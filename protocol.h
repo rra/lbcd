@@ -35,11 +35,10 @@ typedef enum P_STATUS {
 typedef char LBCD_SERVICE_REQ[16];
 
 typedef struct LBCD_SERVICE {
-  LBCD_SERVICE_REQ name;	/* service name (NUL terminated) */
   u_int host_weight;		/* computed host lb weight */
   u_int host_incr;		/* computed host lb increment */
+  LBCD_SERVICE_REQ name;	/* service name (NUL terminated) */
 } LBCD_SERVICE;
-
 
 /*
  * Request packet
