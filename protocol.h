@@ -11,6 +11,7 @@
 #define LBCD_MAXMESG 2048	/* max udp message to receive */
 #define LBCD_MAX_SERVICES 5	/* max service requests to allow */
 #define LBCD_VERSION 3		/* protocol version client speaks */
+#define LBCD_TIMEOUT 5		/* default service poll timeout */
 
 /*
  * Request/Response codes
