@@ -54,11 +54,11 @@ $(LIBRARY):
 
 lbcd.8: lbcd.pod configure.ac
 	pod2man --release=$(VERSION) --center="Maintenance Commands" \
-	    --section=8 lbcd.pod > $@
+	    --section=8 $(srcdir)/lbcd.pod > $@
 
 lbcdclient.1: lbcdclient configure.ac
 	pod2man --release=$(VERSION) --center="User Commands" \
-	    --section=1 lbcdclient > $@
+	    --section=1 $(srcdir)/lbcdclient > $@
 
 install: lbcd lbcd.8 lbcdclient.1
 	$(INSTALL) -d $(bindir) $(sbindir) $(man1dir) $(man8dir)
