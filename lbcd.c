@@ -19,99 +19,112 @@
 extern char *sys_errlist[];
 extern int errno;
 
-static void handle_lb_request(int s,P_HEADER_PTR ph,  int ph_len,
-			      struct sockaddr_in *cli_addr, int cli_len,
-			      int rr);
-static void usage(void);
-static void handle_requests(void);
+/*
+ * Prototypes
+ */
+static int stop_lbcd(const char *pid_file);
+static void usage(int exitcode);
 
-static int d_flag = 0;
-static int p_flag = 0;
-static int r_flag = 0;
-static int s_flag = 0;
-static int l_flag = 0;
-static int R_flag = 0;
-static int t_flag = 0;
-static int err_flag = 0;
-static char *pid_file = PID_FILE;
-static char *lbcd_helper = (char *)0;
+static void handle_requests(int port,
+			    const char *pid_file,
+			    int round_robin,
+			    const char *lbcd_helper);
+static void handle_lb_request(int s,
+			      P_HEADER_PTR ph,
+			      int ph_len,
+			      struct sockaddr_in *cli_addr,
+			      int rr);
+static int lbcd_recv_udp(int s, struct sockaddr_in *cli_addr,
+			 char *mesg, int max_mesg);
+static int lbcd_send_status(int s,
+			    struct sockaddr_in *cli_addr,
+			    P_HEADER *request_header,
+			    p_status_t pstat);
 
 int
 main(int argc, char **argv)
 {
-   int c;
-   extern int optind, opterr;
-   extern char *optarg;
-   int pid;
- 
-   while ((c = getopt(argc, argv, "P:Rc:dhlp:rstz")) != EOF) 
-     switch (c) {
-     case 'h': /* usage */
-         usage();
-	 exit(0);
-	 break;
-     case 'P': /* pid file */
-         pid_file=optarg;
-         break;
-     case 'R': /* round-robin */
-         R_flag=1;
-	 break;
-     case 'c': /* helper command -- must be full path to command */
-         lbcd_helper = optarg;
-	 if (access(lbcd_helper,X_OK) != 0) {
-	   fprintf(stderr,"optarg: no such program\n");
-	   exit(1);
-	 }
-         break;
-     case 'd': /* debugging mode */
-         d_flag=1;
-         break;
-     case 'l':
-         l_flag=1;
-         break;
-     case 'p': /* port number */
-         p_flag = atoi(optarg);
-         break;
-     case 'r': /* restart */
-         r_flag=1;
-         break;
-     case 's': /* stop */
-         s_flag=1;
-         break;
-     case 't': /* test mode */
-         t_flag=1;
-         break;
-     default:
-         err_flag++;
-     }
+  int debug = 0;
+  int port = LBCD_PORTNUM;
+  int round_robin = 0;
+  int testmode = 0;
+  char *pid_file = PID_FILE;
+  char *lbcd_helper = (char *)0;
+  int c;
 
-  if (err_flag)
-    usage();
-
-  if (!p_flag) p_flag = LBCD_PORTNUM;
-
-  if (s_flag) {
-     pid = util_get_pid_from_file(pid_file);
-     if (pid == -1) {
-         fprintf(stderr,"no lbcd running");
-         exit(1);
-     }
-     if (kill(pid,SIGTERM)==-1) {
-         fprintf(stderr,"kill: %s\n",sys_errlist[errno]);
-         exit(1);
-     }
-     exit(0);
+  opterr = 1;
+  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstz")) != EOF) {
+    switch (c) {
+    case 'h': /* usage */
+      usage(0);
+      break;
+    case 'P': /* pid file */
+      pid_file=optarg;
+      break;
+    case 'R': /* round-robin */
+      round_robin=1;
+      break;
+    case 'c': /* helper command -- must be full path to command */
+      lbcd_helper = optarg;
+      if (access(lbcd_helper,X_OK) != 0) {
+	fprintf(stderr,"%s: no such program\n",optarg);
+	exit(1);
+      }
+      break;
+    case 'd': /* debugging mode */
+      debug=1;
+      break;
+    case 'p': /* port number */
+      port = atoi(optarg);
+      break;
+    case 'r': /* restart */
+      if (stop_lbcd(pid_file) != 0) {
+	exit(1);
+      }
+      break;
+    case 's': /* stop */
+      exit(stop_lbcd(pid_file));
+      break;
+    case 't': /* test mode */
+      testmode=1;
+      break;
+    default:
+      usage(1);
+      break;
+    }
   }
 
-  if (!d_flag) util_start_daemon();
+  if (!debug)
+    util_start_daemon();
+  
+#if 0
+  if (testmode) {
+  }
+#endif
 
-  handle_requests();
+  handle_requests(port,pid_file,round_robin,lbcd_helper);
+  return 0;
+}
 
+int
+stop_lbcd(const char *pid_file)
+{
+  pid_t pid;
+
+  if ((pid = util_get_pid_from_file(pid_file)) == -1) {
+    return 0;
+  }
+  if (kill(pid,SIGTERM) == -1) {
+    util_log_error("can't kill pid %d: %%m",pid);
+    perror("kill");
+    return -1;
+  }
   return 0;
 }
 
 void
-handle_requests()
+handle_requests(int port, const char *pid_file,
+		int round_robin, const char *lbcd_helper)
 {
    int s;
    struct sockaddr_in serv_addr, cli_addr;
@@ -121,8 +134,7 @@ handle_requests()
    P_HEADER_PTR ph;
 
   /* open UDP socket */
-  
-  if (  (s = socket(AF_INET,SOCK_DGRAM, 0)) < 0 ) {
+  if ((s = socket(AF_INET,SOCK_DGRAM, 0)) < 0) {
      util_log_error("can't open udp socket: %%m");
      exit(1);
   }
@@ -130,59 +142,46 @@ handle_requests()
   memset(& serv_addr, 0, sizeof(serv_addr));  
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  serv_addr.sin_port = htons(p_flag);
+  serv_addr.sin_port = htons(port);
   
-  while (bind(s,(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-     if(errno==EADDRINUSE) {
-        if(r_flag) {
-           int pid;
-           pid = util_get_pid_from_file(pid_file);
-           if (kill(pid,SIGTERM)==-1) {
-              util_log_error("can't kill pid %d: %%m",pid);
-              exit(1);
-           } 
-           r_flag=0; /* don't loop forever */
-        } else {
-              util_log_error("lbcd already running?");
-              exit(1);
-	}
-     } else {
-        util_log_error("can't bind udp socket: %%m");
-        exit(1);
+  if (bind(s,(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if(errno==EADDRINUSE) {
+      util_log_error("lbcd already running?");
+    } else {
+      util_log_error("cannot bind udp socket: %%m");
     }
-   }
-
-  util_write_pid_in_file(pid_file);
-
-  util_log_info("ready to accept requests");
-  
-  while(1) {
-
-    cli_len = sizeof(cli_addr);
-
-    n=lbcd_recv_udp(s, &cli_addr, &cli_len, mesg, sizeof(mesg));
-
-    if (n>0) {
-         ph = (P_HEADER_PTR) mesg;
-         switch (ph->op) {
-         case op_lb_info_req: 
-            handle_lb_request(s,ph,n,&cli_addr,cli_len,R_flag);
-            break;
-	 default:
-            lbcd_send_status(s, &cli_addr, cli_len,ph,status_unknown_op);
-            util_log_error("unknown op requested: %d",ph->op);
-	 }
-    }     
+    exit(1);
   }
 
+  util_write_pid_in_file(pid_file);
+  util_log_info("ready to accept requests");
+
+  /* Main loop */
+  while(1) {
+    cli_len = sizeof(cli_addr);
+    n=lbcd_recv_udp(s, &cli_addr, mesg, sizeof(mesg));
+    if (n>0) {
+      ph = (P_HEADER_PTR) mesg;
+      switch (ph->op) {
+      case op_lb_info_req: 
+	handle_lb_request(s,ph,n,&cli_addr,round_robin);
+	break;
+      default:
+	lbcd_send_status(s,&cli_addr,ph,status_unknown_op);
+	util_log_error("unknown op requested: %d",ph->op);
+      }
+    }
+  }
 }
 
 void
-handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
-		  struct sockaddr_in *cli_addr, int cli_len,
+handle_lb_request(int s,
+		  P_HEADER_PTR ph, int ph_len,
+		  struct sockaddr_in *cli_addr,
 		  int rr)
 {
    P_LB_RESPONSE lbr;
+   int cli_len = sizeof (struct sockaddr_in);
 
    /* Fill in reply */
    lbcd_pack_info(&lbr,rr);
@@ -194,15 +193,84 @@ handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
    lbr.h.status  = htons(status_ok);
 
    /* Send reply */
-   if (sendto(s,(const char *)&lbr,sizeof(lbr),
-                0,(const struct sockaddr *)cli_addr,cli_len)!=sizeof(lbr)) {
+   if (sendto(s,(const char *)&lbr, sizeof(lbr), 0,
+	      (const struct sockaddr *)cli_addr, cli_len)
+	      != sizeof(lbr)) {
      util_log_error("sendto: %%m");
    }
+}
 
+int
+lbcd_recv_udp(int s, 
+	      struct sockaddr_in *cli_addr,
+	      char *mesg, int max_mesg)
+{
+  int n;
+  int cli_len = sizeof (struct sockaddr_in);
+  P_HEADER_PTR ph;
+
+  n = recvfrom(s,mesg, max_mesg, 0,
+	       (struct sockaddr *)cli_addr,&cli_len);
+
+  if (n < 0) {
+    util_log_error("recvfrom: %%m");
+    exit(1);
+  }
+
+  if (n < sizeof(P_HEADER)) {
+    util_log_error("short packet received, len %d",n);
+    return 0;
+  }
+  ph = (P_HEADER_PTR) mesg;     
+  ph->version = ntohs(ph->version);
+  ph->id      = ntohs(ph->id);
+  ph->op      = ntohs(ph->op);
+  ph->status  = ntohs(ph->status);
+
+  switch(ph->version) {
+  case 3: /* Client-supplied load protocol */
+    break;
+  case 2: /* Original protocol */
+    break;
+  default:
+    util_log_error("protocol version unsupported: %d", ph->version);
+    lbcd_send_status(s, cli_addr, ph, status_lbcd_version);
+    return 0;
+  }
+
+  if (ph -> status != status_request) {
+    util_log_error("expecting request, got %d",ph->status);
+    lbcd_send_status(s, cli_addr, ph, status_lbcd_error);
+    return 0;
+  }
+  
+  return n;     
+}
+
+int
+lbcd_send_status(int s, 
+		 struct sockaddr_in *cli_addr,
+		 P_HEADER *request_header,
+		 p_status_t pstat)
+{
+  int cli_len = sizeof (struct sockaddr_in);
+  P_HEADER header;
+
+  header.version= htons(LBCD_VERSION);
+  header.id     = htons(request_header->id);
+  header.op     = htons(request_header->op);
+  header.status = htons(pstat);
+
+  if (sendto(s,(char *)&header,sizeof(header),0,
+	     (struct sockaddr *)cli_addr,cli_len)!=sizeof(header)) {
+    util_log_error("sendto: %%m");
+    return -1;
+  }
+  return 0;
 }
 
 void
-usage(void)
+usage(int exitcode)
 {
   fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
   fprintf(stderr,"   -h          print usage\n");
@@ -217,6 +285,6 @@ usage(void)
   fprintf(stderr,"               either \"load[:incr]\" or \"service\"\n");
   fprintf(stderr,"   -t          test mode (print stats and exit)\n");
   fprintf(stderr,"   -P file     pid file\n");
-  exit(1);
+  exit(exitcode);
 }
 
