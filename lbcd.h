@@ -55,6 +55,9 @@ extern int util_write_pid_in_file(const char *file);
 extern void util_start_daemon(void);
 extern void util_log_close(void);
 
+/* weight.c */
+void lbcd_default_weight(P_LB_RESPONSE *lb, int *weight, int *incr);
+
 #ifdef __cplusplus
 }
 #endif
