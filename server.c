@@ -50,7 +50,7 @@ lbcd_proto2_convert(P_LB_RESPONSE *lb)
 }
 
 void
-lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
+lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
 {
   double l1,l5,l15;
   time_t bt,ct;
@@ -106,7 +106,7 @@ lbcd_print_load(void)
 {
   P_LB_RESPONSE lb;
 
-  lbcd_pack_info(&lb,0);
+  lbcd_pack_info(&lb,0,0);
 
   printf("  lb.l1 = %d\n",  ntohs(lb.l1));
   printf("  lb.l5 = %d\n",  ntohs(lb.l5));
