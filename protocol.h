@@ -7,10 +7,10 @@
  * Constants
  */
 
-#define LBCD_PORTNUM 4330 
+#define LBCD_PORTNUM 4330	/* default port */
 #define LBCD_MAXMESG 2048	/* max udp message to receive */
 #define LBCD_MAX_SERVICES 5	/* max service requests to allow */
-#define LBCD_VERSION 3
+#define LBCD_VERSION 3		/* protocol version client speaks */
 
 /*
  * Request/Response codes
