@@ -134,6 +134,10 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
 
   uniq_start();
 
+  if (stat("/dev/console",&sbuf)==0) {
+    if (sbuf.st_uid != 0) *on_console = 1;
+  }
+
 #ifdef HAVE_GETUTENT
   {
     struct utmp *ut;
@@ -144,12 +148,7 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
       ++(*total);
 
       if (strncmp(ut->ut_line,"console",7)==0)
-	++(*on_console);
-      else {
-	if (stat("/dev/console",&sbuf)==0) {
-	  if (sbuf.st_uid != 0) ++(*on_console);
-	}
-      }
+	*on_console = 1;
       strncpy(name,ut->ut_user,8);
       name[8]=0;
       uniq_add(name);
@@ -171,7 +170,7 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
     if (ut.ut_type != USER_PROCESS) continue;
 #endif
     ++(*total);
-    if (strncmp(ut.ut_line,"console",7)==0) ++(*on_console);
+    if (strncmp(ut.ut_line,"console",7)==0) *on_console = 1;
     strncpy(name,ut.ut_name,8);
     name[8]=0;
     uniq_add(name);
