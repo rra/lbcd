@@ -1,0 +1,88 @@
+                            lbcd version 3.2.2
+                      (responder for load balancing)
+              Maintained by Russ Allbery <rra@stanford.edu>
+
+  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+  Trustees, Leland Stanford Jr. University.  This software is distributed
+  under an MIT-style license.  Please see the section LICENSE below for
+  terms of use and redistribution.
+
+DESCRIPTION
+
+  The lbcd daemon runs on a Unix system and answers UDP queries (by
+  default on port 4330) with information about system load, number of
+  logged on users, uptime, and free /tmp space.  The intention is for this
+  information to be used by a load balancer service to choose the best
+  system to direct incoming connections to.  It was designed for use with
+  the lbnamed DNS load balancer, available at:
+
+      <http://www.stanford.edu/~riepel/lbnamed/>
+
+  It was originally written by Roland Schemers, was rewritten by Larry
+  Schwimmer to add protocol version 3 with some additional features and
+  service probing, and is currently maintained by Russ Allbery.
+
+  The information provided isn't particularly sophisticated, and a good
+  hardware load balancer will be able to consider such things as
+  connection latency and responsiveness to make better decisions, but lbcd
+  with lbnamed works quite well for smaller scale problems, scales well to
+  multiple load balance pools for different services, and is much simpler
+  and cheaper to understand and deploy.
+
+  Included in this package is a small client program, lbcdclient, which
+  can query an lbcd server and display a formatted version of the returned
+  information.
+
+INSTALLATION
+
+  Compilation and installation are very simple.  Just run:
+
+      ./configure
+      make
+
+  and then as root, run:
+
+      make install
+
+  This will install lbcd in /usr/local/sbin, lbcdclient in /usr/local/bin,
+  and the man pages in /usr/local/man.  To specify a different location
+  for installation, pass the --prefix option to configure.  For more
+  information, run:
+
+      ./configure --help
+
+  lbcdclient is written in Perl, so you may have to edit the first line of
+  the script to point to the correct Perl location on your system.  It
+  does not use any sophisticated Perl features or add-on modules.
+
+  You will generally want to start lbcd at system boot.  There is an init
+  script in debian/init for Debian systems; for other systems, all that is
+  needed is a simple init script to start lbcd with the appropriate
+  options or kill it again.  It writes its PID into /var/run/lbcd.pid by
+  default (and this can be changed with the -P option).  On many systems,
+  lbcd will need to run as root or as a member of particular groups to
+  obtain system load average and uptime information.
+
+LICENSE
+
+  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+  Trustees, Leland Stanford Jr. University.
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
