@@ -118,7 +118,7 @@ main()
   time_t boottime;
 
   if (kernel_getload(&l1,&l5,&l15) == 0) {
-    printf("load %.02f %.02f %.02f\n",l1,l5,15);
+    printf("load %.02f %.02f %.02f\n",l1,l5,l15);
   }
   if (kernel_getboottime(&boottime) == 0) {
     printf("booted at %s",ctime(&boottime));
