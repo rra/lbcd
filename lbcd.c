@@ -24,13 +24,12 @@ static void usage(int exitcode);
 
 static void handle_requests(int port,
 			    const char *pid_file,
-			    int round_robin,
 			    const char *lbcd_helper);
 static void handle_lb_request(int s,
 			      P_HEADER_PTR ph,
 			      int ph_len,
 			      struct sockaddr_in *cli_addr,
-			      int cli_len, int rr);
+			      int cli_len);
 static int lbcd_recv_udp(int s, struct sockaddr_in *cli_addr,
 			 int cli_len, char *mesg, int max_mesg);
 static int lbcd_send_status(int s, struct sockaddr_in *cli_addr,
@@ -43,14 +42,14 @@ main(int argc, char **argv)
 {
   int debug = 0;
   int port = LBCD_PORTNUM;
-  int round_robin = 0;
   int testmode = 0;
   char *pid_file = PID_FILE;
   char *lbcd_helper = (char *)0;
+  char *service_weight = (char *)0;
   int c;
 
   opterr = 1;
-  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstz")) != EOF) {
+  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstw:")) != EOF) {
     switch (c) {
     case 'h': /* usage */
       usage(0);
@@ -59,7 +58,7 @@ main(int argc, char **argv)
       pid_file = optarg;
       break;
     case 'R': /* round-robin */
-      round_robin = 1;
+      service_weight = "rr";
       break;
     case 'c': /* helper command -- must be full path to command */
       lbcd_helper = optarg;
@@ -70,6 +69,9 @@ main(int argc, char **argv)
       break;
     case 'd': /* debugging mode */
       debug = 1;
+      break;
+    case 'l': /* log requests */
+      /* FIXME: implement */
       break;
     case 'p': /* port number */
       port = atoi(optarg);
@@ -85,21 +87,33 @@ main(int argc, char **argv)
     case 't': /* test mode */
       testmode = 1;
       break;
+    case 'w': /* weight or service */
+      service_weight = optarg;
+      break;
     default:
       usage(1);
       break;
     }
   }
 
-  if (!debug)
-    util_start_daemon();
-  
+  /* Initialize default load handler */
+  if (lbcd_weight_init(lbcd_helper,service_weight) != 0) {
+    fprintf(stderr,"could not initialize service handler\n");
+    exit(1);
+  }
+
+  /* If testing, print default output and terminate */
 #if 0
   if (testmode) {
   }
 #endif
 
-  handle_requests(port,pid_file,round_robin,lbcd_helper);
+  /* Fork unless debugging */
+  if (!debug)
+    util_start_daemon();
+
+  /* Become a daemon.  handle_requests never returns */
+  handle_requests(port,pid_file,lbcd_helper);
   return 0;
 }
 
@@ -121,7 +135,7 @@ stop_lbcd(const char *pid_file)
 
 void
 handle_requests(int port, const char *pid_file,
-		int round_robin, const char *lbcd_helper)
+		const char *lbcd_helper)
 {
    int s;
    struct sockaddr_in serv_addr, cli_addr;
@@ -161,7 +175,7 @@ handle_requests(int port, const char *pid_file,
       ph = (P_HEADER_PTR) mesg;
       switch (ph->op) {
       case op_lb_info_req: 
-	handle_lb_request(s,ph,n,&cli_addr,cli_len,round_robin);
+	handle_lb_request(s,ph,n,&cli_addr,cli_len);
 	break;
       default:
 	lbcd_send_status(s,&cli_addr,cli_len,ph,status_unknown_op);
@@ -174,8 +188,7 @@ handle_requests(int port, const char *pid_file,
 void
 handle_lb_request(int s,
 		  P_HEADER_PTR ph, int ph_len,
-		  struct sockaddr_in *cli_addr, int cli_len,
-		  int rr)
+		  struct sockaddr_in *cli_addr, int cli_len)
 {
    P_LB_RESPONSE lbr;
    int pkt_size;
@@ -187,7 +200,7 @@ handle_lb_request(int s,
    lbr.h.status  = htons(status_ok);
 
    /* Fill in reply */
-   lbcd_pack_info(&lbr,rr,ph);
+   lbcd_pack_info(&lbr,ph);
 
    /* Send reply */
    pkt_size = sizeof(lbr) + lbr.services * sizeof(LBCD_SERVICE);
