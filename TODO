@@ -1,2 +1,6 @@
 * If high load, deal with wraparound problem.
 * have lbcd -r -P file work correctly.
+* check -Wall is clean on all hosts
+* add version 2 test option
+* add passing test options for multiple queries
+* ensure negative ports rejected
