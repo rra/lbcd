@@ -28,14 +28,24 @@ proto_recv_udp(int s,
     return 0;
   }
   ph = (P_HEADER_PTR) mesg;     
-  ph -> version = ntohs(ph -> version);
-  ph -> id      = ntohs(ph -> id);
-  ph -> op      = ntohs(ph -> op);
-  ph -> status  = ntohs(ph -> status);
+  ph->version = ntohs(ph->version);
+  ph->id      = ntohs(ph->id);
+  ph->op      = ntohs(ph->op);
+  ph->status  = ntohs(ph->status);
 
-  if (ph -> version != PROTO_VERSION) {
-    util_log_error("protocol version mismatch got %d, want %d",
-		   ph->version, PROTO_VERSION);
+  switch(ph->version) {
+  case 3:
+    /* Basic Extended Version */
+    if (ph->status > 0) {
+      util_log_error("extended protcol 3 not supported yet");
+      proto_send_status(s, cli_addr, *cli_len,ph,status_proto_version);
+    }
+    break;
+  case 2:
+    /* Original Protocol */
+    break;
+  default:
+    util_log_error("protocol version unsupported: %d", ph->version);
     proto_send_status(s, cli_addr, *cli_len,ph,status_proto_version);
     return 0;
   }
