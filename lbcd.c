@@ -2,8 +2,7 @@
  * lbcd client main
  */
 
-/* Program version string -- major and protocol should match */
-#define VERSION "3.0.0beta1"
+#include "version.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
