@@ -1,9 +1,35 @@
 dnl configure.in for lbcd
 
+dnl ------------------------------------------------------------
+dnl
+dnl PROLOG
+dnl
 AC_INIT(lbcd.c)
+AC_CONFIG_HEADER(config.h)
+AC_PREREQ(2.10)
 
+dnl ------------------------------------------------------------
+dnl
+dnl Setup Defaults
+dnl
+test -z "$CFLAGS" && CFLAGS=-O AC_SUBST(CFLAGS)
+
+dnl ------------------------------------------------------------
+dnl
+dnl PROGRAMS
+dnl
 AC_PROG_CC
 
+dnl ------------------------------------------------------------
+dnl
+dnl HEADERS
+dnl
+AC_CHECK_HEADERS(utmp.h utmpx.h sys/statvfs.h sys/vfs.h malloc.h search.h)
+
+dnl ------------------------------------------------------------
+dnl
+dnl LIBRARIES
+dnl
 AC_CHECK_LIB(kvm, main, LIBS="$LIBS -lkvm")
 AC_CHECK_LIB(kstat, main, LIBS="$LIBS -lkstat")
 AC_CHECK_LIB(mld, main, LIBS="$LIBS -lmld")
@@ -19,4 +45,14 @@ if test "$ac_check_both" = 1; then
 fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 
+dnl ------------------------------------------------------------
+dnl
+dnl FUNCTIONS
+dnl
+AC_CHECK_FUNCS(hsearch getutent)
+
+dnl ------------------------------------------------------------
+dnl
+dnl OUTPUT
+dnl
 AC_OUTPUT(Makefile)
