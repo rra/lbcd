@@ -1,0 +1,11 @@
+AC_INIT(lbcd.c)
+
+PROGS="lbcd"
+AC_SUBST(PROGS)
+
+AC_PROG_CC
+AC_PROG_INSTALL
+
+AC_HAVE_LIBRARY(-lkvm)
+
+AC_OUTPUT(Makefile)
