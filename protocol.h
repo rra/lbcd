@@ -32,12 +32,11 @@ typedef enum P_STATUS {
 /*
  * Service request/response types
  */
-typedef char LBCD_SERVICE_REQ[16];
+typedef char LBCD_SERVICE_REQ[16]; /* service name (NUL-terminated) */
 
 typedef struct LBCD_SERVICE {
   u_int host_weight;		/* computed host lb weight */
   u_int host_incr;		/* computed host lb increment */
-  LBCD_SERVICE_REQ name;	/* service name (NUL terminated) */
 } LBCD_SERVICE;
 
 /*
@@ -49,6 +48,14 @@ typedef struct {
   u_short   op;       /* operation requested */
   u_short   status;   /* set on reply */
 } P_HEADER,*P_HEADER_PTR;
+
+/*
+ * Extended request packet
+ */
+typedef struct {
+  P_HEADER h;
+  LBCD_SERVICE_REQ names[LBCD_MAX_SERVICES];
+} P_HEADER_FULL, *P_HEADER_FULLPTR;
 
 /*
  * Reply packet
@@ -69,8 +76,8 @@ typedef struct {
   u_char tmpdir_full;		/* percent of P_tmpdir full */
   u_char pad;			/* padding */
   u_char services;		/* number of service requests */
-  u_int host_weight;		/* computed host lb weight */
-  u_int host_incr;		/* computed host lb increment */
+  LBCD_SERVICE weights[LBCD_MAX_SERVICES+1];
+				/* host service weight/increment pairs */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
 
 #endif
