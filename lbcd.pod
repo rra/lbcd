@@ -1,0 +1,167 @@
+=head1 NAME
+
+lbcd - Report system load for remote load balancing
+
+=head1 SYNOPSIS
+
+lbcd [B<-dhlRrt>] [B<-c> I<command>] [B<-P> I<file>] [B<-p> I<port>]
+[B<-T> I<seconds>] [B<-w> I<weight>]
+
+lbcd B<-s> [B<-P> I<file>]
+
+=head1 DESCRIPTION
+
+B<lbcd> runs as a daemon and reports various system utilization
+information and optionally service status information via a UDP network
+protocol.  It is designed to run on the client systems of a remote load
+balancing system, such as the DNS-based B<lbnamed> load balancer.
+
+B<lbcd> supports two different query protocols, version two and version
+three.  (Currently, B<lbnamed> only supports version two queries.)  Either
+will return the current time according to that system, the time of the
+last system boot, the time the information about logged in users last
+changed, the load averages (one, five, and fifteen minute), the total and
+unique logged in users, whether a user is logged in on console, whether
+the system F</tmp> directory is full, and the percentage full of the
+system F</tmp> directory.  The version three protocol can also return
+weight and increment information about a set of services.
+
+The service information is based around a model that returns a weight
+(indicating the current utilization of the box -- the higher, the busier)
+and an increment (an estimate of how much the utilization will increase
+for each additional connection directed to this box) which defaults to
+one.  The intent is for the load balancer to query the system
+periodically, using the returned weight as the system load, and to
+estimate the system load between queries of B<lbcd> as the last returned
+weight plus the last returned increment times the number of connections
+directed to that system.  By default, only one service is returned (one
+minute load).
+
+Since B<lbnamed> calculates the weight from the one minute load and the
+number of logged-in users and currently only supports version two, B<lbcd>
+will replace the one-minute load with the weight of the primary service
+when responding to a version two query.
+
+B<lbcd> responds to any UDP packets on port 4330 (or the port given with
+the B<-p> option).  It has no built-in security, so if you do not want to
+disclose the above information to random systems on the Internet, you will
+want to limit access to this port using iptables, firewall rules, or other
+similar measures.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c> I<command>
+
+Obtain the service weight and increment by running an external command.
+This command should print to standard output one line containing two
+integer numbers, separated by whitespace.  The first number is taken to be
+the weight and the second number is taken to be the increment.  (As
+mentioned above, when responding to version two protocol queries, the
+weight is returned as the one-minute load average.)
+
+=item B<-d>
+
+Don't run as a daemon (meaning don't fork and detach from a tty) to make
+it easier to run B<lbcd> inside a debugger.
+
+=item B<-h>
+
+Print out usage information and exit.
+
+=item B<-l>
+
+Currently does nothing.  Eventually this will tell lbcd to log all
+received requests, but this has not yet been implemented.
+
+=item B<-P> I<file>
+
+Use I<file> to store the PID of the running B<lbcd> process and as the
+file to read for the B<-r> and B<-s> options, rather than the default of
+F</var/run/lbcd.pid>.
+
+=item B<-p> I<port>
+
+Listen on I<port> rather than the default of 4330.
+
+=item B<-R>
+
+Use round-robin as the service.  This will always return a weight of one
+and an increment of one.  For version two responses, it will always return
+a one-minute load of one regardless of the actual load average of the
+system.
+
+=item B<-r>
+
+Restart a running B<lbcd> process.  This stops the existing B<lbcd>
+process by killing the PID named in F</var/run/lbcd.pid> or the file given
+with the B<-P> option and then starts as the new B<lbcd> process.
+
+=item B<-s>
+
+Stop an existing B<lbcd> process by killing the PID named in
+F</var/run/lbcd.pid> or the file given with the B<-P> option.
+
+=item B<-T> I<seconds>
+
+Use a timeout of I<seconds> when doing service probes (including running a
+command with B<-c>).  The default is five seconds.
+
+=item B<-w> I<weight>
+
+Specify either a service to probe or a weight and increment to always
+return.  I<weight> can be a string of the form I<weight>:I<increment>
+where both I<weight> and I<increment> are numbers, in which case that
+weight and increment will always be returned.  Alternately, it can be the
+name of a service module, in which case that service will be probed and
+its weight will be returned as the service weight (and the one-minute load
+with version two queries).
+
+The currently supported services are load (the default), ftp, http, imap,
+nntp, ntp, pop, smtp, tcp, and rr (round-robin, the same as B<-R>).  The
+http and tcp services must be followed by a colon and a port number.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item F</var/run/lbcd.pid>
+
+The default location of the PID file.  B<lbcd> puts its PID in this file
+when it starts, and refers to this file for the B<-r> and B<-s> commands.
+The file location can be changed with B<-P>.
+
+=back
+
+=head1 AUTHORS
+
+Originally written by Roland Schemers and Larry Schwimmer.  Currently
+maintained by Russ Allbery <rra@stanford.edu>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+Trustees, Leland Stanford Jr.  University.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+=cut
