@@ -15,15 +15,14 @@
 void
 lbcd_set_load(P_LB_RESPONSE *lb)
 {
-  /* FIXME: fill in below */
 #if 1
+  lbcd_default_weight(lb,&lb->host_weight,&lb->host_incr);
+
+  /* FIXME: fill in below */
   lb->pad = 0;
   lb->services = 0;
-  lb->host_weight = 0;
-  lb->host_incr = 0;
 #else
   int i;
-  set_load(lb,0);
   for (i = 1; i < lb->services; i++) {
     set_load(lb,i);
   }
