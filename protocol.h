@@ -41,7 +41,8 @@ typedef struct {
   u_char reserved;		/* future use, padding ... */
   u_char tmp_full;		/* percent of tmp full */
   u_char tmpdir_full;		/* percent of P_tmpdir full */
-  u_short services;		/* number of service requests */
+  u_char pad;			/* padding */
+  u_char services;		/* number of service requests */
   u_int host_weight;		/* computed host lb weight */
   u_int host_incr;		/* computed host lb increment */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
