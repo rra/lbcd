@@ -1,27 +1,55 @@
-3.2.1 September 2004
-	Fixed a long-standing bug in -R mode when responding to v2 requests
-	Set 5 and 15 minute load as well in v2 responses when using -R
+                        User-Visible lbcd Changes
 
-3.2.0 August 2004
-	Added man page for lbcd and lbcdclient
-	Added Debian build rules and Makefile support
-	Changed default PID file to /var/run/lbcd.pid
+lbcd 3.2.2 (2004-11-16)
 
-3.1.2 July 2003
-        Added make dist target to the Makefile
-	Fixed va_end bug and setpgrp portability
+    Documentation updates, including adding a README file and reformatting
+    documentation to match other Stanford packages.  Added URL information
+    to the manual pages.
 
-3.1.1 January 2000
-	IRIX 6.5 port and general cleanup of IRIX
+lbcd 3.2.1 (2004-09)
 
-3.1.0 August 1998
-	IRIX 6.x port
-	Fix protocol 2 conversion handling for little endian
-	Standardize on 32 bytes for protocol 3 service length
-	First server with protocol 3 extensions
+    Fixed a long-standing bug in round-robin (-R) mode when responding to
+    v2 requests.  The response packet was not being correctly changed on
+    Linux and other little-endian systems.
 
-3.0.1 January 1998
-	Fix Solaris utmp gathering mechanism (check utmp entry type)
+    Set the 5 and 15 minute load to a constant value as well as the 1
+    minute load when using round-robin, just in case.
 
-3.0.0 January 1998
-	First complete protocol 3 server
+lbcd 3.2.0 (2004-08)
+
+    Added manual pages for both lbcd and lbcdclient.
+
+    Changed the default PID file location for lbcd to /var/run/lbcd.pid,
+    which is FHS-compliant and supported on most operating systems now.
+
+    Added Debian build rules and Makefile support for building Debian
+    packages, and cleaned up the configure and build system.
+
+lbcd 3.1.2 (2003-07)
+
+    Fixed a bug with va_end usage on systems where va_end is not a no-op
+    and fixed some setpgrp portability issues.
+
+    Added a make dist target to the Makefile.
+
+lbcd 3.1.1 (2000-01)
+
+    Ported to IRIX 6.5.  The IRIX support code underwent a general
+    cleanup.
+
+lbcd 3.1.0 (1998-08)
+
+    Standardize on 32 bytes for protocol v3 service length and add
+    protocol v3 extensions to the server.
+
+    Ported to IRIX 6.x.
+
+    Fix protocol v2 conversion handling for little-endian machines.
+
+lbcd 3.0.1 (1998-01)
+
+    Fix Solaris utmp gathering mechanism by checking the utmp entry type.
+
+lbcd 3.0.0 (1998-01)
+
+    First complete protocol v3 server.
