@@ -210,7 +210,7 @@ int
 lbcd_unknown_weight(u_int *weight_val, u_int *incr_val)
 {
   *weight_val = (u_int)-1;
-  *incr_val = (u_int)-1;
+  *incr_val = 0;
   return 0;
 }
 
