@@ -1,14 +1,22 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #ifdef HAVE_UTMPX_H
 #include <utmpx.h>
-#elif HAVE_UTMP_H
+#endif
+
+#ifdef HAVE_UTMP_H
 #include <utmp.h>
-#else
+#endif
+
+#if !HAVE_UTMPX_H && !HAVE_UTMP_H
 #error No utmp code on this platform?
 #endif
 
@@ -132,7 +140,7 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
 
   uniq_start();
 
-#ifdef __alpha
+#ifdef HAVE_GETUTENT
   {
     struct utmp *ut;
     while((ut = getutent())!=NULL) {
@@ -162,9 +170,8 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
     return -1;
   }
 
-
   while (read(fd,(char*)&ut, sizeof(ut))>0) {
-#ifndef _AIX
+#ifndef USER_PROCESS
     if (ut.ut_name[0] == '\0') continue;
 #else
     if (ut.ut_type != USER_PROCESS) continue;
@@ -176,7 +183,7 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
     uniq_add(name);
   }
   close(fd);
-#endif /* __alpha */
+#endif /* HAVE_GETUTENT */
 
   *uniq = uniq_count();
   uniq_end();
