@@ -3,6 +3,9 @@
  *
  * xntpdc's monlist command butchered and packaged in a single .c
  */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,6 +16,9 @@
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 
 #include "monlist.h"
 

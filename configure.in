@@ -25,6 +25,7 @@ dnl
 dnl HEADERS
 dnl
 AC_CHECK_HEADERS(utmp.h utmpx.h sys/statvfs.h sys/vfs.h malloc.h search.h)
+AC_CHECK_HEADERS(sys/select.h)
 
 dnl ------------------------------------------------------------
 dnl
