@@ -46,7 +46,8 @@ util_debug_off(void)
 void
 util_start_daemon(void)
 {
-  int childpid,fd;
+  pid_t childpid;
+  int fd;
 
 #ifdef SIGTTOU
   signal(SIGTTOU, SIG_IGN);
@@ -195,16 +196,15 @@ util_get_host_by_address(struct in_addr in)
  *
  */
 
-int
-util_get_pid_from_file(char *file)
+pid_t
+util_get_pid_from_file(const char *file)
 {
   FILE *pid;
 
   pid = fopen(file,"r");
   if (pid!=NULL) {
-    int the_pid;
-    the_pid=0;
-    fscanf(pid,"%d",&the_pid);
+    pid_t the_pid = 0;
+    fscanf(pid,"%d",(int *)&the_pid);
     fclose(pid);
     if (the_pid != 0 && kill(the_pid,0) == 0) return the_pid;
   }
@@ -217,7 +217,7 @@ util_get_pid_from_file(char *file)
  */
 
 int
-util_write_pid_in_file(char *file)
+util_write_pid_in_file(const char *file)
 {
   FILE *pid;
 
