@@ -87,7 +87,7 @@ main(int argc, char **argv)
   if (err_flag)
     usage();
 
-  if (!p_flag) p_flag = PROTO_PORTNUM;
+  if (!p_flag) p_flag = LBCD_PORTNUM;
 
   if (s_flag) {
      pid = util_get_pid_from_file(pid_file);
@@ -114,7 +114,7 @@ handle_requests()
    struct sockaddr_in serv_addr, cli_addr;
    int cli_len;
    int n; 
-   char mesg[PROTO_MAXMESG];
+   char mesg[LBCD_MAXMESG];
    P_HEADER_PTR ph;
 
   /* open UDP socket */
@@ -157,7 +157,7 @@ handle_requests()
 
     cli_len = sizeof(cli_addr);
 
-    n=proto_recv_udp(s, (struct sockaddr *)&cli_addr, &cli_len, 
+    n=lbcd_recv_udp(s, (struct sockaddr *)&cli_addr, &cli_len, 
                                               mesg, sizeof(mesg));
 
     if (n>0) {
@@ -167,7 +167,7 @@ handle_requests()
             handle_lb_request(s,ph,n,&cli_addr,cli_len,R_flag);
             break;
 	 default:
-            proto_send_status(s, &cli_addr, cli_len,ph,status_unknown_op);
+            lbcd_send_status(s, &cli_addr, cli_len,ph,status_unknown_op);
             util_log_error("unknown op requested: %d",ph->op);
 	 }
     }     
@@ -182,13 +182,16 @@ handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
 {
    P_LB_RESPONSE lbr;
 
+   /* Fill in reply */
+   lbcd_pack_lb_info(&lbr,rr);
+
+   /* Fill in reply header */
    lbr.h.version = htons(ph->version);
    lbr.h.id      = htons(ph->id);
    lbr.h.op      = htons(ph->op);
    lbr.h.status  = htons(status_ok);
 
-   proto_pack_lb_info(&lbr,rr);
-
+   /* Send reply */
    if (sendto(s,(const char *)&lbr,sizeof(lbr),
                 0,(const struct sockaddr *)cli_addr,cli_len)!=sizeof(lbr)) {
      util_log_error("sendto: %%m");
@@ -208,6 +211,8 @@ usage(void)
   fprintf(stderr,"   -r          restart (kill current lbcd)\n");
   fprintf(stderr,"   -R          round-robin polling\n");
   fprintf(stderr,"   -s          stop running lbcd\n");
+  fprintf(stderr,"   -w option   specify returned weight; options:\n");
+  fprintf(stderr,"               either \"load[:incr]\" or \"service\"\n");
   fprintf(stderr,"   -t          test mode (print stats and exit)\n");
   fprintf(stderr,"   -P file     pid file\n");
   exit(1);
