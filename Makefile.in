@@ -75,7 +75,7 @@ distclean: clean
 	-rm -f Makefile config.log config.status config.cache config.h
 	cd modules && $(MAKE) $@
 
-maintclean: distlcean
+maintclean: distclean
 	-rm -f config.h.in configure $(TARNAME).gz $(TARNAME).gz.md5
 	-rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
 
