@@ -44,8 +44,7 @@ extern int get_user_stats(int *total, int *unique,
 extern int tmp_full(char *path);
 
 /* server.c */
-extern void lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin,
-			   P_HEADER_PTR ph);
+extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_PTR ph);
 
 /* util.c */
 extern void util_log_info(char *fmt, ...);
@@ -57,6 +56,7 @@ extern void util_log_close(void);
 
 /* weight.c */
 void lbcd_default_weight(P_LB_RESPONSE *lb, int *weight, int *incr);
+int lbcd_weight_init(char *cmd, char *service);
 
 #ifdef __cplusplus
 }
