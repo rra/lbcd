@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -9,7 +11,6 @@ lbcd_check_reply(int sd, int timeout, char *token)
 {
   struct timeval tv = { timeout, 0 };
   fd_set rset;
-  int i;
   int retval = 0;
   char *buf;
   int len;
