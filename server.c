@@ -1,3 +1,8 @@
+/*
+ * lbcd client-server routines
+ * Obtains and sends polling information.
+ * Also acts as a test driver.
+ */
 
 #include "config.h"
 #include "lbcd.h"
@@ -44,7 +49,8 @@ proto_recv_udp(int s,
      return n;     
 }
 
-void proto_pack_lb_info(P_LB_RESPONSE *lb)
+void
+proto_pack_lb_info(P_LB_RESPONSE *lb)
 {
   double l1,l5,l15;
   time_t bt,ct;
@@ -68,13 +74,14 @@ void proto_pack_lb_info(P_LB_RESPONSE *lb)
   lb->uniq_users = htons(uu);
   lb->on_console = oc;
   lb->user_mtime = htonl(umtime);
-  lb->reserved = 0;
+  lb->tmp_full = tmp_full();
 }
 
-int proto_send_status(int s, 
-                   struct sockaddr_in *cli_addr, int cli_len,
-                   P_HEADER *request_header,
-                   p_status_t pstat)
+int
+proto_send_status(int s, 
+		  struct sockaddr_in *cli_addr, int cli_len,
+		  P_HEADER *request_header,
+		  p_status_t pstat)
 {
    P_HEADER header;
    header.version= htons(PROTO_VERSION);
@@ -95,20 +102,20 @@ int proto_send_status(int s,
 int
 main(int argc, char *argv[])
 {
-P_LB_RESPONSE lb;
+  P_LB_RESPONSE lb;
 
-proto_pack_lb_info(&lb);
+  proto_pack_lb_info(&lb);
 
-printf("  lb.l1 = %d\n",  ntohs(lb.l1));
-printf("  lb.l5 = %d\n",  ntohs(lb.l5));
-printf("  lb.l15 = %d\n",  ntohs(lb.l15));
-printf("  lb.current_time = %d\n",  ntohl(lb.current_time));
-printf("  lb.boot_time = %d\n",  ntohl(lb.boot_time));
-printf("  lb.user_mtime = %d\n",  ntohl(lb.user_mtime));
-printf("  lb.tot_users = %d\n",  ntohs(lb.tot_users));
-printf("  lb.uniq_users = %d\n",  ntohs(lb.uniq_users));
-printf("  lb.on_console = %d\n",  lb.on_console);
-
+  printf("  lb.l1 = %d\n",  ntohs(lb.l1));
+  printf("  lb.l5 = %d\n",  ntohs(lb.l5));
+  printf("  lb.l15 = %d\n",  ntohs(lb.l15));
+  printf("  lb.current_time = %d\n",  ntohl(lb.current_time));
+  printf("  lb.boot_time = %d\n",  ntohl(lb.boot_time));
+  printf("  lb.user_mtime = %d\n",  ntohl(lb.user_mtime));
+  printf("  lb.tot_users = %d\n",  ntohs(lb.tot_users));
+  printf("  lb.uniq_users = %d\n",  ntohs(lb.uniq_users));
+  printf("  lb.on_console = %d\n",  lb.on_console);
+  printf("  lb.tmp_full = %d\n",  lb.tmp_full);
 }
 
 #endif
