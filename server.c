@@ -1,14 +1,12 @@
 
 #include "config.h"
+#include "lbcd.h"
 #include "proto_server.h"
 
-#include "get_load.h"
-#include "get_time.h"
-#include "get_user.h"
-
-int proto_recv_udp(int s, 
-                   struct sockaddr_in *cli_addr, int * cli_len,
-                   char *mesg, int max_mesg)
+int
+proto_recv_udp(int s, 
+	       struct sockaddr_in *cli_addr, int * cli_len,
+	       char *mesg, int max_mesg)
 {
   int n;
   P_HEADER_PTR ph;
@@ -53,14 +51,17 @@ void proto_pack_lb_info(P_LB_RESPONSE *lb)
   int tu,uu,oc;
   time_t umtime;
 
-  get_boottime(&bt);
+  kernel_getboottime(&bt);
   lb->boot_time = htonl(bt);
 
-  get_time(&ct);
+  time(&ct);
   lb->current_time = htonl(ct);
 
-  get_load(&l1,&l5,&l15);
-printf("%f,%f,%f\n",l1,l5,l15);
+  if (z_flag) {			/* round robin */
+    l1 = l5 = l15 = 0;
+  } else {
+    kernel_getload(&l1,&l5,&l15);
+  }
   lb->l1 = htons((u_short)(l1*100));
   lb->l5 = htons((u_short)(l5*100));
   lb->l15 = htons((u_short)(l15*100));
@@ -72,9 +73,6 @@ printf("%f,%f,%f\n",l1,l5,l15);
   lb->on_console = oc;
   lb->user_mtime = htonl(umtime);
   lb->reserved = 0;
-
-/*printf("htonl(mtime) = %d\n",lb->user_mtime); */
-
 }
 
 int proto_send_status(int s, 
@@ -88,7 +86,7 @@ int proto_send_status(int s,
    header.op     = htons(request_header->op);
    header.status = htons(pstat);
 
-   if (sendto(s,&header,sizeof(header),0,
+   if (sendto(s,(char *)&header,sizeof(header),0,
           (struct sockaddr *)cli_addr,cli_len)!=sizeof(header)) {
     util_log_error("sendto: %%m");
     return -1;
@@ -96,9 +94,12 @@ int proto_send_status(int s,
    return 0;
 }
 
-#ifdef test_me
+#ifdef MAIN
 
-main()
+int z_flag = 0;
+
+int
+main(int argc, char *argv[])
 {
 P_LB_RESPONSE lb;
 
@@ -117,5 +118,3 @@ printf("  lb.on_console = %d\n",  lb.on_console);
 }
 
 #endif
-
-
