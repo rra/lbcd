@@ -1,10 +1,12 @@
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 extern int udp_connect (char *host, char *protocol, int port);
-extern int monlist(int sd);
+extern int monlist(int sd, int timeout);
 
 int
-probe_ntp(char *host)
+probe_ntp(char *host, int timeout)
 {
   int sd;
   int retval = 0;
@@ -12,11 +14,18 @@ probe_ntp(char *host)
   if ((sd = udp_connect(host ? host : "localhost","ntp",123)) == -1) {
     return -1;
   } else {
-    retval = monlist(sd);
+    retval = monlist(sd,timeout);
     close(sd);
   }
 
   return retval;
+}
+
+int
+lbcd_ntp_weight(u_int *weight_val, u_int *incr_val, int timeout)
+{
+  *weight_val = (u_int)probe_ntp("localhost",timeout);
+  return (*weight_val == -1) ? -1 : 0;
 }
 
 #ifdef MAIN
