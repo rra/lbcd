@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <sys/signal.h>
+#include <signal.h>
 #include <errno.h>
 
 #ifdef PATH_LDAPSEARCH
@@ -15,10 +15,8 @@
 #define PATH_LDAPSEARCH "ldapsearch"
 #endif
 
-#define TIMEOUT 5
-
 int
-probe_ldap(char *host)
+probe_ldap(char *host, int timeout)
 {
   int retval = 0;
   int fd[2];
@@ -49,7 +47,7 @@ probe_ldap(char *host)
       close(fd[1]);
       if ((fp = fdopen(fd[0],"r")) == NULL)
 	return -1;
-      while(waitpid(child,&stat_loc,TIMEOUT) < 0) {
+      while(waitpid(child,&stat_loc,timeout) < 0) {
 	if (errno != EINTR) {
 	  fclose(fp);
 	  if (kill(SIGTERM,child) == -1)
@@ -83,13 +81,20 @@ probe_ldap(char *host)
   return retval;
 }
 
+int
+lbcd_ldap_weight(u_int *weight_val, u_int *incr_val, int timeout)
+{
+  *weight_val = (u_int)probe_ldap("localhost",timeout);
+  return (*weight_val == -1) ? -1 : 0;
+}
+
 #ifdef MAIN
 int
 main(int argc, char *argv[])
 {
   int status;
 
-  status = probe_ldap(argv[1]);
+  status = probe_ldap(argv[1],5);
   if (status == -1) {
     printf("ldap service not available\n");
   } else {

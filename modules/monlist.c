@@ -3,9 +3,13 @@
  *
  * xntpdc's monlist command butchered and packaged in a single .c
  */
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -16,7 +20,8 @@
  * prototypes
  */
 static int sendrequest(int sd, int implcode, int reqcode, int auth);
-static int getresponse(int sd, int implcode, int reqcode, int *ritems);
+static int getresponse(int sd, int implcode, int reqcode, int *ritems,
+		       int timeout);
 
 /*
  * monlist
@@ -24,7 +29,7 @@ static int getresponse(int sd, int implcode, int reqcode, int *ritems);
  * Return number of ntp peers for a machine
  */
 int
-monlist(int sd)
+monlist(int sd, int timeout)
 {
   int res, peers;
 
@@ -33,7 +38,8 @@ monlist(int sd)
     return -1;
 
   /* get the monlist response */
-  if ((res = getresponse(sd, IMPL_XNTPD, REQ_MON_GETLIST, &peers)) != 0)
+  if ((res = getresponse(sd, IMPL_XNTPD, REQ_MON_GETLIST, &peers,
+			 timeout)) != 0)
     return -1;
 
   return peers;
@@ -68,11 +74,10 @@ sendrequest(int sd, int implcode, int reqcode, int auth)
 #define MAXPACKETS 100
 
 static int
-getresponse(int sd, int implcode, int reqcode, int *ritems)
+getresponse(int sd, int implcode, int reqcode, int *ritems, int timeout)
 {
   struct resp_pkt rpkt;
-  struct timeval tv = { 1, 0 };
-  int items;
+  struct timeval tv = { timeout, 0 };
   int seq;
   fd_set fds;
   int n;
