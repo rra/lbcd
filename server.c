@@ -12,21 +12,30 @@
 #endif
 #include "lbcd.h"
 
-void
-lbcd_set_load(P_LB_RESPONSE *lb)
-{
-#if 1
-  lbcd_default_weight(lb,&lb->host_weight,&lb->host_incr);
+/*
+ * Prototypes
+ */
+static void lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_PTR ph);
+static void lbcd_proto2_convert(P_LB_RESPONSE *lb);
+extern void lbcd_print_load(void);
 
-  /* FIXME: fill in below */
-  lb->pad = 0;
-  lb->services = 0;
+void
+lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_PTR ph)
+{
+  int i, numserv;
+
+#if 0
+  lbcd_setweight(lb[0],myservice);
 #else
-  int i;
-  for (i = 1; i < lb->services; i++) {
-    set_load(lb,i);
-  }
+  lbcd_default_weight(lb,&lb->host_weight,&lb->host_incr);
 #endif
+  lb->pad = 0;
+  lb->services = numserv = ph->status;
+  for (i = 0; i < numserv; i++) {
+#if 0
+    lbcd_setweight(lb[offset],ph[offset]);
+#endif
+  }
 }
 
 /*
@@ -90,7 +99,7 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
   lb->tmpdir_full = lb->tmp_full;
 #endif
 
-  lbcd_set_load(lb);
+  lbcd_set_load(lb,ph);
 
   /*
    * Backward compatibility
