@@ -1,24 +1,21 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
 
-extern int tcp_connect (char *host, char *protocol, int port);
-extern int lbcd_check_reply(int sd, int timeout, char *token);
+extern int probe_tcp(char *host, char *service, short port,
+		     char *replycheck, int timeout);
 
 int
-probe_pop(char *host)
+probe_pop(char *host, int timeout)
 {
-  int sd;
-  int retval = 0;
+  return probe_tcp(host,"pop",110,"+OK",timeout);
+}
 
-  if ((sd = tcp_connect(host ? host : "localhost","pop",110)) == -1) {
-    return -1;
-  } else {
-    retval = lbcd_check_reply(sd,5,"+OK");
-    write(sd,"quit\r\n",6);
-    close(sd);
-  }
-  return retval;
+int
+lbcd_pop_weight(u_int *weight_val, u_int *incr_val, int timeout)
+{
+  return *weight_val = probe_pop("localhost",timeout);
 }
 
 #ifdef MAIN
