@@ -41,9 +41,9 @@ build-stamp: config.status
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp 
+	rm -f build-stamp
 	-$(MAKE) distclean
-	dh_clean 
+	dh_clean
 
 install: build
 	dh_testdir
@@ -73,4 +73,4 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install 
+.PHONY: build clean binary-indep binary-arch binary install
