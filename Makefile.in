@@ -15,20 +15,36 @@ SHELL  = /bin/sh
 
 HDRS   = config.h lbcd.h proto_server.h protocol.h util.h
 
-SRCS   = lbcd.c proto_server.c kernel.c util.c get_user.c
+LBSRC  = lbcd.c proto_server.c
+LBOBJ  = $(LBSRC:.c=.o)
 
-OBJS = $(SRCS:.c=.o)
+SRCS   = kernel.c util.c get_user.c tmp_full.c
+OBJS   = $(SRCS:.c=.o)
 
 all: lbcd
 
 .c.o:
 	$(CC) -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
 
-lbcd: $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+lbcd: $(LBOBJ) $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(LBOBJ) $(OBJS) $(LIBS)
+
+lbcdtest: $(OBJS) lbcdtest.o
+	$(CC) $(LDFLAGS) -o $@ lbcdtest.o $(OBJS) $(LIBS)
+
+lbcdtest.o: proto_server.c
+	$(CC) -o $@ -DMAIN -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
 
 clean:
-	-rm -f *.o core lbcd
+	-rm -f *.o core lbcd lbcdtest
 
 distclean: clean
-	-rm -f Makefile config.log config.status config.cache
+	-rm -f Makefile config.log config.status config.cache config.h
+
+#
+# Dependencies
+#
+kernel.o: $(srcdir)/kernel.c \
+	$(srcdir)/arch/aix.c $(srcdir)/arch/hpux10.c \
+	$(srcdir)/arch/irix.c $(srcdir)/arch/linux.c \
+	$(srcdir)/arch/osf.c $(srcdir)/arch/solaris.c
