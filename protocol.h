@@ -33,7 +33,7 @@ typedef enum P_STATUS {
 /*
  * Service request/response types
  */
-typedef char LBCD_SERVICE_REQ[16]; /* service name (NUL-terminated) */
+typedef char LBCD_SERVICE_REQ[32]; /* service name (NUL-terminated) */
 
 typedef struct LBCD_SERVICE {
   u_int host_weight;		/* computed host lb weight */
