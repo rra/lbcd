@@ -37,7 +37,7 @@ lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
   /* Set requested services, if any */
   for (i = 1; i <= numserv; i++) {
     /* Obtain values */
-    lbcd_setweight(lb,i,ph->names[i]);
+    lbcd_setweight(lb,i,ph->names[i-1]);
 
     /* Convert to network byte order */
     lb->weights[i].host_weight = htonl(lb->weights[i].host_weight);
@@ -129,6 +129,24 @@ lbcd_test(int argc, char *argv[])
   lb.h.op      = ph.h.op = op_lb_info_req;
   lb.h.status  = ph.h.status = 0;
 
+  /* Handle version 2 option */
+  if (argv[0] && strcmp(argv[0],"v2") == 0) {
+    argc--;
+    argv++;
+    lb.h.version = ph.h.version = 2;
+  }
+
+  /* Fill in service requests */
+  if (argc > 0 && lb.h.version == 3) {
+    ph.h.status = argc > LBCD_MAX_SERVICES ? LBCD_MAX_SERVICES : argc;
+    for (i = 0; i < argc; i++) {
+      if (i >= LBCD_MAX_SERVICES)
+	break;
+      strncpy(ph.names[i],argv[i],sizeof(LBCD_SERVICE_REQ)-1);
+      ph.names[i][sizeof(LBCD_SERVICE_REQ)-1] = '\0';
+    }
+  }
+
   /* Fill reply */
   lbcd_pack_info(&lb,&ph);
 
@@ -151,9 +169,10 @@ lbcd_test(int argc, char *argv[])
   printf("SERVICES: %d\n",lb.services);
 
   for (i = 0; i <= lb.services; i++) {
-    printf("%d: weight %8d increment %8d\n",i,
+    printf("%d: weight %8d increment %8d name %s\n",i,
 	   (int)ntohl(lb.weights[i].host_weight),
-	   (int)ntohl(lb.weights[i].host_incr));
+	   (int)ntohl(lb.weights[i].host_incr),
+	   i ? ph.names[i-1] : "default");
   }
 
   exit(0);
