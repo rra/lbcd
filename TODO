@@ -1,1 +1,6 @@
 * If high load, deal with wraparound problem.
+* Get on_console code correct for IRIX
+* Ensure does not leek fds
+* Test mult services remotely
+* Torture test
+* Get -r -w load:incr to work in any order.
