@@ -1,8 +1,8 @@
-                            lbcd version 3.2.2
+                            lbcd version 3.2.3
                       (responder for load balancing)
               Maintained by Russ Allbery <rra@stanford.edu>
 
-  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005 Board of
   Trustees, Leland Stanford Jr. University.  This software is distributed
   under an MIT-style license.  Please see the section LICENSE below for
   terms of use and redistribution.
@@ -65,7 +65,7 @@ INSTALLATION
 
 LICENSE
 
-  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+  Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005 Board of
   Trustees, Leland Stanford Jr. University.
 
   Permission is hereby granted, free of charge, to any person obtaining a

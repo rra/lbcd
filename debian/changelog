@@ -1,3 +1,9 @@
+lbcd (3.2.3-1) unstable; urgency=low
+
+  * New upstream release adding the -b option to lbcd.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 24 Feb 2005 20:02:29 -0800
+
 lbcd (3.2.2-1) unstable; urgency=low
 
   * New upstream release.

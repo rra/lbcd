@@ -1,5 +1,10 @@
                         User-Visible lbcd Changes
 
+lbcd 3.2.3 (2005-02-24)
+
+    Added the -b option to lbcd to bind to only the specified address
+    instead of all available addresses.
+
 lbcd 3.2.2 (2004-11-16)
 
     Documentation updates, including adding a README file and reformatting
