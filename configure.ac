@@ -7,6 +7,7 @@ AC_INIT([lbcd], [3.1.3], [rra@stanford.edu])
 
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_PROG_MAKE_SET
 
 AC_CHECK_HEADERS([utmp.h utmpx.h sys/statvfs.h sys/vfs.h malloc.h search.h])
 AC_CHECK_HEADERS([sys/select.h])
