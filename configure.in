@@ -19,6 +19,7 @@ dnl
 dnl PROGRAMS
 dnl
 AC_PROG_CC
+AC_PROG_INSTALL
 
 dnl ------------------------------------------------------------
 dnl
@@ -53,6 +54,7 @@ dnl FUNCTIONS
 dnl
 AC_CHECK_FUNCS(hsearch getutent)
 AC_FUNC_ALLOCA
+AC_FUNC_SETPGRP
 
 dnl ------------------------------------------------------------
 dnl
