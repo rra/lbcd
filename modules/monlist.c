@@ -21,7 +21,7 @@ static int getresponse(int sd, int implcode, int reqcode, int *ritems);
 /*
  * monlist
  *
- * Return min(500,number of ntp peers) for a machine
+ * Return number of ntp peers for a machine
  */
 int
 monlist(int sd)
