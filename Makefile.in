@@ -15,7 +15,9 @@ SHELL  = /bin/sh
 
 HDRS   = config.h lbcd.h lbcdload.h protocol.h
 
-SRCS   = lbcd.c server.c kernel.c util.c get_user.c tmp_full.c weight.c
+SRCS   = lbcd.c server.c util.c \
+	kernel.c get_user.c tmp_full.c weight.c load.c
+
 OBJS   = $(SRCS:.c=.o)
 LIBRARY= modules/liblbcd.a
 
