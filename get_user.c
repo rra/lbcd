@@ -4,26 +4,18 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include "lbcd.h"
 #ifdef HAVE_UTMPX_H
 #include <utmpx.h>
 #endif
-
-#ifdef HAVE_UTMP_H
 #include <utmp.h>
-#endif
-
-#if !HAVE_UTMPX_H && !HAVE_UTMP_H
-#error No utmp code on this platform?
-#endif
-
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
-
 #ifdef HAVE_SEARCH_H
 #include <search.h>
 #endif
@@ -112,10 +104,12 @@ uniq_count(void)
 int
 get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
 {
-  char line[9],name[9],host[17];
-  struct utmp ut;
+  char name[9];
   struct stat sbuf;
+#ifndef HAVE_GETUTENT
+  struct utmp ut;
   int fd;
+#endif
 
   static int last_total=0,
              last_uniq=0,
@@ -197,6 +191,10 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
 }
 
 #ifdef MAIN
+void
+util_log_error(char *fmt, ...) {
+}
+
 int
 main()
 {
