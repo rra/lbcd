@@ -1,34 +1,34 @@
 #
+# Makefile.in for lbcd
 #
 
+CC     = @CC@
+
+DEFS   = @DEFS@
+LIBS   = @LIBS@
+CFLAGS = @CFLAGS@
+
 srcdir = @srcdir@
-VPATH = @srcdir@
+VPATH  = @srcdir@
 
-CC = @CC@
+SHELL  = /bin/sh
 
-DEFS = @DEFS@
-LIBS = @LIBS@
-CFLAGS = -O
+HDRS   = config.h lbcd.h proto_server.h protocol.h util.h
 
-SHELL = /bin/sh
+SRCS   = lbcd.c proto_server.c kernel.c util.c get_user.c
 
-HDRS = config.h get_load.h get_time.h get_user.h kernel.h proto_client.h \
-    proto_server.h protocol.h util.h
+OBJS = $(SRCS:.c=.o)
 
-SRCS = $(srcdir)/lbcd.c $(srcdir)/proto_server.c $(srcdir)/kernel.c \
-       $(srcdir)/util.c $(srcdir)/get_time.c  $(srcdir)/get_load.c \
-       $(srcdir)/get_user.c
-
-OBJS = lbcd.o proto_server.o kernel.o util.o get_time.o \
-           get_load.o get_user.o
-
-all: @PROGS@
+all: lbcd
 
 .c.o:
-	$(CC) -c -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) $<
+	$(CC) -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
 
 lbcd: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
+clean:
+	-rm -f *.o core lbcd
 
-
+distclean: clean
+	-rm -f Makefile config.log config.status config.cache
