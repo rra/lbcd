@@ -4,3 +4,4 @@
 * Test mult services remotely
 * Torture test
 * Get -r -w load:incr to work in any order.
+* /etc/lbcd.down file?
