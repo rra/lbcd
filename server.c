@@ -74,7 +74,13 @@ proto_pack_lb_info(P_LB_RESPONSE *lb)
   lb->uniq_users = htons(uu);
   lb->on_console = oc;
   lb->user_mtime = htonl(umtime);
+  lb->reserved = 0;
   lb->tmp_full = tmp_full();
+  /* FIXME: fill in below */
+  lb->tmpdir_full = tmp_full();
+  lb->pad = htons(0);
+  lb->host_weight = htonl(0);
+  lb->host_incr = htonl(0);
 }
 
 int
