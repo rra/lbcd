@@ -47,7 +47,7 @@ typedef struct {
   u_short   version;  /* protocol version */
   u_short   id;       /* requestor's uniq request id */
   u_short   op;       /* operation requested */
-  u_short   status;   /* set on reply */
+  u_short   status;   /* number of services requested */
 } P_HEADER,*P_HEADER_PTR;
 
 /*
