@@ -59,9 +59,9 @@ distclean: clean
 dist:
 	mkdir lbcd-$(VERSION)
 	cp COPYRIGHT LAYOUT Makefile.in NEWS TODO acconfig.h config.h.in \
-	    configure configure.in get_user.c kernel.c lbcd.c lbcd.h \
-	    lbcdclient lbcdload.h load.c protocol.h server.c tmp_full.c \
-	    util.c version.h weight.c lbcd-$(VERSION)/
+	    configure configure.in get_user.c install-sh kernel.c lbcd.c \
+	    lbcd.h lbcdclient lbcdload.h load.c protocol.h server.c \
+	    tmp_full.c util.c version.h weight.c lbcd-$(VERSION)/
 	mkdir lbcd-$(VERSION)/arch
 	cp arch/*.c lbcd-$(VERSION)/arch/
 	mkdir lbcd-$(VERSION)/modules
