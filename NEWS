@@ -1,3 +1,7 @@
+3.1.2 July 2003
+        Added make dist target to the Makefile
+	Fixed va_end bug and setpgrp portability
+
 3.1.1 January 2000
 	IRIX 6.5 port and general cleanup of IRIX
 
