@@ -69,8 +69,11 @@ lbcd_proto2_convert(P_LB_RESPONSE *lb)
     weightval_s = weightval_i;
   }
 
-  /* lbnamed v2 only used l1, tot_users, and uniq_users */
+  /* lbnamed v2 only used l1, tot_users, and uniq_users, although Rob
+     thinks all the loads may be used, so set them all just in case */
   lb->l1 = htons(weightval_s);
+  lb->l5 = htons(weightval_s);
+  lb->l15 = htons(weightval_s);
   lb->tot_users = 0;
   lb->uniq_users = 0;
 }
@@ -122,7 +125,7 @@ lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
   /*
    * Backward compatibility
    */
-  if (lb->h.version < 3) {
+  if (ph->h.version < 3) {
     lbcd_proto2_convert(lb);
   }
 }
