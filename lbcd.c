@@ -2,6 +2,9 @@
  * lbcd client main
  */
 
+/* Program version string -- major and protocol should match */
+#define VERSION "3.0.0beta1"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -21,12 +24,13 @@
  */
 static int stop_lbcd(const char *pid_file);
 static void usage(int exitcode);
+static void version(void);
 
 static void handle_requests(int port,
 			    const char *pid_file,
 			    const char *lbcd_helper);
 static void handle_lb_request(int s,
-			      P_HEADER_PTR ph,
+			      P_HEADER_FULLPTR ph,
 			      int ph_len,
 			      struct sockaddr_in *cli_addr,
 			      int cli_len);
@@ -46,10 +50,24 @@ main(int argc, char **argv)
   char *pid_file = PID_FILE;
   char *lbcd_helper = (char *)0;
   char *service_weight = (char *)0;
+  int service_timeout = LBCD_TIMEOUT;
   int c;
 
+  /* A quick hack to honor --help and --version */
+  if (argv[1])
+    if (argv[1][0] == '-' && argv[1][1] == '-' && argv[1][2] != '\0') {
+      switch(argv[1][2]) {
+      case 'h':
+	usage(0);
+      case 'v':
+	version();
+      default:
+	usage(1);
+      }
+    }
+
   opterr = 1;
-  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstw:")) != EOF) {
+  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstT:w:")) != EOF) {
     switch (c) {
     case 'h': /* usage */
       usage(0);
@@ -87,6 +105,14 @@ main(int argc, char **argv)
     case 't': /* test mode */
       testmode = 1;
       break;
+    case 'T': /* timeout */
+      service_timeout = atoi(optarg);
+      if (service_timeout < 1 || service_timeout > 300) {
+	fprintf(stderr,"timeout (%d) must be between 1 and 300 seconds\n",
+		service_timeout);
+	exit(1);
+      }
+      break;
     case 'w': /* weight or service */
       service_weight = optarg;
       break;
@@ -97,16 +123,15 @@ main(int argc, char **argv)
   }
 
   /* Initialize default load handler */
-  if (lbcd_weight_init(lbcd_helper,service_weight) != 0) {
+  if (lbcd_weight_init(lbcd_helper,service_weight,service_timeout) != 0) {
     fprintf(stderr,"could not initialize service handler\n");
     exit(1);
   }
 
   /* If testing, print default output and terminate */
-#if 0
   if (testmode) {
+    lbcd_test(argc-optind,argv+optind);
   }
-#endif
 
   /* Fork unless debugging */
   if (!debug)
@@ -142,7 +167,7 @@ handle_requests(int port, const char *pid_file,
    int cli_len;
    int n; 
    char mesg[LBCD_MAXMESG];
-   P_HEADER_PTR ph;
+   P_HEADER_FULLPTR ph;
 
   /* open UDP socket */
   if ((s = socket(AF_INET,SOCK_DGRAM, 0)) < 0) {
@@ -172,14 +197,14 @@ handle_requests(int port, const char *pid_file,
     cli_len = sizeof(cli_addr);
     n = lbcd_recv_udp(s,&cli_addr,cli_len,mesg,sizeof(mesg));
     if (n>0) {
-      ph = (P_HEADER_PTR) mesg;
-      switch (ph->op) {
+      ph = (P_HEADER_FULLPTR) mesg;
+      switch (ph->h.op) {
       case op_lb_info_req: 
 	handle_lb_request(s,ph,n,&cli_addr,cli_len);
 	break;
       default:
-	lbcd_send_status(s,&cli_addr,cli_len,ph,status_unknown_op);
-	util_log_error("unknown op requested: %d",ph->op);
+	lbcd_send_status(s,&cli_addr,cli_len,&ph->h,status_unknown_op);
+	util_log_error("unknown op requested: %d",ph->h.op);
       }
     }
   }
@@ -187,37 +212,48 @@ handle_requests(int port, const char *pid_file,
 
 void
 handle_lb_request(int s,
-		  P_HEADER_PTR ph, int ph_len,
+		  P_HEADER_FULLPTR ph, int ph_len,
 		  struct sockaddr_in *cli_addr, int cli_len)
 {
    P_LB_RESPONSE lbr;
    int pkt_size;
 
    /* Fill in reply header */
-   lbr.h.version = htons(ph->version);
-   lbr.h.id      = htons(ph->id);
-   lbr.h.op      = htons(ph->op);
+   lbr.h.version = htons(ph->h.version);
+   lbr.h.id      = htons(ph->h.id);
+   lbr.h.op      = htons(ph->h.op);
    lbr.h.status  = htons(status_ok);
 
    /* Fill in reply */
    lbcd_pack_info(&lbr,ph);
 
+   /* Compute reply size (maximum packet minus unused service slots) */
+   pkt_size = sizeof(lbr) -
+     (LBCD_MAX_SERVICES - lbr.services) * sizeof(LBCD_SERVICE);
+
    /* Send reply */
-   pkt_size = sizeof(lbr) + lbr.services * sizeof(LBCD_SERVICE);
-   if (sendto(s,(const char *)&lbr, sizeof(lbr), 0,
+   if (sendto(s,(const char *)&lbr, pkt_size, 0,
 	      (const struct sockaddr *)cli_addr, cli_len)
-	      != pkt_size) {
+       != pkt_size) {
      util_log_error("sendto: %%m");
    }
 }
 
+/*
+ * lbcd_recv_udp
+ *
+ * Receive request packet and verify the integrity and format
+ * of the reply.  This routine is REQUIRED to sanitize the request
+ * packet.  All other program routines can expect that the packet
+ * is safe to read once it is passed on.
+ */
 int
 lbcd_recv_udp(int s, 
 	      struct sockaddr_in *cli_addr, int cli_len,
 	      char *mesg, int max_mesg)
 {
   int n;
-  P_HEADER_PTR ph;
+  P_HEADER_FULLPTR ph;
 
   n = recvfrom(s,mesg, max_mesg, 0,
 	       (struct sockaddr *)cli_addr,&cli_len);
@@ -232,30 +268,45 @@ lbcd_recv_udp(int s,
     return 0;
   }
 
-  ph = (P_HEADER_PTR) mesg;     
-  ph->version = ntohs(ph->version);
-  ph->id      = ntohs(ph->id);
-  ph->op      = ntohs(ph->op);
-  ph->status  = ntohs(ph->status);
+  /*
+   * Convert request to host format
+   */
+  ph = (P_HEADER_FULLPTR) mesg;     
+  ph->h.version = ntohs(ph->h.version);
+  ph->h.id      = ntohs(ph->h.id);
+  ph->h.op      = ntohs(ph->h.op);
+  ph->h.status  = ph->h.status;	/* number of services requested */
 
-  switch(ph->version) {
+  /*
+   * Check protocol number and packet integrity
+   */
+  switch(ph->h.version) {
   case 3: /* Client-supplied load protocol */
-    /* Extended services request: status > 0 */
-    if (ph->status > LBCD_MAX_SERVICES) {
-      ph->status = LBCD_MAX_SERVICES; /* trim query to max allowed */
+    {
+      int i;
+
+      /* Extended services request: status > 0 */
+      if (ph->h.status > LBCD_MAX_SERVICES) {
+	ph->h.status = LBCD_MAX_SERVICES; /* trim query to max allowed */
+      }
+      /* Ensure NUL-termination of services name */
+      for (i = 0; i < ph->h.status; i++) {
+	ph->names[i][sizeof(LBCD_SERVICE_REQ)-1] = '\0';
+      }
+
+      break;
     }
-    break;
   case 2: /* Original protocol */
     break;
   default:
-    util_log_error("protocol version unsupported: %d", ph->version);
-    lbcd_send_status(s, cli_addr, cli_len, ph, status_lbcd_version);
+    util_log_error("protocol version unsupported: %d", ph->h.version);
+    lbcd_send_status(s, cli_addr, cli_len, &ph->h, status_lbcd_version);
     return 0;
   }
 
-  if (ph -> status != status_request) {
-    util_log_error("expecting request, got %d",ph->status);
-    lbcd_send_status(s, cli_addr, cli_len, ph, status_lbcd_error);
+  if (ph->h.status != status_request) {
+    util_log_error("expecting request, got %d",ph->h.status);
+    lbcd_send_status(s, cli_addr, cli_len, &ph->h, status_lbcd_error);
     return 0;
   }
   
@@ -286,19 +337,28 @@ lbcd_send_status(int s,
 void
 usage(int exitcode)
 {
-  fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
-  fprintf(stderr,"   -h          print usage\n");
-  fprintf(stderr,"   -c cmd      run cmd (full path) to obtain load values\n");
-  fprintf(stderr,"   -d          debug mode, don't fork off\n");
-  fprintf(stderr,"   -l          log various requests\n");
-  fprintf(stderr,"   -p port     run using different port number\n");
-  fprintf(stderr,"   -r          restart (kill current lbcd)\n");
-  fprintf(stderr,"   -R          round-robin polling\n");
-  fprintf(stderr,"   -s          stop running lbcd\n");
-  fprintf(stderr,"   -w option   specify returned weight; options:\n");
-  fprintf(stderr,"               either \"load[:incr]\" or \"service\"\n");
-  fprintf(stderr,"   -t          test mode (print stats and exit)\n");
-  fprintf(stderr,"   -P file     pid file\n");
+  printf("Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
+  printf("   -h          print usage\n");
+  printf("   -c cmd      run cmd (full path) to obtain load values\n");
+  printf("   -d          debug mode, don't fork off\n");
+  printf("   -l          log various requests\n");
+  printf("   -p port     run using different port number\n");
+  printf("   -r          restart (kill current lbcd)\n");
+  printf("   -R          round-robin polling\n");
+  printf("   -s          stop running lbcd\n");
+  printf("   -w option   specify returned weight; options:\n");
+  printf("               either \"load:incr\" or \"service\"\n");
+  printf("   -t          test mode (print stats and exit)\n");
+  printf("   -T seconds  timeout (1-300 seconds, default 5)\n");
+  printf("   -P file     pid file\n");
+  printf("   --help      print usage and exit\n");
+  printf("   --version   print protocol version and exit\n");
   exit(exitcode);
 }
 
+void
+version(void)
+{
+  printf("lbcd protocol %d version %s\n",LBCD_VERSION,VERSION);
+  exit(0);
+}
