@@ -12,58 +12,12 @@
 #endif
 #include "lbcd.h"
 
-int
-lbcd_recv_udp(int s, 
-	      struct sockaddr_in *cli_addr, int * cli_len,
-	      char *mesg, int max_mesg)
-{
-  int n;
-  P_HEADER_PTR ph;
-
-  n = recvfrom(s,mesg, max_mesg, 0, (struct sockaddr *)cli_addr,cli_len);
-
-  if (n < 0) {
-    util_log_error("recvfrom: %%m");
-    exit(1);
-  }
-
-  if (n < sizeof(P_HEADER)) {
-    util_log_error("short packet received, len %d",n);
-    return 0;
-  }
-  ph = (P_HEADER_PTR) mesg;     
-  ph->version = ntohs(ph->version);
-  ph->id      = ntohs(ph->id);
-  ph->op      = ntohs(ph->op);
-  ph->status  = ntohs(ph->status);
-
-  switch(ph->version) {
-  case 3:
-    /* Client-supplied load protocol */
-    break;
-  case 2:
-    /* Original protocol */
-    break;
-  default:
-    util_log_error("protocol version unsupported: %d", ph->version);
-    lbcd_send_status(s, cli_addr, *cli_len,ph,status_lbcd_version);
-    return 0;
-  }
-
-  if (ph -> status != status_request) {
-    util_log_error("expecting request, got %d",ph->status);
-    lbcd_send_status(s, cli_addr, *cli_len,ph,status_lbcd_error);
-    return 0;
-  }
-  
-  return n;     
-}
-
 void
 lbcd_set_load(P_LB_RESPONSE *lb)
 {
   /* FIXME: fill in below */
 #if 1
+  lb->pad = 0;
   lb->services = 0;
   lb->host_weight = 0;
   lb->host_incr = 0;
@@ -74,6 +28,25 @@ lbcd_set_load(P_LB_RESPONSE *lb)
     set_load(lb,i);
   }
 #endif
+}
+
+/*
+ * Convert a protocol 3 packet to a form a protocol 2
+ * server will use properly.
+ *
+ * Version 2 of the protocol had no mechanism for client-computed
+ * load.  To work around this problem, we just lie to the version 2
+ * server such that the weight lbnamed will compute will be the
+ * weight we desire.  Note that we have no control over the
+ * increment for version 2 lbnamed -- that value is hard-coded.
+ */
+void
+lbcd_proto2_convert(P_LB_RESPONSE *lb)
+{
+  /* lbnamed v2 only used l1, tot_users, and uniq_users */
+  lb->l1 = lb->host_weight;
+  lb->tot_users = 0;
+  lb->uniq_users = 0;
 }
 
 void
@@ -89,10 +62,8 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
    */
   kernel_getboottime(&bt);
   lb->boot_time = htonl(bt);
-
   time(&ct);
   lb->current_time = htonl(ct);
-
   lb->user_mtime = htonl(umtime);
 
   /*
@@ -109,21 +80,6 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
   lb->uniq_users = htons(uu);
   lb->on_console = oc;
 
-  /* Client-Computed load for Version 2 lbnamed
-   *
-   * Version 2 of the protocol had no mechanism for client-computed
-   * load.  To work around this problem, we just lie to the version 2
-   * server such that the weight lbnamed will compute will be the
-   * weight we desire.  Note that we have no control over the
-   * increment for version 2 lbnamed -- that value is hard-coded.
-   */
-  if (round_robin && lb->h.version < 3) {
-    lb->l1 = 100;
-    lb->tot_users = 0;
-    lb->uniq_users = 0;
-    lb->on_console = 0;
-  }
-
   /*
    * Additional Fields
    */
@@ -136,26 +92,13 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
 #endif
 
   lbcd_set_load(lb);
-}
 
-int
-lbcd_send_status(int s, 
-		 struct sockaddr_in *cli_addr, int cli_len,
-		 P_HEADER *request_header,
-		 p_status_t pstat)
-{
-  P_HEADER header;
-  header.version= htons(LBCD_VERSION);
-  header.id     = htons(request_header->id);
-  header.op     = htons(request_header->op);
-  header.status = htons(pstat);
-
-  if (sendto(s,(char *)&header,sizeof(header),0,
-	     (struct sockaddr *)cli_addr,cli_len)!=sizeof(header)) {
-    util_log_error("sendto: %%m");
-    return -1;
+  /*
+   * Backward compatibility
+   */
+  if (lb->h.version < 3) {
+    lbcd_proto2_convert(lb);
   }
-  return 0;
 }
 
 void
