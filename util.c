@@ -89,7 +89,7 @@ util_start_daemon(void)
   /*  chdir("/"); */
 }
 
-static util_log_init = 0;
+static int util_log_init = 0;
 
 static void
 util_log_open()

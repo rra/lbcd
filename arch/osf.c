@@ -3,20 +3,18 @@
  */
 
 #include <stdio.h>
-#include<sys/types.h>
-#include<sys/table.h>
-#include <fcntl.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include "lbcd.h"
+#include<sys/types.h>
+#include<sys/table.h>
+#include <fcntl.h>
 
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
   struct tbl_loadavg load;
-  struct tbl_sysinfo sys;
-  struct utmp *ut;
 
   if (table(TBL_LOADAVG, 0, &load, 1, sizeof(load))==-1) {
     return -1;

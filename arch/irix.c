@@ -44,10 +44,10 @@ kernel_open(void)
   return 0;
 }
 
-static int
+int
 kernel_close(void)
 {
-  if (! kernel_init) return;
+  if (! kernel_init) return 0;
   return close(kd);
 }
 
