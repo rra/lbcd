@@ -230,6 +230,9 @@ clear whether this works correctly.
 
 lbcd(8)
 
+The current version of this program is available from its web page at
+L<http://www.eyrie.org/~eagle/software/lbcd/>.
+
 =head1 AUTHORS
 
 Written by Larry Schwimmer.  Currently maintained by Russ Allbery
