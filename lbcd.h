@@ -12,5 +12,7 @@ extern int kernel_read(off_t where, void *dest, int dest_len);
 extern int get_user_stats(int *total,
 			  int *unique, int *onconsole, time_t *user_mtime);
 
+/* tmp_free.c */
+extern int tmp_free(void);
 
 #endif /* __LBCD_H__ */
