@@ -40,7 +40,8 @@ tcp_connect (char *host, char *protocol, int port)
 
   /* Assign port */
   memset ((char *) &serv_addr, 0, sizeof (serv_addr));
-  if ((se = getservbyname (protocol, "tcp")) != NULL ||
+  if ((protocol != NULL &&
+       (se = getservbyname (protocol, "tcp")) != NULL) ||
       (port && (se = getservbyport(htons(port),"tcp")) != NULL)) {
     serv_addr.sin_port = se->s_port;
   } else if (port) {
