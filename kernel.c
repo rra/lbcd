@@ -26,7 +26,13 @@
 #endif
 
 #if defined(__hpux__)
-#include "arch/hpux.c"
+/* A completely arbitrary method of determining system version */
+#include <ntl.h>
+#if NTL_VERSION < 1000
+#include "arch/hpux9.c"
+#else
+#include "arch/hpux10.c"
+#endif
 #endif
 
 #if defined(sgi)
