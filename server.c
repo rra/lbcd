@@ -58,8 +58,19 @@ lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
 void
 lbcd_proto2_convert(P_LB_RESPONSE *lb)
 {
+  u_int weightval_i;
+  u_short weightval_s;
+
+  /* Convert host weight to a short, handling network byte order */
+  weightval_i = ntohl(lb->weights[0].host_weight);
+  if (weightval_i > (u_short)-1) {
+    weightval_s = (u_short)-1;
+  } else {
+    weightval_s = weightval_i;
+  }
+
   /* lbnamed v2 only used l1, tot_users, and uniq_users */
-  lb->l1 = (u_short)lb->weights[0].host_weight;
+  lb->l1 = htons(weightval_s);
   lb->tot_users = 0;
   lb->uniq_users = 0;
 }
