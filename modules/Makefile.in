@@ -62,10 +62,6 @@ $(LIBRARY): $(SRCS) $(OBJS)
 #
 # Maintenance Section
 #
-Makefile: Makefile.in ../config.status
-	cd .. &&\
-	CONFIG_FILES=lib/$@ CONFIG_HEADERS= $(SHELL) ./config.status
-
 clean:
 	rm -f *.o core liblbcd.a
 
