@@ -4,9 +4,13 @@
  * Also acts as a test driver.
  */
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "lbcd.h"
-#include "proto_server.h"
 
 int
 lbcd_recv_udp(int s, 
@@ -73,7 +77,7 @@ lbcd_set_load(P_LB_RESPONSE *lb)
 }
 
 void
-lbcd_pack_lb_info(P_LB_RESPONSE *lb)
+lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
 {
   double l1,l5,l15;
   time_t bt,ct;
@@ -139,19 +143,19 @@ lbcd_send_status(int s,
   return 0;
 }
 
-int
+void
 lbcd_print_load(void)
 {
   P_LB_RESPONSE lb;
 
-  lbcd_pack_lb_info(&lb);
+  lbcd_pack_info(&lb,0);
 
   printf("  lb.l1 = %d\n",  ntohs(lb.l1));
   printf("  lb.l5 = %d\n",  ntohs(lb.l5));
   printf("  lb.l15 = %d\n",  ntohs(lb.l15));
-  printf("  lb.current_time = %d\n",  ntohl(lb.current_time));
-  printf("  lb.boot_time = %d\n",  ntohl(lb.boot_time));
-  printf("  lb.user_mtime = %d\n",  ntohl(lb.user_mtime));
+  printf("  lb.current_time = %ld\n",  ntohl(lb.current_time));
+  printf("  lb.boot_time = %ld\n",  ntohl(lb.boot_time));
+  printf("  lb.user_mtime = %ld\n",  ntohl(lb.user_mtime));
   printf("  lb.tot_users = %d\n",  ntohs(lb.tot_users));
   printf("  lb.uniq_users = %d\n",  ntohs(lb.uniq_users));
   printf("  lb.on_console = %d\n",  lb.on_console);
