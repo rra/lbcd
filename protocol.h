@@ -1,14 +1,11 @@
 #ifndef LBCD_PROTOCOL_H
-#define LBC_PROTOCOL_H
+#define LBCD_PROTOCOL_H
 
 #define LBCD_PORTNUM 4330 
 #define LBCD_MAXMESG 2048    /* max udp message to receive */
 #define LBCD_VERSION 2
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 typedef enum P_OPS {
     op_lb_info_req             =1,  /* load balance info, request and reply */
