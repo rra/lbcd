@@ -21,7 +21,7 @@
 #endif
 
 #ifndef PID_FILE
-#define PID_FILE "/etc/lbcd.pid"
+#define PID_FILE "/var/run/lbcd.pid"
 #endif
 
 /*
