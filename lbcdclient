@@ -1,4 +1,4 @@
-#!/usr/pubsw/bin/perl
+#!/usr/bin/perl
 
 require 5.004;
 use strict;
@@ -111,8 +111,8 @@ sub udp_connect ($$$$) {
 
 
 sub usage() {
-    print STDOUT <DATA>;
-    exit($_[0]);
+    print STDOUT "lbcdclient hostname [hostname2 ... hostnameN]\n";
+    exit;
 }
 
 sub print_results($) {
@@ -163,4 +163,76 @@ sub print_results($) {
     }
 }
 __END__
-lbcdclient hostname [hostname2 ... hostnameN]
+
+=head1 NAME
+
+lbcdclient - Query a remote lbcd daemon for system load
+
+=head1 SYNOPSIS
+
+lbcdclient [B<-2>] [B<-s> I<service>[,I<service> ...]] I<host> ...
+
+=head1 DESCRIPTION
+
+B<lbcdclient> sends a query packet to a remote B<lbcd> server and prints the
+results.  The result output will look something like this:
+
+    btime 1092858021 ctime 1092960298 utime 1092955199
+    load l1 96 l5 69 l15 57
+    total 0 unique 0 console 0
+    tmp full 0 P_tmpdir full 2
+    services 0 pads 0 0
+    service 0: weight 1 increment 1
+
+btime is the time of the last system boot in seconds since epoch.  ctime is
+the current system time in seconds since epoch.  utime is the last
+modification time of the information about logged in users in seconds since
+epoch.
+
+The load line gives the one-minute (l1), five-minute (l5), and
+fifteen-minute (l15) load averages, multiplied by 100.
+
+The next line gives the count of logged-in users.  total gives the count of
+all logged-in users, unique lists the total number of unique users, and
+console is 1 if a user is logged in to the console of the system.
+
+tmp full is the percentage used in the system F</tmp> directory and P_tmpdir
+full is the percentage full in the system F</var/tmp> directory.
+
+Finally, the last lines give information for each service, using the
+extended service response for the version three packet format.  The first
+line gives the count of number of configured services minus one.  (The pads
+numbers are reserved space in the packet and will generally always be zero.)
+Then, each subsequent line lists the weights and increments for each service
+B<lbcd> is monitoring on the system.
+
+If the B<-2> option is used, B<lbcdclient> will send a version two packet
+instead, and the returned results will not include the services line and
+everything after that.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-2>
+
+Send a version two protocol packet instead of a version three packet.
+Version two doesn't support the separate service weights.
+
+=item B<-s> I<service>,[I<service> ...]
+
+Request information for the specified service names.  It's not entirely
+clear whether this works correctly.
+
+=back
+
+=head1 SEE ALSO
+
+lbcd(8)
+
+=head1 AUTHORS
+
+Written by Larry Schwimmer.  Currently maintained by Russ Allbery
+<rra@stanford.edu>.
+
+=cut
