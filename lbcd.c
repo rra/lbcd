@@ -275,7 +275,7 @@ lbcd_recv_udp(int s,
   ph->h.version = ntohs(ph->h.version);
   ph->h.id      = ntohs(ph->h.id);
   ph->h.op      = ntohs(ph->h.op);
-  ph->h.status  = ph->h.status;	/* number of services requested */
+  ph->h.status  = ntohs(ph->h.status);
 
   /*
    * Check protocol number and packet integrity
