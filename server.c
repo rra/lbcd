@@ -15,26 +15,23 @@
 /*
  * Prototypes
  */
-static void lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_PTR ph);
+static void lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph);
 static void lbcd_proto2_convert(P_LB_RESPONSE *lb);
 extern void lbcd_print_load(void);
 
 void
-lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_PTR ph)
+lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
 {
   int i, numserv;
 
-#if 0
-  lbcd_setweight(lb[0],myservice);
-#else
-  lbcd_default_weight(lb,&lb->host_weight,&lb->host_incr);
-#endif
+  /* Clear pad and set number of requested services */
   lb->pad = 0;
-  lb->services = numserv = ph->status;
-  for (i = 0; i < numserv; i++) {
-#if 0
-    lbcd_setweight(lb[offset],ph[offset]);
-#endif
+  lb->services = numserv = ph->h.status;
+
+  /* Set default weight and requested services, if any */
+  lbcd_setweight(lb,0,"default");
+  for (i = 1; i <= numserv; i++) {
+    lbcd_setweight(lb,i,ph->names[i]);
   }
 }
 
@@ -52,13 +49,13 @@ void
 lbcd_proto2_convert(P_LB_RESPONSE *lb)
 {
   /* lbnamed v2 only used l1, tot_users, and uniq_users */
-  lb->l1 = lb->host_weight;
+  lb->l1 = (u_short)lb->weights[0].host_weight;
   lb->tot_users = 0;
   lb->uniq_users = 0;
 }
 
 void
-lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
+lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
 {
   double l1,l5,l15;
   time_t bt,ct;
@@ -72,7 +69,6 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
   lb->boot_time = htonl(bt);
   time(&ct);
   lb->current_time = htonl(ct);
-  lb->user_mtime = htonl(umtime);
 
   /*
    * Load
@@ -87,6 +83,7 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
   lb->tot_users = htons(tu);
   lb->uniq_users = htons(uu);
   lb->on_console = oc;
+  lb->user_mtime = htonl(umtime);
 
   /*
    * Additional Fields
@@ -110,30 +107,44 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin, P_HEADER_PTR ph)
 }
 
 void
-lbcd_print_load(void)
+lbcd_test(int argc, char *argv[])
 {
   P_LB_RESPONSE lb;
+  P_HEADER_FULL ph;
+  int i;
 
-  lbcd_pack_info(&lb,0,0);
+  /* Create query packet */
+  lb.h.version = ph.h.version = LBCD_VERSION;
+  lb.h.id      = ph.h.id = 0;
+  lb.h.op      = ph.h.op = op_lb_info_req;
+  lb.h.status  = ph.h.status = 0;
 
-  printf("  lb.l1 = %d\n",  ntohs(lb.l1));
-  printf("  lb.l5 = %d\n",  ntohs(lb.l5));
-  printf("  lb.l15 = %d\n",  ntohs(lb.l15));
-  printf("  lb.current_time = %ld\n",  ntohl(lb.current_time));
-  printf("  lb.boot_time = %ld\n",  ntohl(lb.boot_time));
-  printf("  lb.user_mtime = %ld\n",  ntohl(lb.user_mtime));
-  printf("  lb.tot_users = %d\n",  ntohs(lb.tot_users));
-  printf("  lb.uniq_users = %d\n",  ntohs(lb.uniq_users));
-  printf("  lb.on_console = %d\n",  lb.on_console);
-  printf("  lb.tmp_full = %d\n",  lb.tmp_full);
-  printf("  lb.tmpdir_full = %d\n",  lb.tmpdir_full);
+  /* Fill reply */
+  lbcd_pack_info(&lb,&ph);
+
+  /* Print results */
+  printf("PROTOCOL %d\n",lb.h.version);
+  printf("\n");
+  printf("MACHINE STATUS:\n");
+  printf("l1           = %d\n",  ntohs(lb.l1));
+  printf("l5           = %d\n",  ntohs(lb.l5));
+  printf("l15          = %d\n",  ntohs(lb.l15));
+  printf("current_time = %ld\n",  ntohl(lb.current_time));
+  printf("boot_time    = %ld\n",  ntohl(lb.boot_time));
+  printf("user_mtime   = %ld\n",  ntohl(lb.user_mtime));
+  printf("tot_users    = %d\n",  ntohs(lb.tot_users));
+  printf("uniq_users   = %d\n",  ntohs(lb.uniq_users));
+  printf("on_console   = %d\n",  lb.on_console);
+  printf("tmp_full     = %d\n",  lb.tmp_full);
+  printf("tmpdir_full  = %d\n",  lb.tmpdir_full);
+  printf("\n");
+  printf("SERVICES: %d\n",lb.services);
+
+  for (i = 0; i <= lb.services; i++) {
+    printf("%d: weight %8d increment %8d\n",i,
+	   lb.weights[0].host_weight,
+	   lb.weights[0].host_incr);
+  }
+
+  exit(0);
 }
-
-#ifdef MAIN
-int
-main(int argc, char *argv[])
-{
-  lbcd_print_load();
-  return 0;
-}
-#endif
