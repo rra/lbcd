@@ -64,7 +64,7 @@ util_start_daemon(void)
   else if (childpid > 0)
     exit(0);  /* parent */
 
-#if defined(SIGTSTP) && defined(TIOCNTOTTY) && !defined(hpux)
+#if !defined(SETPGRP_VOID)
   if (setpgrp(0, getpid()) == -1) 
     util_log_error("can't change process group: %%m");
   if ( (fd = open("/dev/tty", O_RDWR)) >=0) {
@@ -125,8 +125,6 @@ util_log_info(char *fmt, ...)
 
   if(util_debug_mode) {
     fprintf(stderr,"INFO: %s\n",buffer);
-
-    va_end(argptr);
   }
 
   syslog(LOG_INFO,buffer);
