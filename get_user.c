@@ -1,38 +1,62 @@
-
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef HAVE_UTMPX_H
+#include <utmpx.h>
+#elif HAVE_UTMP_H
 #include <utmp.h>
-
-#if defined(ultrix) || defined(sparc) || defined(ibm) || defined(__alpha)
-#include <malloc.h>
-#include <search.h>
-
+#else
+#error No utmp code on this platform?
 #endif
 
-#ifdef sparc
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
+#ifdef HAVE_SEARCH_H
+#include <search.h>
+#endif
+
+#if defined(sparc) && !defined(__SVR4)
 ENTRY *hsearch();
 #endif
 
-static char *users[500]; /* should be enough for now, change to dynamic */
+static const char *utmp =
+#ifdef HAVE_UTMPX_H
+  #ifdef UTMPX_FILE
+    UTMPX_FILE
+  #else
+    "/etc/utmpx"
+  #endif
+#elif HAVE_UTMP_H
+  #ifdef UTMP_FILE
+    UTMP_FILE
+  #else
+    "/etc/utmp"
+  #endif
+#endif
+;
+
+static char *users[512]; /* should be enough for now, change to dynamic */
 static int uniq_users=0;
 
 static void
-uniq_start()
+uniq_start(void)
 {
   uniq_users = 0;
-#ifdef C_HAS_HASH
+#ifdef HAVE_HSEARCH
   hcreate(211);  /* nice prime number */
 #endif 
 }
 
 static void
-uniq_end()
+uniq_end(void)
 {
  int i;
-#ifdef C_HAS_HASH
+#ifdef HAVE_HSEARCH
  hdestroy();
 #endif
  if (uniq_users) for (i=0; i<uniq_users; i++) {
@@ -44,7 +68,7 @@ uniq_end()
 static void
 uniq_add(char *name)
 {
-#ifdef C_HAS_HASH
+#ifdef HAVE_HSEARCH
  ENTRY item, *i;
  item.key = name;
  item.data = 0;
@@ -72,7 +96,7 @@ uniq_add(char *name)
 }
 
 static int
-uniq_count()
+uniq_count(void)
 {
   return uniq_users;
 }
@@ -95,59 +119,61 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
   *on_console = 0;
   *user_mtime = 0;
 
-  if (stat(C_UTMP,&sbuf)==0) {
-       *user_mtime = sbuf.st_mtime;
+  if (stat(utmp,&sbuf)==0) {
+    *user_mtime = sbuf.st_mtime;
   }
 
   if (*user_mtime == last_user_mtime) { /* used cached values */ 
-     *total      = last_total;
-     *uniq       = last_uniq;
-     *on_console = last_on_console;
-     return 0;
+    *total      = last_total;
+    *uniq       = last_uniq;
+    *on_console = last_on_console;
+    return 0;
   }
 
   uniq_start();
 
 #ifdef __alpha
-{
-  struct utmp *ut;
-  while((ut = getutent())!=NULL) {
+  {
+    struct utmp *ut;
+    while((ut = getutent())!=NULL) {
 
-    if (ut->ut_type != USER_PROCESS) continue;
-     ++(*total);
+      if (ut->ut_type != USER_PROCESS)
+	continue;
+      ++(*total);
 
-     if (strncmp(ut->ut_line,"console",7)==0) ++(*on_console);
-     else {
-       if (stat("/dev/console",&sbuf)==0) {
-           if (sbuf.st_uid != 0) ++(*on_console);
-       }
-     }
-     strncpy(name,ut->ut_user,8);
-     name[8]=0;
-     uniq_add(name);
-  }
-  endutent();
+      if (strncmp(ut->ut_line,"console",7)==0)
+	++(*on_console);
+      else {
+	if (stat("/dev/console",&sbuf)==0) {
+	  if (sbuf.st_uid != 0) ++(*on_console);
+	}
+      }
+      strncpy(name,ut->ut_user,8);
+      name[8]=0;
+      uniq_add(name);
+    }
+    endutent();
 }
 
 #else
-  fd =open(C_UTMP,O_RDONLY);
+  fd =open(utmp,O_RDONLY);
   if (fd==-1) {
-    util_log_error("can't open %s: %%ms",C_UTMP);
+    util_log_error("can't open %s: %%ms",utmp);
     return -1;
   }
 
 
   while (read(fd,(char*)&ut, sizeof(ut))>0) {
-#ifndef ibm
-     if (ut.ut_name[0] == '\0') continue;
+#ifndef _AIX
+    if (ut.ut_name[0] == '\0') continue;
 #else
-     if (ut.ut_type != USER_PROCESS) continue;
+    if (ut.ut_type != USER_PROCESS) continue;
 #endif
-     ++(*total);
-     if (strncmp(ut.ut_line,"console",7)==0) ++(*on_console);
-     strncpy(name,ut.ut_name,8);
-     name[8]=0;
-     uniq_add(name);
+    ++(*total);
+    if (strncmp(ut.ut_line,"console",7)==0) ++(*on_console);
+    strncpy(name,ut.ut_name,8);
+    name[8]=0;
+    uniq_add(name);
   }
   close(fd);
 #endif /* __alpha */
