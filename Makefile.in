@@ -15,10 +15,7 @@ SHELL  = /bin/sh
 
 HDRS   = config.h lbcd.h protocol.h
 
-LBSRC  = lbcd.c server.c
-LBOBJ  = $(LBSRC:.c=.o)
-
-SRCS   = kernel.c util.c get_user.c tmp_full.c weight.c
+SRCS   = lbcd.c server.c kernel.c util.c get_user.c tmp_full.c weight.c
 OBJS   = $(SRCS:.c=.o)
 
 all: lbcd
@@ -26,17 +23,11 @@ all: lbcd
 .c.o: $(HDRS)
 	$(CC) -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
 
-lbcd: $(LBOBJ) $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(LBOBJ) $(OBJS) $(LIBS)
-
-lbcdtest: $(OBJS) lbcdtest.o
-	$(CC) $(LDFLAGS) -o $@ lbcdtest.o $(OBJS) $(LIBS)
-
-lbcdtest.o: proto_server.c
-	$(CC) -o $@ -DMAIN -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
+lbcd: $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 clean:
-	-rm -f *.o core lbcd lbcdtest
+	-rm -f *.o core lbcd
 
 distclean: clean
 	-rm -f Makefile config.log config.status config.cache config.h
