@@ -1,12 +1,20 @@
 #ifndef LBCD_PROTOCOL_H
 #define LBCD_PROTOCOL_H
 
+#include <sys/types.h>
+
+/*
+ * Constants
+ */
+
 #define LBCD_PORTNUM 4330 
 #define LBCD_MAXMESG 2048	/* max udp message to receive */
 #define LBCD_MAX_SERVICES 5	/* max service requests to allow */
 #define LBCD_VERSION 3
 
-#include <sys/types.h>
+/*
+ * Request/Response codes
+ */
 
 typedef enum P_OPS {
     op_lb_info_req             =1,  /* load balance info, request and reply */
@@ -16,19 +24,26 @@ typedef enum P_STATUS {
     status_request             =0,  /* a request packet */
     status_ok                  =1,  /* load balance info, request and reply */
     status_error               =2,  /* generic error */
-    status_lbcd_version       =3,  /* protocol version error */
-    status_lbcd_error         =4,  /* generic protocol error */
+    status_lbcd_version        =3,  /* protocol version error */
+    status_lbcd_error          =4,  /* generic protocol error */
     status_unknown_op          =5,  /* unknown operation requested */
 } p_status_t;
 
+/*
+ * Service request/response types
+ */
+typedef char LBCD_SERVICE_REQ[16];
+
 typedef struct LBCD_SERVICE {
-  char name[16];		/* service name (NUL terminated) */
+  LBCD_SERVICE_REQ name;	/* service name (NUL terminated) */
   u_int host_weight;		/* computed host lb weight */
   u_int host_incr;		/* computed host lb increment */
 } LBCD_SERVICE;
 
-typedef char LBCD_SERVICE_REQ[16];
 
+/*
+ * Request packet
+ */
 typedef struct {
   u_short   version;  /* protocol version */
   u_short   id;       /* requestor's uniq request id */
@@ -36,6 +51,9 @@ typedef struct {
   u_short   status;   /* set on reply */
 } P_HEADER,*P_HEADER_PTR;
 
+/*
+ * Reply packet
+ */
 typedef struct {
   P_HEADER h;
   u_int boot_time;		/* boot time */
@@ -55,6 +73,5 @@ typedef struct {
   u_int host_weight;		/* computed host lb weight */
   u_int host_incr;		/* computed host lb increment */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
-
 
 #endif
