@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include <varargs.h>
+#include <stdarg.h>
 #include <syslog.h>
 #include <errno.h>
 #include <netdb.h>
@@ -9,6 +9,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
 
 extern int errno;
 
@@ -51,7 +55,7 @@ void util_start_daemon()
  else if (childpid > 0)
      exit(0);  /* parent */
 
-#ifdef SIGTSTP  /* BSD */
+#if defined(SIGTSTP) && defined(TIOCNTOTTY) && !defined(hpux)
   if (setpgrp(0, getpid()) == -1) 
      util_log_error("can't change process group: %%m");
   if ( (fd = open("/dev/tty", O_RDWR)) >=0) {
@@ -59,7 +63,7 @@ void util_start_daemon()
        close(fd);
   }
 #else
-  if (stepgrgp() == -1)
+  if (setpgrp() == -1)
        util_log_error("can't change process group: %%m");
   signal(SIGHUP, SIG_IGN);
   if ( (childpid = fork()) < 0) util_log_error("can't fork second child: %%m");
@@ -96,22 +100,21 @@ void util_log_close()
   if ( util_log_init ) closelog();
 }
 
-void util_log_info(va_alist)
-va_dcl
+void util_log_info(char *fmt, ...)
 {
 char buffer[512];
 va_list ap;
-char *mess;
 
 if (!util_log_init) util_log_open();
 
-va_start(ap);
-mess = va_arg(ap, char *);
+va_start(ap, fmt);
 
-vsprintf(buffer,mess,ap);
+vsprintf(buffer,fmt,ap);
 
 if(util_debug_on) {
      fprintf(stderr,"INFO: %s\n",buffer);
+
+va_end(argptr);
 }
 
 syslog(LOG_INFO,buffer);
@@ -120,19 +123,16 @@ va_end(ap);
 
 }
 
-void util_log_error(va_alist)
-va_dcl
+void util_log_error(char *fmt, ...)
 {
 char buffer[512];
 va_list ap;
-char *mess;
 
 if (!util_log_init) util_log_open();
 
-va_start(ap);
-mess = va_arg(ap, char *);
+va_start(ap,fmt);
 
-vsprintf(buffer,mess,ap);
+vsprintf(buffer,fmt,ap);
 
 if(util_debug_on) {
      fprintf(stderr,"ERROR: %s\n",buffer);
