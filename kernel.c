@@ -36,13 +36,7 @@
 #endif
 
 #if defined(sgi)
-#ifndef _OFF64_T
-/* IRIX 5.x, IRIX 6.2 */
 #include "arch/irix.c"
-#else
-/* > IRIX 6.2 */
-#include "arch/irix6.c"
-#endif
 #endif
 
 #if defined(__linux__)
