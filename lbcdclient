@@ -1,0 +1,166 @@
+#!/usr/pubsw/bin/perl
+
+require 5.004;
+use strict;
+use Socket;
+
+#------------#
+# Prototypes #
+#------------#
+
+sub send_query($$$$@);		# perform queries
+sub udp_connect($$$$);		# connect to host using udp
+sub print_results($);		# print reply packet
+sub usage();			# program usage
+
+#------#
+# MAIN #
+#------#
+{
+    my ($reply);
+    my ($version) = 3;
+    if ($ARGV[0] =~ /^-.*2/) {
+	shift;
+	$version = 2;
+    }
+    my (@services);
+    if ($ARGV[0] =~ /^-s(.*)/) {
+	shift;
+	@services = split(',',$1);
+    }
+    foreach my $server (@ARGV) {
+	next unless udp_connect(\*SH,$server,"lbcd",4330);
+	next unless send_query(\*SH,\$reply,$version,10,@services) == 0;
+	&print_results($reply);
+    }
+    exit(0);
+}
+
+#-------------#
+# Subroutines #
+#-------------#
+
+sub send_query ($$$$@) {
+    my($SH,$reply,$version,$timeout,@services) = @_;
+    my($num_services);
+
+    # struct P_HEADER
+    # u_short   version;  /* protocol version */
+    # u_short   id;       /* requestor's uniq request id */
+    # u_short   op;       /* operation requested */
+    # u_short   status;   /* set on reply */ (used for extended protocol)
+
+    # Are we using the extended protocol?
+    if ($version > 2) {
+	$num_services = $#services + 1;
+    }
+
+    # Form register packet ("version operation operation status")
+    my($template) = "nnnn" . " a32" x $num_services;
+    my($packet) = pack($template,$version,0,1,$num_services,@services);
+
+    # Send registration
+    unless (send($SH,$packet,0)) {
+	warn "send: $!\n";
+	return 0;
+    }
+
+    # Obtain reply (with timeout)
+    my($rin,$nfound) = ('',0);
+    vec($rin,fileno($SH),1) = 1;
+    if (($nfound = select($rin,undef,undef,$timeout)) != 1) {
+	warn "timeout\n";
+	return 1;		# timeout
+    }
+    $$reply = '';
+    unless (recv($SH,$$reply,256,0)) {
+	warn "recv: $!\n";
+	return 1;
+    }
+    0;				# zero signifies no error
+}
+
+
+#---------------------#
+# Auxilliary Routines #
+#---------------------#
+sub udp_connect ($$$$) {
+    my($SH,$server,$port,$defaultport) = @_;
+
+    my ($proto,$iaddr,$sin);
+
+    $proto = getprotobyname('udp');
+    unless (socket($SH, PF_INET, SOCK_DGRAM, $proto)) {
+	return 0;
+    }
+    unless ($iaddr = gethostbyname($server)) {
+	return 0;
+    }
+    $port = getservbyname($port, 'udp') || $defaultport;
+    unless ($sin = sockaddr_in($port, $iaddr)) {
+	return 0;
+    }
+    unless (send($SH, 0, 0, $sin)) {
+	return 0;
+    }
+    unless (connect($SH,$sin)) {
+	close $SH; return undef;
+    }
+    1;
+}
+
+
+sub usage() {
+    print STDOUT <DATA>;
+    exit($_[0]);
+}
+
+sub print_results($) {
+    my ($reply) = @_;
+
+    # Response packet
+    # struct P_HEADER;
+    #  u_int boot_time;
+    #  u_int current_time;
+    #  u_int user_mtime;  /* time user information last changed */
+    #  u_short l1; /* (int) (load*100) */
+    #  u_short l5;
+    #  u_short l15;
+    #  u_short tot_users;  /* total number of users logged in */
+    #  u_short uniq_users; /* total number of uniq users */
+    #  u_char  on_console; /* true if somone on console */
+    #  u_char  reserved;   /* future use, padding ... */
+    #  u_char  tmp_full;   /* percernt of tmp full */
+    #  u_char  tmpdir_full;  /* percernt of P_tmpdir full */
+    #  u_char pad;         /* padding */
+    #  u_char services;    /* number of service requests */
+    #  LBCD_SERVICE weights[LBCD_MAX_SERVICES+1];
+    my ($version,$op,$id,$status,
+	$btime,$ctime,$utime,
+	$l1,$l5,$l15,$tot_user,$uniq_user,
+	$on_console,$reserved,$tmp_full,
+	$tmpdir_full,$pad,$services) =
+	    unpack("nnnnNNNnnnnnCCCCCC",$reply);
+
+    print "btime $btime ctime $ctime utime $utime\n";
+    print "load l1 $l1 l5 $l5 l15 $l15\n";
+    print "total $tot_user unique $uniq_user console $on_console\n";
+    print "tmp full $tmp_full P_tmpdir full $tmpdir_full\n";
+
+    # Extended package:
+    # struct LBCD_SERVICE;
+    # u_int host_weight;		/* computed host lb weight */
+    # u_int host_incr;		/* computed host lb increment */
+    if ($version > 2) {
+	print "services $services pads $reserved $pad\n";
+	$reply = substr($reply,36);
+	for (my $i = 0; $i <= $services; $i++) {
+	    my($weight,$incr) = unpack("NN",$reply);
+	    $weight = -1 if $weight == 2**32-1;
+	    print "service $i: weight $weight increment $incr\n";
+	    $reply = substr($reply,8);
+	}
+    }
+}
+__END__
+lbcdclient hostname [hostname2 ... hostnameN]
