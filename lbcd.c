@@ -14,6 +14,8 @@ void handle_lb_request(int s,P_HEADER_PTR ph,  int ph_len,
 void usage();
 void handle_requests();
 
+extern int z_flag;
+
 int d_flag = 0;
 int p_flag = 0;
 int r_flag = 0;
@@ -27,7 +29,8 @@ char *pid_flag;
 
 char *pid_file=PID_FILE;
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
    int c;
    extern int optind, opterr;
@@ -70,7 +73,7 @@ int main(int argc, char **argv)
   if (s_flag) {
      pid = util_get_pid_from_file(pid_file);
      if (pid == -1) {
-         fprintf(stderr,"no dsod running");
+         fprintf(stderr,"no lbcd running");
          exit(1);
      }
      if (kill(pid,SIGTERM)==-1) {
@@ -84,10 +87,10 @@ int main(int argc, char **argv)
 
   handle_requests();
 
- }
+}
 
-
-void handle_requests()
+void
+handle_requests()
 {
    int s;
    struct sockaddr_in serv_addr, cli_addr;
@@ -119,7 +122,7 @@ void handle_requests()
            } 
            r_flag=0; /* don't loop forever */
         } else {
-              util_log_error("dsod already running?");
+              util_log_error("lbcd already running?");
               exit(1);
 	}
      } else {
@@ -154,8 +157,9 @@ void handle_requests()
 
 }
 
-void handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
-                     struct sockaddr_in *cli_addr, int cli_len)
+void
+handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
+		  struct sockaddr_in *cli_addr, int cli_len)
 {
    P_LB_RESPONSE lbr;
 
@@ -166,25 +170,24 @@ void handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
 
    proto_pack_lb_info( &lbr);
 
-   if (sendto(s,&lbr,sizeof(lbr),
-                0,(struct sockaddr *)cli_addr,cli_len)!=sizeof(lbr)) {
-    util_log_error("sendto: %%m");
+   if (sendto(s,(const char *)&lbr,sizeof(lbr),
+                0,(const struct sockaddr *)cli_addr,cli_len)!=sizeof(lbr)) {
+     util_log_error("sendto: %%m");
    }
 
 }
 
-void usage()
+void
+usage()
 {
-
-fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
-fprintf(stderr,"   -d          debug mode, don't fork off\n");
-fprintf(stderr,"   -l          log various requests\n");
-fprintf(stderr,"   -p port     run using different port number\n");
-fprintf(stderr,"   -r          restart (kill current dsod)\n");
-fprintf(stderr,"   -s          stop running dsod\n");
-fprintf(stderr,"   -z          always report zero load\n");
-fprintf(stderr,"   -P file     pid file\n");
-exit(1);
-
+  fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
+  fprintf(stderr,"   -d          debug mode, don't fork off\n");
+  fprintf(stderr,"   -l          log various requests\n");
+  fprintf(stderr,"   -p port     run using different port number\n");
+  fprintf(stderr,"   -r          restart (kill current lbcd)\n");
+  fprintf(stderr,"   -s          stop running lbcd\n");
+  fprintf(stderr,"   -z          always report zero load\n");
+  fprintf(stderr,"   -P file     pid file\n");
+  exit(1);
 }
 
