@@ -307,12 +307,6 @@ lbcd_recv_udp(int s,
     return 0;
   }
 
-  if (ph->h.status != status_request) {
-    util_log_error("expecting request, got %d",ph->h.status);
-    lbcd_send_status(s, cli_addr, cli_len, &ph->h, status_lbcd_error);
-    return 0;
-  }
-  
   return n;     
 }
 
