@@ -34,6 +34,7 @@ dnl
 AC_CHECK_LIB(kvm, main, LIBS="$LIBS -lkvm")
 AC_CHECK_LIB(kstat, main, LIBS="$LIBS -lkstat")
 AC_CHECK_LIB(mld, main, LIBS="$LIBS -lmld")
+AC_CHECK_LIB(elf, nlist, LIBS="$LIBS -lelf")
 
 AC_CHECK_FUNC(connect, , ac_check_socket=1)
 if test "$ac_check_socket" = 1; then
