@@ -32,30 +32,22 @@ typedef struct {
 
 typedef struct {
   P_HEADER h;
-  u_int boot_time;
-  u_int current_time;
-  u_int user_mtime;  /* time user information last changed */
-  u_short l1; /* (int) (load*100) */
+  u_int boot_time;		/* boot time */
+  u_int current_time;		/* host time */
+  u_int user_mtime;		/* time user information last changed */
+  u_short l1;			/* (int) (load*100) */
   u_short l5;
   u_short l15;
-  u_short tot_users;  /* total number of users logged in */
-  u_short uniq_users; /* total number of uniq users */
-  u_char  on_console; /* true if somone on console */
-  u_char  reserved;   /* future use, padding... */
+  u_short tot_users;		/* total number of users logged in */
+  u_short uniq_users;		/* total number of uniq users */
+  u_char on_console;		/* true if somone on console */
+  u_char reserved;		/* future use, padding ... */
+  u_char tmp_full;		/* percent of tmp full */
+  u_char tmpdir_full;		/* percent of P_tmpdir full */
+  u_short pad;
+  u_int host_weight;		/* computed host lb weight */
+  u_int host_incr;		/* computed host lb increment */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
 
-
-typedef struct {
-  u_int boot_time;
-  u_int current_time;
-  double l1;
-  double l5;
-  double l15;
-  u_int user_mtime;
-  u_short tot_users;  /* total number of users logged in */
-  u_short uniq_users; /* total number of uniq users */
-  u_char  on_console; /* true if somone on console */
-  u_char  reserved;   /* future use, padding... */
-} LB_RESPONSE, *LB_RESPONSE_PTR;
 
 #endif
