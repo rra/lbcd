@@ -13,24 +13,30 @@ VPATH  = @srcdir@
 
 SHELL  = /bin/sh
 
-HDRS   = config.h lbcd.h protocol.h
+HDRS   = config.h lbcd.h lbcdload.h protocol.h
 
 SRCS   = lbcd.c server.c kernel.c util.c get_user.c tmp_full.c weight.c
 OBJS   = $(SRCS:.c=.o)
+LIBRARY= modules/liblbcd.a
 
 all: lbcd
 
-.c.o: $(HDRS)
+.c.o: $(HDRS) $*.c
 	$(CC) -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
 
-lbcd: $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+lbcd: $(OBJS) $(LIBRARY)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBRARY) $(LIBS)
+
+$(LIBRARY):
+	cd modules && ${MAKE}
 
 clean:
 	-rm -f *.o core lbcd
+	cd modules && ${MAKE} $@
 
 distclean: clean
 	-rm -f Makefile config.log config.status config.cache config.h
+	cd modules && ${MAKE} $@
 
 #
 # Dependencies
