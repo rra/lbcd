@@ -20,14 +20,22 @@ static int penalty[] = {
   32				/* 100% */
 };
 
+/* lbcd_load_weight
+ *
+ * WARNING: Since this deals with the raw P_LB_RESPONSE packet,
+ *          it must convert from network to host order and is
+ *          thus dependent on the data types in protcol.h.
+ *          A more elegant approach would be desirable; it might
+ *          not be so bad just to call the kernel routines twice.
+ */
 void
 lbcd_load_weight(P_LB_RESPONSE *lb, int *weight_val, int *incr_val)
 {
   int fudge, weight;
   int tmp_used;
 
-  fudge = (lb->tot_users - lb->uniq_users) * 20;
-  weight = (lb->uniq_users * 100) + (3 * lb->l1) + fudge;
+  fudge = (ntohs(lb->tot_users) - ntohs(lb->uniq_users)) * 20;
+  weight = (ntohs(lb->uniq_users) * 100) + (3 * ntohs(lb->l1)) + fudge;
 
   /* Heavy penalty for a full /tmp partition */
   tmp_used = MAX(lb->tmp_full,lb->tmpdir_full);

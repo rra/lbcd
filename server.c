@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,10 +29,19 @@ lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
   lb->pad = 0;
   lb->services = numserv = ph->h.status;
 
-  /* Set default weight and requested services, if any */
+  /* Set default weight and convert to network byte order */
   lbcd_setweight(lb,0,"default");
+  lb->weights[0].host_weight = htonl(lb->weights[0].host_weight);
+  lb->weights[0].host_incr = htonl(lb->weights[0].host_incr);
+
+  /* Set requested services, if any */
   for (i = 1; i <= numserv; i++) {
+    /* Obtain values */
     lbcd_setweight(lb,i,ph->names[i]);
+
+    /* Convert to network byte order */
+    lb->weights[i].host_weight = htonl(lb->weights[i].host_weight);
+    lb->weights[i].host_incr = htonl(lb->weights[i].host_incr);
   }
 }
 
@@ -129,9 +139,9 @@ lbcd_test(int argc, char *argv[])
   printf("l1           = %d\n",  ntohs(lb.l1));
   printf("l5           = %d\n",  ntohs(lb.l5));
   printf("l15          = %d\n",  ntohs(lb.l15));
-  printf("current_time = %ld\n",  ntohl(lb.current_time));
-  printf("boot_time    = %ld\n",  ntohl(lb.boot_time));
-  printf("user_mtime   = %ld\n",  ntohl(lb.user_mtime));
+  printf("current_time = %d\n",  (int)ntohl(lb.current_time));
+  printf("boot_time    = %d\n",  (int)ntohl(lb.boot_time));
+  printf("user_mtime   = %d\n",  (int)ntohl(lb.user_mtime));
   printf("tot_users    = %d\n",  ntohs(lb.tot_users));
   printf("uniq_users   = %d\n",  ntohs(lb.uniq_users));
   printf("on_console   = %d\n",  lb.on_console);
@@ -142,8 +152,8 @@ lbcd_test(int argc, char *argv[])
 
   for (i = 0; i <= lb.services; i++) {
     printf("%d: weight %8d increment %8d\n",i,
-	   lb.weights[0].host_weight,
-	   lb.weights[0].host_incr);
+	   (int)ntohl(lb.weights[i].host_weight),
+	   (int)ntohl(lb.weights[i].host_incr));
   }
 
   exit(0);
