@@ -30,7 +30,6 @@ INSTALL_SCRIPT	= @INSTALL_SCRIPT@
 PACKAGE		= @PACKAGE_TARNAME@
 VERSION		= @PACKAGE_VERSION@
 TARDIR		= $(PACKAGE)-$(VERSION)
-DEBNAME		= $(PACKAGE)_$(VERSION)
 TARNAME		= $(TARDIR).tar
 
 HDRS   = config.h lbcd.h lbcdload.h protocol.h
@@ -84,20 +83,12 @@ maintclean: distclean
 dist: lbcd.8 lbcdclient.1
 	rm -rf $(TARNAME).gz $(TARNAME).gz.md5 $(TARDIR)
 	mkdir $(TARDIR)
-	rsync -C -a ./ $(TARDIR)/
+	rsync -C --exclude /debian/ -a ./ $(TARDIR)/
 	rsync -a lbcd.8 lbcdclient.1 $(TARDIR)/
 	cd $(TARDIR) && autoconf && autoheader && rm -rf autom4te.cache
 	tar cf $(TARNAME) $(TARDIR)
 	gzip -9 $(TARNAME)
 	md5sum $(TARNAME).gz > $(TARNAME).gz.md5
-
-# Prepare to make a Debian package.  This doesn't do the actual work of
-# creating the package; there are too many different flags we might want to
-# use.  It just copies things around so that the Debian packaging will work
-# properly.
-deb-prep: dist
-	rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
-	cp $(TARNAME).gz $(DEBNAME).orig.tar.gz
 
 # Dependencies.
 kernel.o: $(srcdir)/kernel.c \
