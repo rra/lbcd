@@ -73,6 +73,7 @@ clean:
 
 distclean: clean
 	-rm -f Makefile config.log config.status config.cache config.h
+	-rm -rf autom4te.cache
 	cd modules && $(MAKE) $@
 
 maintclean: distclean
