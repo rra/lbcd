@@ -19,7 +19,8 @@ ENTRY *hsearch();
 static char *users[500]; /* should be enough for now, change to dynamic */
 static int uniq_users=0;
 
-static uniq_start()
+static void
+uniq_start()
 {
   uniq_users = 0;
 #ifdef C_HAS_HASH
@@ -27,7 +28,8 @@ static uniq_start()
 #endif 
 }
 
-static uniq_end()
+static void
+uniq_end()
 {
  int i;
 #ifdef C_HAS_HASH
@@ -39,7 +41,8 @@ static uniq_end()
  }
 }
 
-static uniq_add(char *name)
+static void
+uniq_add(char *name)
 {
 #ifdef C_HAS_HASH
  ENTRY item, *i;
@@ -68,12 +71,14 @@ static uniq_add(char *name)
 #endif
 }
 
-static int uniq_count()
+static int
+uniq_count()
 {
   return uniq_users;
 }
 
-int get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
+int
+get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
 {
   char line[9],name[9],host[17];
   struct utmp ut;
@@ -158,15 +163,15 @@ int get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
   return 0;  
 }
 
-#ifdef test_me
+#ifdef MAIN
+int
 main()
 {
+  int t,u,oc;
+  time_t mtime;
 
-int t,u,oc;
-time_t mtime;
-
-get_user_stats(&t,&u,&oc,&mtime);
-printf("total = %d  uniq = %d  on_cons = %d\n",t,u,oc);
-
+  get_user_stats(&t,&u,&oc,&mtime);
+  printf("total = %d  uniq = %d  on_cons = %d\n",t,u,oc);
+  return 0;
 }
 #endif

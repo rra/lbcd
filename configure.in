@@ -1,11 +1,22 @@
+dnl configure.in for lbcd
+
 AC_INIT(lbcd.c)
 
-PROGS="lbcd"
-AC_SUBST(PROGS)
-
 AC_PROG_CC
-AC_PROG_INSTALL
 
-AC_HAVE_LIBRARY(-lkvm)
+AC_CHECK_LIB(kvm, main, LIBS="$LIBS -lkvm")
+AC_CHECK_LIB(kstat, main, LIBS="$LIBS -lkstat")
+AC_CHECK_LIB(mld, main, LIBS="$LIBS -lmld")
+
+AC_CHECK_FUNC(connect, , ac_check_socket=1)
+if test "$ac_check_socket" = 1; then
+  AC_CHECK_LIB(socket, main, LIBS="$LIBS -lsocket", ac_check_both=1)
+fi
+if test "$ac_check_both" = 1; then
+  ac_old_libs=$LIBS
+  LIBS="$LIBS -lsocket -lnsl"
+  AC_CHECK_FUNC(accept, checknsl=0, LIBS=$ac_old_libs)
+fi
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
 
 AC_OUTPUT(Makefile)
