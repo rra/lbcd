@@ -43,8 +43,12 @@ main(int argc, char **argv)
    extern char *optarg;
    int pid;
  
-   while ((c = getopt(argc, argv, "P:Rc:dlp:rstz")) != EOF) 
+   while ((c = getopt(argc, argv, "P:Rc:dhlp:rstz")) != EOF) 
      switch (c) {
+     case 'h': /* usage */
+         usage();
+	 exit(0);
+	 break;
      case 'P': /* pid file */
          pid_file=optarg;
          break;
@@ -196,6 +200,7 @@ void
 usage(void)
 {
   fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
+  fprintf(stderr,"   -h          print usage\n");
   fprintf(stderr,"   -c cmd      run cmd (full path) to obtain load values\n");
   fprintf(stderr,"   -d          debug mode, don't fork off\n");
   fprintf(stderr,"   -l          log various requests\n");
