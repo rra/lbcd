@@ -7,7 +7,6 @@
 #include "config.h"
 #endif
 #include "lbcd.h"
-#include "util.h"
 
 int
 kernel_getload(double *l1, double *l5, double *l15)

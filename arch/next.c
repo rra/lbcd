@@ -10,7 +10,6 @@
 #include "config.h"
 #endif
 #include "lbcd.h"
-#include "util.h"
 
 #define C_KMEM "/dev/kmem"
 #define C_VMUNIX "/mach"
