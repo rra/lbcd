@@ -46,6 +46,7 @@ main(int argc, char **argv)
   int debug = 0;
   int port = LBCD_PORTNUM;
   int testmode = 0;
+  int restart = 0;
   char *pid_file = PID_FILE;
   char *lbcd_helper = (char *)0;
   char *service_weight = (char *)0;
@@ -94,9 +95,7 @@ main(int argc, char **argv)
       port = atoi(optarg);
       break;
     case 'r': /* restart */
-      if (stop_lbcd(pid_file) != 0) {
-	exit(1);
-      }
+      restart = 1;
       break;
     case 's': /* stop */
       exit(stop_lbcd(pid_file));
@@ -119,6 +118,11 @@ main(int argc, char **argv)
       usage(1);
       break;
     }
+  }
+
+  /* Handle restart, if requested */
+  if (!testmode && restart && stop_lbcd(pid_file) != 0) {
+    exit(1);
   }
 
   /* Initialize default load handler */
