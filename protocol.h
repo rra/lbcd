@@ -3,7 +3,7 @@
 
 #define LBCD_PORTNUM 4330 
 #define LBCD_MAXMESG 2048    /* max udp message to receive */
-#define LBCD_VERSION 2
+#define LBCD_VERSION 3
 
 #include <sys/types.h>
 
