@@ -2,7 +2,8 @@
 #define LBCD_PROTOCOL_H
 
 #define LBCD_PORTNUM 4330 
-#define LBCD_MAXMESG 2048    /* max udp message to receive */
+#define LBCD_MAXMESG 2048	/* max udp message to receive */
+#define LBCD_MAX_SERVICES 5	/* max service requests to allow */
 #define LBCD_VERSION 3
 
 #include <sys/types.h>
@@ -19,6 +20,14 @@ typedef enum P_STATUS {
     status_lbcd_error         =4,  /* generic protocol error */
     status_unknown_op          =5,  /* unknown operation requested */
 } p_status_t;
+
+typedef struct LBCD_SERVICE {
+  char name[16];		/* service name (NUL terminated) */
+  u_int host_weight;		/* computed host lb weight */
+  u_int host_incr;		/* computed host lb increment */
+} LBCD_SERVICE;
+
+typedef char LBCD_SERVICE_REQ[16];
 
 typedef struct {
   u_short   version;  /* protocol version */
