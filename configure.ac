@@ -12,10 +12,10 @@ AC_PROG_MAKE_SET
 AC_CHECK_HEADERS([utmp.h utmpx.h sys/statvfs.h sys/vfs.h malloc.h search.h])
 AC_CHECK_HEADERS([sys/select.h])
 
-AC_SEARCH_LIBS([kvm], [kvm_open])
-AC_SEARCH_LIBS([kstat], [kstat_open])
+AC_SEARCH_LIBS([kvm_open], [kvm])
+AC_SEARCH_LIBS([kstat_open], [kstat])
 AC_CHECK_LIB([mld], [main], [LIBS="$LIBS -lmld"])
-AC_SEARCH_LIBS([elf], [nlist])
+AC_SEARCH_LIBS([nlist], [elf])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket], ,
     [AC_CHECK_LIB([nsl], [socket], [LIBS="$LIBS -lsocket -lnsl"], ,
