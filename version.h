@@ -2,6 +2,6 @@
 #define __lbcd_version_h__
 
 /* Program version string -- major and protocol should match */
-#define VERSION "3.0.0beta6"
+#define VERSION "3.0.0beta8"
 
 #endif /* __lbcd_version_h__ */
