@@ -30,11 +30,11 @@ static void handle_lb_request(int s,
 			      P_HEADER_PTR ph,
 			      int ph_len,
 			      struct sockaddr_in *cli_addr,
-			      int rr);
+			      int cli_len, int rr);
 static int lbcd_recv_udp(int s, struct sockaddr_in *cli_addr,
-			 char *mesg, int max_mesg);
-static int lbcd_send_status(int s,
-			    struct sockaddr_in *cli_addr,
+			 int cli_len, char *mesg, int max_mesg);
+static int lbcd_send_status(int s, struct sockaddr_in *cli_addr,
+			    int cli_len,
 			    P_HEADER *request_header,
 			    p_status_t pstat);
 
@@ -156,15 +156,15 @@ handle_requests(int port, const char *pid_file,
   /* Main loop */
   while(1) {
     cli_len = sizeof(cli_addr);
-    n = lbcd_recv_udp(s, &cli_addr, mesg, sizeof(mesg));
+    n = lbcd_recv_udp(s,&cli_addr,cli_len,mesg,sizeof(mesg));
     if (n>0) {
       ph = (P_HEADER_PTR) mesg;
       switch (ph->op) {
       case op_lb_info_req: 
-	handle_lb_request(s,ph,n,&cli_addr,round_robin);
+	handle_lb_request(s,ph,n,&cli_addr,cli_len,round_robin);
 	break;
       default:
-	lbcd_send_status(s,&cli_addr,ph,status_unknown_op);
+	lbcd_send_status(s,&cli_addr,cli_len,ph,status_unknown_op);
 	util_log_error("unknown op requested: %d",ph->op);
       }
     }
@@ -174,11 +174,10 @@ handle_requests(int port, const char *pid_file,
 void
 handle_lb_request(int s,
 		  P_HEADER_PTR ph, int ph_len,
-		  struct sockaddr_in *cli_addr,
+		  struct sockaddr_in *cli_addr, int cli_len,
 		  int rr)
 {
    P_LB_RESPONSE lbr;
-   int cli_len = sizeof (struct sockaddr_in);
    int pkt_size;
 
    /* Fill in reply header */
@@ -201,11 +200,10 @@ handle_lb_request(int s,
 
 int
 lbcd_recv_udp(int s, 
-	      struct sockaddr_in *cli_addr,
+	      struct sockaddr_in *cli_addr, int cli_len,
 	      char *mesg, int max_mesg)
 {
   int n;
-  int cli_len = sizeof (struct sockaddr_in);
   P_HEADER_PTR ph;
 
   n = recvfrom(s,mesg, max_mesg, 0,
@@ -238,13 +236,13 @@ lbcd_recv_udp(int s,
     break;
   default:
     util_log_error("protocol version unsupported: %d", ph->version);
-    lbcd_send_status(s, cli_addr, ph, status_lbcd_version);
+    lbcd_send_status(s, cli_addr, cli_len, ph, status_lbcd_version);
     return 0;
   }
 
   if (ph -> status != status_request) {
     util_log_error("expecting request, got %d",ph->status);
-    lbcd_send_status(s, cli_addr, ph, status_lbcd_error);
+    lbcd_send_status(s, cli_addr, cli_len, ph, status_lbcd_error);
     return 0;
   }
   
@@ -253,11 +251,10 @@ lbcd_recv_udp(int s,
 
 int
 lbcd_send_status(int s, 
-		 struct sockaddr_in *cli_addr,
+		 struct sockaddr_in *cli_addr, int cli_len,
 		 P_HEADER *request_header,
 		 p_status_t pstat)
 {
-  int cli_len = sizeof (struct sockaddr_in);
   P_HEADER header;
 
   header.version= htons(LBCD_VERSION);
