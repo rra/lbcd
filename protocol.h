@@ -1,9 +1,9 @@
 #ifndef LBCD_PROTOCOL_H
 #define LBC_PROTOCOL_H
 
-#define PROTO_PORTNUM 4330 
-#define PROTO_MAXMESG 2048    /* max udp message to receive */
-#define PROTO_VERSION 2
+#define LBCD_PORTNUM 4330 
+#define LBCD_MAXMESG 2048    /* max udp message to receive */
+#define LBCD_VERSION 2
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,8 +18,8 @@ typedef enum P_STATUS {
     status_request             =0,  /* a request packet */
     status_ok                  =1,  /* load balance info, request and reply */
     status_error               =2,  /* generic error */
-    status_proto_version       =3,  /* protocol version error */
-    status_proto_error         =4,  /* generic protocol error */
+    status_lbcd_version       =3,  /* protocol version error */
+    status_lbcd_error         =4,  /* generic protocol error */
     status_unknown_op          =5,  /* unknown operation requested */
 } p_status_t;
 
