@@ -9,8 +9,8 @@
 void util_debug_on();
 void util_debug_off();
 
-void util_log_info();
-void util_log_error();
+void util_log_info(char *fmt, ...);
+void util_log_error(char *fmt, ...);
 void util_log_open();
 void util_log_close();
 void util_start_daemon();
