@@ -19,6 +19,7 @@ int p_flag = 0;
 int r_flag = 0;
 int s_flag = 0;
 int l_flag = 0;
+int z_flag = 0;
 
 int err_flag = 0;
 
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
    extern char *optarg;
    int pid;
  
-   while ((c = getopt(argc, argv, "P:dlp:rs")) != EOF) 
+   while ((c = getopt(argc, argv, "P:dlp:rsz")) != EOF) 
      switch (c) {
      case 'P':
          pid_file=optarg;
@@ -53,6 +54,9 @@ int main(int argc, char **argv)
      case 's':
          s_flag=1;
          break;
+     case 'z':
+         z_flag=1;
+	 break;
      default:
          err_flag++;
      }
@@ -99,7 +103,7 @@ void handle_requests()
      exit(1);
   }
 
-  bzero((char*)& serv_addr, sizeof(serv_addr));  
+  memset(& serv_addr, 0, sizeof(serv_addr));  
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   serv_addr.sin_port = htons(p_flag);
@@ -178,6 +182,7 @@ fprintf(stderr,"   -l          log various requests\n");
 fprintf(stderr,"   -p port     run using different port number\n");
 fprintf(stderr,"   -r          restart (kill current dsod)\n");
 fprintf(stderr,"   -s          stop running dsod\n");
+fprintf(stderr,"   -z          always report zero load\n");
 fprintf(stderr,"   -P file     pid file\n");
 exit(1);
 
