@@ -55,7 +55,7 @@ extern void util_start_daemon(void);
 extern void util_log_close(void);
 
 /* weight.c */
-void lbcd_default_weight(P_LB_RESPONSE *lb, int *weight, int *incr);
+int lbcd_default_weight(P_LB_RESPONSE *lb, u_int *weight, u_int *incr);
 int lbcd_weight_init(char *cmd, char *service);
 
 #ifdef __cplusplus
