@@ -55,7 +55,8 @@ lbcd_tcp_weight(u_int *weight_val, u_int *incr_val,
   }
 
   /* Connect to the port, set weight, and return */
-  return *weight_val = probe_tcp("localhost",service,port,NULL,timeout);
+  return *weight_val = (u_int)probe_tcp("localhost",service,
+					port,NULL,timeout);
 }
 
 #ifdef TCPMAIN
