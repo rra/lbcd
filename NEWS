@@ -1,3 +1,7 @@
+3.2.1 September 2004
+	Fixed a long-standing bug in -R mode when responding to v2 requests
+	Set 5 and 15 minute load as well in v2 responses when using -R
+
 3.2.0 August 2004
 	Added man page for lbcd and lbcdclient
 	Added Debian build rules and Makefile support
