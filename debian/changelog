@@ -1,3 +1,10 @@
+lbcd (3.2.2-1) unstable; urgency=low
+
+  * New upstream release.
+    - Improved documentation.
+
+ -- Russ Allbery <rra@stanford.edu>  Tue, 16 Nov 2004 14:40:48 -0800
+
 lbcd (3.2.1-1) unstable; urgency=low
 
   * New upstream release.
