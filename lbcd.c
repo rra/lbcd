@@ -10,9 +10,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
-#include "protocol.h"
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "lbcd.h"
-#include "util.h"
 
 extern char *sys_errlist[];
 extern int errno;
@@ -31,7 +33,6 @@ static int l_flag = 0;
 static int R_flag = 0;
 static int t_flag = 0;
 static int err_flag = 0;
-static char *pid_flag;
 static char *pid_file = PID_FILE;
 static char *lbcd_helper = (char *)0;
 
@@ -105,6 +106,8 @@ main(int argc, char **argv)
   if (!d_flag) util_start_daemon();
 
   handle_requests();
+
+  return 0;
 }
 
 void
@@ -157,8 +160,7 @@ handle_requests()
 
     cli_len = sizeof(cli_addr);
 
-    n=lbcd_recv_udp(s, (struct sockaddr *)&cli_addr, &cli_len, 
-                                              mesg, sizeof(mesg));
+    n=lbcd_recv_udp(s, &cli_addr, &cli_len, mesg, sizeof(mesg));
 
     if (n>0) {
          ph = (P_HEADER_PTR) mesg;
@@ -183,7 +185,7 @@ handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
    P_LB_RESPONSE lbr;
 
    /* Fill in reply */
-   lbcd_pack_lb_info(&lbr,rr);
+   lbcd_pack_info(&lbr,rr);
 
    /* Fill in reply header */
    lbr.h.version = htons(ph->version);
