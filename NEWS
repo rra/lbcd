@@ -2,9 +2,10 @@
 	IRIX 6.x port
 	Fix protocol 2 conversion handling for little endian
 	Standardize on 32 bytes for protocol 3 service length
+	First server with protocol 3 extensions
 
 3.0.1 January 1998
 	Fix Solaris utmp gathering mechanism (check utmp entry type)
 
 3.0.0 January 1998
-	First complete protocol 3 prototype
+	First complete protocol 3 server
