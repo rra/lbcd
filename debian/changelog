@@ -1,3 +1,10 @@
+lbcd (3.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fixes -R mode on Linux when responding to v2 queries.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 16 Sep 2004 16:12:51 -0700
+
 lbcd (3.2.0-1) unstable; urgency=low
 
   * Initial release.
