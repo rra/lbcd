@@ -44,21 +44,13 @@ extern int get_user_stats(int *total, int *unique,
 extern int tmp_full(char *path);
 
 /* server.c */
-extern int lbcd_recv_udp(int s, 
-			 struct sockaddr_in *cli_addr, int * cli_len,
-			 char *mesg, int max_mesg);
-
-extern int lbcd_send_status(int s, 
-			    struct sockaddr_in *cli_addr, int cli_len,
-			    P_HEADER *request_header,
-			    p_status_t pstat);
 extern void lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin);
 
 /* util.c */
 extern void util_log_info(char *fmt, ...);
 extern void util_log_error(char *fmt, ...);
-extern int util_get_pid_from_file(char *file);
-extern int util_write_pid_in_file(char *file);
+extern pid_t util_get_pid_from_file(const char *file);
+extern int util_write_pid_in_file(const char *file);
 extern void util_start_daemon(void);
 extern void util_log_close(void);
 
