@@ -1,6 +1,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <syslog.h>
@@ -20,23 +22,26 @@
 #include <sys/ioctl.h>
 #endif
 #include "lbcd.h"
-#include "util.h"
 
 extern int errno;
 
 static int util_debug_mode=0;
 
-void
+#ifdef notdef
+static void
 util_debug_on(void)
 {
   util_debug_mode=1;
 }
+#endif
 
-void
+#ifdef notdef
+static void
 util_debug_off(void)
 {
   util_debug_mode=0;
 }
+#endif
 
 void
 util_start_daemon(void)
@@ -85,7 +90,7 @@ util_start_daemon(void)
 
 static util_log_init = 0;
 
-void
+static void
 util_log_open()
 {
   if(util_log_init) return;
@@ -117,7 +122,7 @@ util_log_info(char *fmt, ...)
 
   vsprintf(buffer,fmt,ap);
 
-  if(util_debug_on) {
+  if(util_debug_mode) {
     fprintf(stderr,"INFO: %s\n",buffer);
 
     va_end(argptr);
@@ -139,7 +144,7 @@ util_log_error(char *fmt, ...)
   va_start(ap,fmt);
   vsprintf(buffer,fmt,ap);
 
-  if(util_debug_on) {
+  if(util_debug_mode) {
     fprintf(stderr,"ERROR: %s\n",buffer);
   }
 
@@ -148,7 +153,8 @@ util_log_error(char *fmt, ...)
   va_end(ap);
 }
 
-unsigned int
+#ifdef notdef
+static unsigned int
 util_get_ipaddress(char *host)
 {
   struct hostent *host_ent;
@@ -168,8 +174,10 @@ util_get_ipaddress(char *host)
   else
     return ipaddress;
 }
+#endif
 
-char *
+#ifdef notdef
+static char *
 util_get_host_by_address(struct in_addr in)
 {
   struct hostent *h;
@@ -179,6 +187,7 @@ util_get_host_by_address(struct in_addr in)
   else
     return h->h_name;
 }
+#endif
 
 /*
  * return -1 if no pid file, or no daemon running,
@@ -217,7 +226,7 @@ util_write_pid_in_file(char *file)
         util_log_error("can't create pid file: %s\n",file);
         return -1;
   } else {
-      fprintf(pid,"%d\n",getpid());
+      fprintf(pid,"%d\n",(int)getpid());
       fclose(pid);
   }
 
