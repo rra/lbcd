@@ -136,6 +136,13 @@ The file location can be changed with B<-P>.
 
 =back
 
+=head1 SEE ALSO
+
+lbcdclient(1)
+
+The current version of this program is available from its web page at
+L<http://www.eyrie.org/~eagle/software/lbcd/>.
+
 =head1 AUTHORS
 
 Originally written by Roland Schemers and Larry Schwimmer.  Currently
