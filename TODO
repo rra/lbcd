@@ -1,3 +1,1 @@
 * If high load, deal with wraparound problem.
-* check -Wall is clean on all hosts
-* ensure negative ports rejected
