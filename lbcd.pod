@@ -4,8 +4,8 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-lbcd [B<-dhlRrt>] [B<-c> I<command>] [B<-P> I<file>] [B<-p> I<port>]
-[B<-T> I<seconds>] [B<-w> I<weight>]
+lbcd [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
+[B<-p> I<port>] [B<-T> I<seconds>] [B<-w> I<weight>]
 
 lbcd B<-s> [B<-P> I<file>]
 
@@ -51,6 +51,12 @@ similar measures.
 =head1 OPTIONS
 
 =over 4
+
+=item B<-b> I<address>
+
+By default, B<lbcd> binds to all available addresses.  If this option is
+given, B<lbcd> binds only to the specified address and will only answer
+UDP queries to that address.
 
 =item B<-c> I<command>
 
@@ -150,7 +156,7 @@ maintained by Russ Allbery <rra@stanford.edu>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004 Board of
+Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005 Board of
 Trustees, Leland Stanford Jr.  University.
 
 Permission is hereby granted, free of charge, to any person obtaining a

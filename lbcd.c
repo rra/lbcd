@@ -27,7 +27,8 @@ static void version(void);
 
 static void handle_requests(int port,
 			    const char *pid_file,
-			    const char *lbcd_helper);
+			    const char *lbcd_helper,
+                            struct in_addr *bind_address);
 static void handle_lb_request(int s,
 			      P_HEADER_FULLPTR ph,
 			      int ph_len,
@@ -50,6 +51,7 @@ main(int argc, char **argv)
   char *pid_file = PID_FILE;
   char *lbcd_helper = (char *)0;
   char *service_weight = (char *)0;
+  struct in_addr bind_address;
   int service_timeout = LBCD_TIMEOUT;
   int c;
 
@@ -67,7 +69,8 @@ main(int argc, char **argv)
     }
 
   opterr = 1;
-  while ((c = getopt(argc, argv, "P:Rc:dhlp:rstT:w:")) != EOF) {
+  bind_address.s_addr = htonl(INADDR_ANY);
+  while ((c = getopt(argc, argv, "P:Rb:c:dhlp:rstT:w:")) != EOF) {
     switch (c) {
     case 'h': /* usage */
       usage(0);
@@ -77,6 +80,12 @@ main(int argc, char **argv)
       break;
     case 'R': /* round-robin */
       service_weight = "rr";
+      break;
+    case 'b': /* bind address */
+      if (inet_aton(optarg, &bind_address) == 0) {
+        fprintf(stderr,"invalid bind address %s",optarg);
+        exit(1);
+      }
       break;
     case 'c': /* helper command -- must be full path to command */
       lbcd_helper = optarg;
@@ -141,7 +150,7 @@ main(int argc, char **argv)
     util_start_daemon();
 
   /* Become a daemon.  handle_requests never returns */
-  handle_requests(port,pid_file,lbcd_helper);
+  handle_requests(port,pid_file,lbcd_helper,&bind_address);
   return 0;
 }
 
@@ -163,7 +172,7 @@ stop_lbcd(const char *pid_file)
 
 void
 handle_requests(int port, const char *pid_file,
-		const char *lbcd_helper)
+		const char *lbcd_helper, struct in_addr *bind_address)
 {
    int s;
    struct sockaddr_in serv_addr, cli_addr;
@@ -180,7 +189,7 @@ handle_requests(int port, const char *pid_file,
 
   memset(& serv_addr, 0, sizeof(serv_addr));  
   serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  serv_addr.sin_addr = *bind_address;
   serv_addr.sin_port = htons(port);
   
   if (bind(s,(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
