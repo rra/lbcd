@@ -1,44 +1,47 @@
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-
+#endif
+#include <stdio.h>
 #include <stdarg.h>
 #include <syslog.h>
 #include <errno.h>
 #include <netdb.h>
-
-#include<sys/types.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#if defined(HAVE_FCNTL_H)
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
-
-extern int errno;
-
 #include <signal.h>
 #include <sys/param.h>
-
 #ifdef SIGTSTP  /* true if BSD system */
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #endif
+#include "lbcd.h"
+#include "util.h"
+
+extern int errno;
 
 static int util_debug_mode=0;
 
-void util_debug_on()
+void
+util_debug_on(void)
 {
   util_debug_mode=1;
 }
 
-void util_debug_off()
+void
+util_debug_off(void)
 {
   util_debug_mode=0;
 }
 
-void util_start_daemon()
+void
+util_start_daemon(void)
 {
- int childpid,fd;
+  int childpid,fd;
 
 #ifdef SIGTTOU
   signal(SIGTTOU, SIG_IGN);
@@ -50,24 +53,26 @@ void util_start_daemon()
   signal(SIGTSTP, SIG_IGN);
 #endif
 
- if ( (childpid = fork()) < 0 ) 
-     util_log_error("can't fork child: %%m");
- else if (childpid > 0)
-     exit(0);  /* parent */
+  if ( (childpid = fork()) < 0 ) 
+    util_log_error("can't fork child: %%m");
+  else if (childpid > 0)
+    exit(0);  /* parent */
 
 #if defined(SIGTSTP) && defined(TIOCNTOTTY) && !defined(hpux)
   if (setpgrp(0, getpid()) == -1) 
-     util_log_error("can't change process group: %%m");
+    util_log_error("can't change process group: %%m");
   if ( (fd = open("/dev/tty", O_RDWR)) >=0) {
-       ioctl(fd, TIOCNOTTY, NULL);
-       close(fd);
+    ioctl(fd, TIOCNOTTY, NULL);
+    close(fd);
   }
 #else
   if (setpgrp() == -1)
-       util_log_error("can't change process group: %%m");
+    util_log_error("can't change process group: %%m");
   signal(SIGHUP, SIG_IGN);
-  if ( (childpid = fork()) < 0) util_log_error("can't fork second child: %%m");
-  else if (childpid > 0) exit(0);
+  if ( (childpid = fork()) < 0)
+    util_log_error("can't fork second child: %%m");
+  else if (childpid > 0)
+    exit(0);
 #endif 
 
   /* close open file descriptors */
@@ -75,16 +80,15 @@ void util_start_daemon()
   for (fd=0; fd < NOFILE; fd++) close(fd);
   errno = 0;
 
-/*  chdir("/"); */
-
+  /*  chdir("/"); */
 }
 
 static util_log_init = 0;
 
-void util_log_open()
+void
+util_log_open()
 {
-
-if(util_log_init) return;
+  if(util_log_init) return;
 
 #ifdef ultrix
   openlog(PROGNAME,LOG_PID);
@@ -92,59 +96,60 @@ if(util_log_init) return;
   openlog(PROGNAME,LOG_PID,LOG_DAEMON);
 #endif
 
- util_log_init = 1;
+  util_log_init = 1;
 }
 
-void util_log_close()
+void
+util_log_close(void)
 {
   if ( util_log_init ) closelog();
 }
 
-void util_log_info(char *fmt, ...)
+void
+util_log_info(char *fmt, ...)
 {
-char buffer[512];
-va_list ap;
+  char buffer[512];
+  va_list ap;
 
-if (!util_log_init) util_log_open();
+  if (!util_log_init) util_log_open();
 
-va_start(ap, fmt);
+  va_start(ap, fmt);
 
-vsprintf(buffer,fmt,ap);
+  vsprintf(buffer,fmt,ap);
 
-if(util_debug_on) {
-     fprintf(stderr,"INFO: %s\n",buffer);
+  if(util_debug_on) {
+    fprintf(stderr,"INFO: %s\n",buffer);
 
-va_end(argptr);
+    va_end(argptr);
+  }
+
+  syslog(LOG_INFO,buffer);
+
+  va_end(ap);
 }
 
-syslog(LOG_INFO,buffer);
-
-va_end(ap);
-
-}
-
-void util_log_error(char *fmt, ...)
+void
+util_log_error(char *fmt, ...)
 {
-char buffer[512];
-va_list ap;
+  char buffer[512];
+  va_list ap;
 
-if (!util_log_init) util_log_open();
+  if (!util_log_init) util_log_open();
 
-va_start(ap,fmt);
+  va_start(ap,fmt);
+  vsprintf(buffer,fmt,ap);
 
-vsprintf(buffer,fmt,ap);
+  if(util_debug_on) {
+    fprintf(stderr,"ERROR: %s\n",buffer);
+  }
 
-if(util_debug_on) {
-     fprintf(stderr,"ERROR: %s\n",buffer);
+  syslog(LOG_ERR,buffer);
+
+  va_end(ap);
 }
 
-syslog(LOG_ERR,buffer);
-
-va_end(ap);
-
-}
-
-unsigned int util_get_ipaddress(char *host)
+unsigned int
+util_get_ipaddress(char *host)
 {
   struct hostent *host_ent;
   struct in_addr *host_add;
@@ -153,22 +158,26 @@ unsigned int util_get_ipaddress(char *host)
 
   if ( (ipaddress == -1) &&
        ( ((host_ent=gethostbyname(host)) == 0) ||
-          ((host_add = (struct in_addr *) *(host_ent->h_addr_list))==0))
-     )  {
-          return -1 ;
-       }
+	 ((host_add = (struct in_addr *) *(host_ent->h_addr_list))==0))
+       )  {
+    return -1 ;
+  }
 
-  if (ipaddress==-1) return host_add->s_addr;
-  else return ipaddress;
-
+  if (ipaddress==-1)
+    return host_add->s_addr;
+  else
+    return ipaddress;
 }
 
-char *util_get_host_by_address(struct in_addr in)
+char *
+util_get_host_by_address(struct in_addr in)
 {
-struct hostent *h;
- h=gethostbyaddr((char *) &in,sizeof(struct in_addr),AF_INET);
- if (h==NULL || h->h_name==NULL) return inet_ntoa(in);
- else return h->h_name;
+  struct hostent *h;
+  h=gethostbyaddr((char *) &in,sizeof(struct in_addr),AF_INET);
+  if (h==NULL || h->h_name==NULL)
+    return inet_ntoa(in);
+  else
+    return h->h_name;
 }
 
 /*
@@ -177,7 +186,8 @@ struct hostent *h;
  *
  */
 
-int util_get_pid_from_file(char *file)
+int
+util_get_pid_from_file(char *file)
 {
   FILE *pid;
 
@@ -197,7 +207,8 @@ int util_get_pid_from_file(char *file)
  *
  */
 
-int util_write_pid_in_file(char *file)
+int
+util_write_pid_in_file(char *file)
 {
   FILE *pid;
 
