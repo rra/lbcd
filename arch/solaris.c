@@ -5,6 +5,8 @@
  * in the comp.unix.solaris post <3qh88s$6ho@engnews2.Eng.Sun.COM>.
  */
 
+#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <sys/param.h>
@@ -18,7 +20,8 @@
 #include <utmpx.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/fcntl.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 static int kernel_init=0;
 static kstat_ctl_t *kc;
@@ -35,7 +38,7 @@ kernel_open()
 int
 kernel_close()
 {
-  if (! kernel_init) return;
+  if (! kernel_init) return 0;
 
   return kstat_close(kc);
 }
@@ -45,7 +48,6 @@ kernel_getload(double *l1, double *l5, double *l15)
 {
   kstat_t *ksp;
   kstat_named_t *kn1,*kn5,*kn15;
-  long kern_avenrun[3];
 
   if (!kernel_init) kernel_open();
 
