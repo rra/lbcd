@@ -1,7 +1,16 @@
-* If high load, deal with wraparound problem.
-* Get on_console code correct for IRIX
-* Ensure does not leek fds
-* Test mult services remotely
-* Torture test
+                             lbcd To-Do List
+
+* It's not clear whether protocol v3 is worth it, and it's definitely
+  unclear how service information is requested by the client and returned
+  as part of the v3 support.  Better documentation is needed here, if v3
+  ends up being worthwhile to keep.
+
+* The reported load numbers can wrap around at high loads.
+
+* The on_console code doesn't work properly on IRIX.
+
+* More testing is needed to make sure that file descriptors are not leaked
+  when doing service probes, that querying multiple services remotely
+  works corectly, and that the daemon works when pounded on.
+
 * Get -r -w load:incr to work in any order.
-* /etc/lbcd.down file?
