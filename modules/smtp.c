@@ -1,9 +1,10 @@
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <string.h>
 
 extern int tcp_connect (char *host, char *protocol, int port);
+extern int lbcd_check_reply(int sd, int timeout, char *token);
 
 int
 probe_sendmail(char *host)
@@ -14,23 +15,8 @@ probe_sendmail(char *host)
   if ((sd = tcp_connect(host ? host : "localhost","smtp",25)) == -1) {
     return -1;
   } else {
-    struct timeval tv = { 1, 0 };
-    fd_set rset;
-    char buf[4];
-    int i;
-
-    FD_ZERO(&rset);
-    FD_SET(sd,&rset);
-    if (select(sd+1, &rset, NULL, NULL, &tv) > 0) {
-      buf[sizeof(buf)-1] = '\0';
-      if (read(sd,buf,sizeof(buf)-1) > 0) {
-	if (strcmp(buf,"220") != 0) {
-	  retval = -1;
-	}
-      }
-    } else {
-      retval = -1;
-    }
+    retval = lbcd_check_reply(sd,5,"220");
+    write(sd,"quit\r\n",6);
     close(sd);
   }
 
