@@ -60,6 +60,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs NEWS
 	dh_installdocs TODO
+	dh_installinit
 	dh_installman
 	dh_link
 	dh_strip
