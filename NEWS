@@ -1,3 +1,8 @@
+3.2.0 August 2004
+	Added man page for lbcd and lbcdclient
+	Added Debian build rules and Makefile support
+	Changed default PID file to /var/run/lbcd.pid
+
 3.1.2 July 2003
         Added make dist target to the Makefile
 	Fixed va_end bug and setpgrp portability
