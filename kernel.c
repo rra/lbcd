@@ -1,5 +1,5 @@
 #include "config.h"
-#include "kernel.h"
+#include "lbcd.h"
 
 #ifdef ultrix
 #include "arch/ultrix.c"
@@ -29,7 +29,7 @@
 #include "arch/hpux.c"
 #endif
 
-#if defined(__irix__)
+#if defined(sgi)
 #include "arch/irix.c"
 #endif
 
