@@ -16,9 +16,6 @@
 #include <arpa/inet.h>
 #include "lbcd.h"
 
-extern char *sys_errlist[];
-extern int errno;
-
 /*
  * Prototypes
  */
@@ -59,10 +56,10 @@ main(int argc, char **argv)
       usage(0);
       break;
     case 'P': /* pid file */
-      pid_file=optarg;
+      pid_file = optarg;
       break;
     case 'R': /* round-robin */
-      round_robin=1;
+      round_robin = 1;
       break;
     case 'c': /* helper command -- must be full path to command */
       lbcd_helper = optarg;
@@ -72,7 +69,7 @@ main(int argc, char **argv)
       }
       break;
     case 'd': /* debugging mode */
-      debug=1;
+      debug = 1;
       break;
     case 'p': /* port number */
       port = atoi(optarg);
@@ -86,7 +83,7 @@ main(int argc, char **argv)
       exit(stop_lbcd(pid_file));
       break;
     case 't': /* test mode */
-      testmode=1;
+      testmode = 1;
       break;
     default:
       usage(1);
@@ -159,7 +156,7 @@ handle_requests(int port, const char *pid_file,
   /* Main loop */
   while(1) {
     cli_len = sizeof(cli_addr);
-    n=lbcd_recv_udp(s, &cli_addr, mesg, sizeof(mesg));
+    n = lbcd_recv_udp(s, &cli_addr, mesg, sizeof(mesg));
     if (n>0) {
       ph = (P_HEADER_PTR) mesg;
       switch (ph->op) {
@@ -182,9 +179,7 @@ handle_lb_request(int s,
 {
    P_LB_RESPONSE lbr;
    int cli_len = sizeof (struct sockaddr_in);
-
-   /* Fill in reply */
-   lbcd_pack_info(&lbr,rr);
+   int pkt_size;
 
    /* Fill in reply header */
    lbr.h.version = htons(ph->version);
@@ -192,10 +187,14 @@ handle_lb_request(int s,
    lbr.h.op      = htons(ph->op);
    lbr.h.status  = htons(status_ok);
 
+   /* Fill in reply */
+   lbcd_pack_info(&lbr,rr,ph);
+
    /* Send reply */
+   pkt_size = sizeof(lbr) + lbr.services * sizeof(LBCD_SERVICE);
    if (sendto(s,(const char *)&lbr, sizeof(lbr), 0,
 	      (const struct sockaddr *)cli_addr, cli_len)
-	      != sizeof(lbr)) {
+	      != pkt_size) {
      util_log_error("sendto: %%m");
    }
 }
@@ -221,6 +220,7 @@ lbcd_recv_udp(int s,
     util_log_error("short packet received, len %d",n);
     return 0;
   }
+
   ph = (P_HEADER_PTR) mesg;     
   ph->version = ntohs(ph->version);
   ph->id      = ntohs(ph->id);
@@ -229,6 +229,10 @@ lbcd_recv_udp(int s,
 
   switch(ph->version) {
   case 3: /* Client-supplied load protocol */
+    /* Extended services request: status > 0 */
+    if (ph->status > LBCD_MAX_SERVICES) {
+      ph->status = LBCD_MAX_SERVICES; /* trim query to max allowed */
+    }
     break;
   case 2: /* Original protocol */
     break;
