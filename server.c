@@ -57,11 +57,7 @@ void proto_pack_lb_info(P_LB_RESPONSE *lb)
   time(&ct);
   lb->current_time = htonl(ct);
 
-  if (z_flag) {			/* round robin */
-    l1 = l5 = l15 = 0;
-  } else {
-    kernel_getload(&l1,&l5,&l15);
-  }
+  kernel_getload(&l1,&l5,&l15);
   lb->l1 = htons((u_short)(l1*100));
   lb->l5 = htons((u_short)(l5*100));
   lb->l15 = htons((u_short)(l15*100));
@@ -95,8 +91,6 @@ int proto_send_status(int s,
 }
 
 #ifdef MAIN
-
-int z_flag = 0;
 
 int
 main(int argc, char *argv[])

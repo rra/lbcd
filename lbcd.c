@@ -14,14 +14,11 @@ void handle_lb_request(int s,P_HEADER_PTR ph,  int ph_len,
 void usage();
 void handle_requests();
 
-extern int z_flag;
-
 int d_flag = 0;
 int p_flag = 0;
 int r_flag = 0;
 int s_flag = 0;
 int l_flag = 0;
-int z_flag = 0;
 
 int err_flag = 0;
 
@@ -57,9 +54,6 @@ main(int argc, char **argv)
      case 's':
          s_flag=1;
          break;
-     case 'z':
-         z_flag=1;
-	 break;
      default:
          err_flag++;
      }
@@ -186,7 +180,6 @@ usage()
   fprintf(stderr,"   -p port     run using different port number\n");
   fprintf(stderr,"   -r          restart (kill current lbcd)\n");
   fprintf(stderr,"   -s          stop running lbcd\n");
-  fprintf(stderr,"   -z          always report zero load\n");
   fprintf(stderr,"   -P file     pid file\n");
   exit(1);
 }
