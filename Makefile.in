@@ -1,28 +1,37 @@
 # Makefile for lbcd
 # $Id$
 
-# Eventually, this should come from Autoconf.
-VERSION= 3.1.2
+srcdir		= @srcdir@
+VPATH		= @srcdir@
 
-CC     = @CC@
+@SET_MAKE@
 
-DEFS   = @DEFS@
-LIBS   = @LIBS@
-CFLAGS = @CFLAGS@
+CC		= @CC@
 
-srcdir = @srcdir@
-VPATH  = @srcdir@
+DEFS		= @DEFS@
+LIBS		= @LIBS@
+CFLAGS		= @CFLAGS@
 
-SHELL  = /bin/sh
+SHELL		= /bin/sh
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 bindir		= @bindir@
 sbindir		= @sbindir@
+mandir		= @mandir@
+man1dir		= $(mandir)/man1
+man8dir		= $(mandir)/man8
 
 INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
 INSTALL_SCRIPT	= @INSTALL_SCRIPT@
+
+PACKAGE		= @PACKAGE_TARNAME@
+VERSION		= @PACKAGE_VERSION@
+TARDIR		= $(PACKAGE)-$(VERSION)
+DEBNAME		= $(PACKAGE)_$(VERSION)
+TARNAME		= $(TARDIR).tar
 
 HDRS   = config.h lbcd.h lbcdload.h protocol.h
 
@@ -43,32 +52,50 @@ lbcd: $(OBJS) $(LIBRARY)
 $(LIBRARY):
 	cd modules && ${MAKE}
 
-install: lbcd
-	$(INSTALL) -d $(bindir) $(sbindir)
+lbcd.8: lbcd.pod configure.ac
+	pod2man --release=$(VERSION) --center="Maintenance Commands" \
+	    --section=8 lbcd.pod > $@
+
+lbcdclient.1: lbcdclient configure.ac
+	pod2man --release=$(VERSION) --center="User Commands" \
+	    --section=1 lbcdclient > $@
+
+install: lbcd lbcd.8 lbcdclient.1
+	$(INSTALL) -d $(bindir) $(sbindir) $(man1dir) $(man8dir)
 	$(INSTALL_PROGRAM) lbcd $(sbindir)/lbcd
 	$(INSTALL_SCRIPT) $(srcdir)/lbcdclient $(bindir)/lbcdclient
+	$(INSTALL_DATA) lbcd.8 $(man8dir)/lbcd.8
+	$(INSTALL_DATA) lbcdclient.1 $(man1dir)/lbcdclient.1
 
 clean:
 	-rm -f *.o core lbcd
-	cd modules && ${MAKE} $@
+	cd modules && $(MAKE) $@
 
 distclean: clean
 	-rm -f Makefile config.log config.status config.cache config.h
-	cd modules && ${MAKE} $@
+	cd modules && $(MAKE) $@
 
-dist:
-	mkdir lbcd-$(VERSION)
-	cp COPYRIGHT LAYOUT Makefile.in NEWS TODO acconfig.h config.h.in \
-	    configure configure.in get_user.c install-sh kernel.c lbcd.c \
-	    lbcd.h lbcdclient lbcdload.h load.c protocol.h server.c \
-	    tmp_full.c util.c version.h weight.c lbcd-$(VERSION)/
-	mkdir lbcd-$(VERSION)/arch
-	cp arch/*.c lbcd-$(VERSION)/arch/
-	mkdir lbcd-$(VERSION)/modules
-	cp modules/*.in modules/*.c modules/*.h lbcd-$(VERSION)/modules/
-	tar cf lbcd-$(VERSION).tar lbcd-$(VERSION)
-	gzip -9 lbcd-$(VERSION).tar
-	rm -rf lbcd-$(VERSION)
+maintclean: distlcean
+	-rm -f config.h.in configure $(TARNAME).gz $(TARNAME).gz.md5
+	-rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
+
+dist: lbcd.8 lbcdclient.1
+	rm -rf $(TARNAME).gz $(TARNAME).gz.md5 $(TARDIR)
+	mkdir $(TARDIR)
+	rsync -C -a ./ $(TARDIR)/
+	rsync -a lbcd.8 lbcdclient.1 $(TARDIR)/
+	cd $(TARDIR) && autoconf && autoheader && rm -rf autom4te.cache
+	tar cf $(TARNAME) $(TARDIR)
+	gzip -9 $(TARNAME)
+	md5sum $(TARNAME).gz > $(TARNAME).gz.md5
+
+# Prepare to make a Debian package.  This doesn't do the actual work of
+# creating the package; there are too many different flags we might want to
+# use.  It just copies things around so that the Debian packaging will work
+# properly.
+deb-prep: dist
+	rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
+	cp $(TARNAME).gz $(DEBNAME).orig.tar.gz
 
 # Dependencies.
 kernel.o: $(srcdir)/kernel.c \
