@@ -3,6 +3,11 @@
 
 #include "protocol.h"
 
+/* round robin flag */
+extern int z_flag;
+
+/* protocol.c */
+
 void proto_pack_lb_info(P_LB_RESPONSE *lb);
 int proto_recv_udp(int s, 
                    struct sockaddr_in *cli_addr, int * cli_len,
