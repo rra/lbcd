@@ -16,37 +16,37 @@ proto_recv_udp(int s,
   int n;
   P_HEADER_PTR ph;
 
-     n = recvfrom(s,mesg, max_mesg, 0, (struct sockaddr *)cli_addr,cli_len);
+  n = recvfrom(s,mesg, max_mesg, 0, (struct sockaddr *)cli_addr,cli_len);
 
-     if (n < 0) {
-            util_log_error("recvfrom: %%m");
-            exit(1);
-     }
+  if (n < 0) {
+    util_log_error("recvfrom: %%m");
+    exit(1);
+  }
 
-     if (n < sizeof(P_HEADER)) {
-           util_log_error("short packet received, len %d",n);
-           return 0;
-     }
-     ph = (P_HEADER_PTR) mesg;     
-     ph -> version = ntohs(ph -> version);
-     ph -> id      = ntohs(ph -> id);
-     ph -> op      = ntohs(ph -> op);
-     ph -> status  = ntohs(ph -> status);
+  if (n < sizeof(P_HEADER)) {
+    util_log_error("short packet received, len %d",n);
+    return 0;
+  }
+  ph = (P_HEADER_PTR) mesg;     
+  ph -> version = ntohs(ph -> version);
+  ph -> id      = ntohs(ph -> id);
+  ph -> op      = ntohs(ph -> op);
+  ph -> status  = ntohs(ph -> status);
 
-     if (ph -> version != PROTO_VERSION) {
-         util_log_error("protocol version mismatch got %d, want %d",
-                            ph->version, PROTO_VERSION);
-         proto_send_status(s, cli_addr, *cli_len,ph,status_proto_version);
-         return 0;
-     }
+  if (ph -> version != PROTO_VERSION) {
+    util_log_error("protocol version mismatch got %d, want %d",
+		   ph->version, PROTO_VERSION);
+    proto_send_status(s, cli_addr, *cli_len,ph,status_proto_version);
+    return 0;
+  }
 
-     if (ph -> status != status_request) {
-         util_log_error("expecting request, got %d",ph->status);
-         proto_send_status(s, cli_addr, *cli_len,ph,status_proto_error);
-         return 0;
-     }
+  if (ph -> status != status_request) {
+    util_log_error("expecting request, got %d",ph->status);
+    proto_send_status(s, cli_addr, *cli_len,ph,status_proto_error);
+    return 0;
+  }
   
-     return n;     
+  return n;     
 }
 
 void
@@ -89,18 +89,18 @@ proto_send_status(int s,
 		  P_HEADER *request_header,
 		  p_status_t pstat)
 {
-   P_HEADER header;
-   header.version= htons(PROTO_VERSION);
-   header.id     = htons(request_header->id);
-   header.op     = htons(request_header->op);
-   header.status = htons(pstat);
+  P_HEADER header;
+  header.version= htons(PROTO_VERSION);
+  header.id     = htons(request_header->id);
+  header.op     = htons(request_header->op);
+  header.status = htons(pstat);
 
-   if (sendto(s,(char *)&header,sizeof(header),0,
-          (struct sockaddr *)cli_addr,cli_len)!=sizeof(header)) {
+  if (sendto(s,(char *)&header,sizeof(header),0,
+	     (struct sockaddr *)cli_addr,cli_len)!=sizeof(header)) {
     util_log_error("sendto: %%m");
     return -1;
-   }
-   return 0;
+  }
+  return 0;
 }
 
 #ifdef MAIN
