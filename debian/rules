@@ -59,7 +59,7 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs NEWS
-	dh_installdocs TODO
+	dh_installdocs README TODO
 	dh_installinit
 	dh_installman
 	dh_link
