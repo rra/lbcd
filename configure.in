@@ -50,6 +50,7 @@ dnl
 dnl FUNCTIONS
 dnl
 AC_CHECK_FUNCS(hsearch getutent)
+AC_FUNC_ALLOCA
 
 dnl ------------------------------------------------------------
 dnl
