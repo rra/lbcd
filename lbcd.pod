@@ -21,9 +21,9 @@ three.  (Currently, B<lbnamed> only supports version two queries.)  Either
 will return the current time according to that system, the time of the
 last system boot, the time the information about logged in users last
 changed, the load averages (one, five, and fifteen minute), the total and
-unique logged in users, whether a user is logged in on console, whether
-the system F</tmp> directory is full, and the percentage full of the
-system F</tmp> directory.  The version three protocol can also return
+unique logged in users, whether a user is logged in on console, percentage
+full of the system F</tmp> directory is full, and percentage full of the
+system F</var/tmp> directory.  The version three protocol can also return
 weight and increment information about a set of services.
 
 The service information is based around a model that returns a weight
