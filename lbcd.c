@@ -1,30 +1,39 @@
+/*
+ * lbcd client main
+ */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-#include "protocol.h"
-
+#endif
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <signal.h>
-
 #include <errno.h>
+#include "protocol.h"
+#include "lbcd.h"
+#include "util.h"
+
 extern char *sys_errlist[];
 extern int errno;
 
+static void handle_lb_request(int s,P_HEADER_PTR ph,  int ph_len,
+			      struct sockaddr_in *cli_addr, int cli_len,
+			      int rr);
+static void usage(void);
+static void handle_requests(void);
 
-void handle_lb_request(int s,P_HEADER_PTR ph,  int ph_len,
-                     struct sockaddr_in *cli_addr, int cli_len);
-void usage();
-void handle_requests();
-
-int d_flag = 0;
-int p_flag = 0;
-int r_flag = 0;
-int s_flag = 0;
-int l_flag = 0;
-
-int err_flag = 0;
-
-char *pid_flag;
-
-char *pid_file=PID_FILE;
+static int d_flag = 0;
+static int p_flag = 0;
+static int r_flag = 0;
+static int s_flag = 0;
+static int l_flag = 0;
+static int R_flag = 0;
+static int t_flag = 0;
+static int err_flag = 0;
+static char *pid_flag;
+static char *pid_file = PID_FILE;
+static char *lbcd_helper = (char *)0;
 
 int
 main(int argc, char **argv)
@@ -34,35 +43,47 @@ main(int argc, char **argv)
    extern char *optarg;
    int pid;
  
-   while ((c = getopt(argc, argv, "P:dlp:rsz")) != EOF) 
+   while ((c = getopt(argc, argv, "P:Rc:dlp:rstz")) != EOF) 
      switch (c) {
-     case 'P':
+     case 'P': /* pid file */
          pid_file=optarg;
          break;
-     case 'd':
+     case 'R': /* round-robin */
+         R_flag=1;
+	 break;
+     case 'c': /* helper command -- must be full path to command */
+         lbcd_helper = optarg;
+	 if (access(lbcd_helper,X_OK) != 0) {
+	   fprintf(stderr,"optarg: no such program\n");
+	   exit(1);
+	 }
+         break;
+     case 'd': /* debugging mode */
          d_flag=1;
          break;
      case 'l':
          l_flag=1;
          break;
-     case 'p':
+     case 'p': /* port number */
          p_flag = atoi(optarg);
          break;
-     case 'r':
+     case 'r': /* restart */
          r_flag=1;
          break;
-     case 's':
+     case 's': /* stop */
          s_flag=1;
+         break;
+     case 't': /* test mode */
+         t_flag=1;
          break;
      default:
          err_flag++;
      }
 
-  if (err_flag) (void)usage();
+  if (err_flag)
+    usage();
 
   if (!p_flag) p_flag = PROTO_PORTNUM;
-
-
 
   if (s_flag) {
      pid = util_get_pid_from_file(pid_file);
@@ -80,7 +101,6 @@ main(int argc, char **argv)
   if (!d_flag) util_start_daemon();
 
   handle_requests();
-
 }
 
 void
@@ -140,7 +160,7 @@ handle_requests()
          ph = (P_HEADER_PTR) mesg;
          switch (ph->op) {
          case op_lb_info_req: 
-            handle_lb_request(s,ph,n,&cli_addr,cli_len);
+            handle_lb_request(s,ph,n,&cli_addr,cli_len,R_flag);
             break;
 	 default:
             proto_send_status(s, &cli_addr, cli_len,ph,status_unknown_op);
@@ -153,7 +173,8 @@ handle_requests()
 
 void
 handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
-		  struct sockaddr_in *cli_addr, int cli_len)
+		  struct sockaddr_in *cli_addr, int cli_len,
+		  int rr)
 {
    P_LB_RESPONSE lbr;
 
@@ -162,7 +183,7 @@ handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
    lbr.h.op      = htons(ph->op);
    lbr.h.status  = htons(status_ok);
 
-   proto_pack_lb_info( &lbr);
+   proto_pack_lb_info(&lbr,rr);
 
    if (sendto(s,(const char *)&lbr,sizeof(lbr),
                 0,(const struct sockaddr *)cli_addr,cli_len)!=sizeof(lbr)) {
@@ -172,14 +193,17 @@ handle_lb_request(int s,P_HEADER_PTR ph, int ph_len,
 }
 
 void
-usage()
+usage(void)
 {
   fprintf(stderr,"Usage:   %s [options] [-d] [-p port]\n",PROGNAME);
+  fprintf(stderr,"   -c cmd      run cmd (full path) to obtain load values\n");
   fprintf(stderr,"   -d          debug mode, don't fork off\n");
   fprintf(stderr,"   -l          log various requests\n");
   fprintf(stderr,"   -p port     run using different port number\n");
   fprintf(stderr,"   -r          restart (kill current lbcd)\n");
+  fprintf(stderr,"   -R          round-robin polling\n");
   fprintf(stderr,"   -s          stop running lbcd\n");
+  fprintf(stderr,"   -t          test mode (print stats and exit)\n");
   fprintf(stderr,"   -P file     pid file\n");
   exit(1);
 }
