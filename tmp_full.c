@@ -30,22 +30,13 @@
 #endif
 #endif
 
-#ifndef TMP_DIR
-/* P_tmpdir is "standard" but the important user programs seem to
- * use /tmp.  A later version of the protocol should probably hand
- * back values for both directories, but for now, we'll default
- * to /tmp.
- */
-#define TMP_DIR "/tmp"
-#endif
-
 int
-tmp_full(void)
+tmp_full(const char *path)
 {
   int percent = 0;
 
 #if defined(HAVE_SYS_STATVFS_H) || defined(HAVE_SYS_VFS_H)
-  if (chdir(TMP_DIR) == 0) {
+  if (chdir(path) == 0) {
 #ifdef HAVE_SYS_STATVFS_H
   struct statvfs tmp;
 #elif HAVE_SYS_VFS_H
@@ -78,7 +69,10 @@ tmp_full(void)
 int
 main(char argc, char **argv)
 {
-  printf("%%%d percent full.\n",tmp_full());
+  printf("%%%d percent tmp full.\n",tmp_full("/tmp"));
+#ifdef P_tmpdir
+  printf("%%%d percent P_tmpdir full.\n",tmp_full(P_tmpdir));
+#endif
   return 0;
 }
 #endif
