@@ -84,34 +84,49 @@ lbcd_pack_info(P_LB_RESPONSE *lb, int round_robin)
   int tu,uu,oc;
   time_t umtime;
 
+  /*
+   * Timestamps
+   */
   kernel_getboottime(&bt);
   lb->boot_time = htonl(bt);
 
   time(&ct);
   lb->current_time = htonl(ct);
 
-  /**/
-#if 0
-  if (round_robin && lb->h->version < 3) {
+  lb->user_mtime = htonl(umtime);
 
-  } else {
-#endif
+  /*
+   * Load
+   */
   kernel_getload(&l1,&l5,&l15);
-
   lb->l1 = htons((u_short)(l1*100));
   lb->l5 = htons((u_short)(l5*100));
   lb->l15 = htons((u_short)(l15*100));
 
   get_user_stats(&tu,&uu,&oc,&umtime);
 
-  lb->tot_users = htons(tu);  
+  lb->tot_users = htons(tu);
   lb->uniq_users = htons(uu);
   lb->on_console = oc;
-#if 0
+
+  /* Client-Computed load for Version 2 lbnamed
+   *
+   * Version 2 of the protocol had no mechanism for client-computed
+   * load.  To work around this problem, we just lie to the version 2
+   * server such that the weight lbnamed will compute will be the
+   * weight we desire.  Note that we have no control over the
+   * increment for version 2 lbnamed -- that value is hard-coded.
+   */
+  if (round_robin && lb->h.version < 3) {
+    lb->l1 = 100;
+    lb->tot_users = 0;
+    lb->uniq_users = 0;
+    lb->on_console = 0;
   }
-#endif
-  /**/
-  lb->user_mtime = htonl(umtime);
+
+  /*
+   * Additional Fields
+   */
   lb->reserved = 0;
   lb->tmp_full = tmp_full("/tmp");
 #ifdef P_tmpdir
