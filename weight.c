@@ -53,6 +53,7 @@ lbcd_func_tab_t service_table[] = {
  * Module globals
  */
 static char *lbcd_command;
+static char *lbcd_service;
 static u_int default_weight;
 static u_int default_increment;
 static lbcd_func_tab_t* lbcd_default_functab;
@@ -62,6 +63,7 @@ int
 lbcd_weight_init(char *cmd, char *service, int timeout)
 {
   lbcd_command = cmd;
+  lbcd_service = service;
   lbcd_timeout = timeout;
 
   /* Round robin with default specified */
@@ -111,8 +113,18 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, char *service)
     functab->function(lb,weight_ptr,incr_ptr);
     break;
   case LBCD_ARGPORT:
-    functab->function(weight_ptr,incr_ptr,lbcd_timeout,service);
-    break;
+    {
+      char *cp;
+
+      /* Obtain port name/number from service */
+      cp = !strcmp(service,"default") ? lbcd_service : service;
+      cp = strchr(cp, ':');
+      if (cp) cp++;
+
+      /* Call module */
+      functab->function(weight_ptr,incr_ptr,lbcd_timeout,cp);
+      break;
+    }
   }
 }
 
@@ -155,8 +167,9 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
       char buf[128];
 
       close(fd[1]);
-      if ((fp = fdopen(fd[0],"r")) == NULL)
+      if ((fp = fdopen(fd[0],"r")) == NULL) {
 	return lbcd_unknown_weight(weight_val,incr_val);
+      }
       while(waitpid(child,&stat_loc,lbcd_timeout) < 0) {
 	if (errno != EINTR) {
 	  fclose(fp);
@@ -180,7 +193,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
       if (fgets(buf,sizeof(buf),fp) != NULL) {
 	fclose(fp);
 
-	if (sscanf(buf,"%ud%ud",weight_val,incr_val) != 2)
+	if (sscanf(buf,"%d%d",weight_val,incr_val) != 2)
 	  return lbcd_unknown_weight(weight_val,incr_val);
       } else {
 	fclose(fp);
