@@ -5,8 +5,8 @@
 #include "arch/ultrix.c"
 #endif
 
-#if defined(sparc)
-#if defined(__svr4__)
+#if defined(sun)
+#if defined(__SVR4)
 #include "arch/solaris.c"
 #else
 #include "arch/sunos.c"
