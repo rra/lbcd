@@ -1,0 +1,78 @@
+#
+# Configured Options
+#
+
+CC       = @CC@
+CFLAGS   = @CFLAGS@
+DEFS     = @DEFS@
+LIBS     = @LIBS@
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/..
+
+AR        = ar
+ARFLAGS   = rv
+RANLIB    = ranlib
+
+srcdir    = @srcdir@
+VPATH     = @srcdir@
+
+#
+# Standard Definitions
+#
+
+SHELL   = /bin/sh
+
+
+
+SRCS    = \
+	check_reply.c tcp_socket.c udp_socket.c tcp.c \
+	ftp.c \
+	http.c \
+	imap.c \
+	ldap.c \
+	nntp.c \
+	ntp.c monlist.c \
+	pop.c \
+	smtp.c
+
+OBJS    = $(SRCS:.c=.o)
+
+LIBRARY = liblbcd.a
+
+#
+# Makefile Section
+#
+
+# Rule for generating a .o file from a .c file
+.c.o: $(srcdir)/$*.c $(srcdir)/lbcd.h
+	$(CC) $(DEFS) $(CFLAGS) $(INCLUDES) -c $(srcdir)/$*.c -o $@
+
+all: $(LIBRARY)
+
+$(LIBRARY): $(SRCS) $(OBJS)
+	rm -f $@
+	$(AR) $(ARFLAGS) $@ $(OBJS)
+	- $(RANLIB) $@
+	@/bin/ls -l $@
+
+# Empty target for generating test drivers
+.c: $(LIBRARY)
+	$(CC) -DMAIN $(DEFS) $(CFLAGS) $(INCLUDES) -o $@\
+            $< $(LDFLAGS) $(LIBRARY) $(LIBS)
+
+#
+# Maintenance Section
+#
+Makefile: Makefile.in ../config.status
+	cd .. &&\
+	CONFIG_FILES=lib/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+clean:
+	rm -f *.o core liblbcd.a
+
+distclean: clean
+	rm -f Makefile .depend *~ *#
+
+#
+# Dependencies
+#
+monlist.o: monlist.h

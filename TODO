@@ -1,0 +1,2 @@
+* If high load, deal with wraparound problem.
+* have lbcd -r -P file work correctly.
