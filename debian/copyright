@@ -2,8 +2,10 @@ lbcd was originally written by Roland Schemers and was significantly
 updated by Larry Schwimmer.
 
 The current maintainer is Russ Allbery <rra@stanford.edu>, who also
-maintains the Debian package.  There is currently no distribution point
-for the upstream source.
+maintains the Debian package.  The original source of this package may be
+downloaded from:
+
+    <http://www.eyrie.org/~eagle/software/lbcd/>
 
 Copyright:
 
