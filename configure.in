@@ -6,13 +6,13 @@ dnl PROLOG
 dnl
 AC_INIT(lbcd.c)
 AC_CONFIG_HEADER(config.h)
-AC_PREREQ(2.10)
+AC_PREREQ(2.12)
 
 dnl ------------------------------------------------------------
 dnl
 dnl Setup Defaults
 dnl
-test -z "$CFLAGS" && CFLAGS=-O AC_SUBST(CFLAGS)
+test -z "$CFLAGS" && CFLAGS='-Wall -O2' AC_SUBST(CFLAGS)
 
 dnl ------------------------------------------------------------
 dnl
@@ -55,4 +55,4 @@ dnl ------------------------------------------------------------
 dnl
 dnl OUTPUT
 dnl
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile modules/Makefile)
