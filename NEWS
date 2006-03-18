@@ -1,5 +1,14 @@
                         User-Visible lbcd Changes
 
+lbcd 3.2.4 (2006-03-17)
+
+    Document lbcd's behavior on hosts with multiple addresses and the use
+    of -b and running multiple instances of lbcd to ensure that replies
+    go out from the right source address.  Unfortunately, the design of
+    the Unix UDP API makes it more difficult than it's worth to try to
+    reply to incoming packets with the source address of the interface on
+    which they were received.
+
 lbcd 3.2.3 (2005-02-24)
 
     Added the -b option to lbcd to bind to only the specified address

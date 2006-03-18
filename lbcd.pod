@@ -48,6 +48,17 @@ disclose the above information to random systems on the Internet, you will
 want to limit access to this port using iptables, firewall rules, or other
 similar measures.
 
+By default, B<lbcd> listens on all addresses and responds on whatever
+address the kernel picks for outgoing packets.  B<lbnamed> sends out all
+of its packets and then waits for replies and uses the source address of
+the reply packet to associate that reply with one of the queried hosts.
+This means that if B<lbnamed> is not configured to query the same address
+as the kernel picks for B<lbcd> to respond on, the response may be ignored
+and the host considered down.  To work around this, use the B<-b> flag on
+hosts with multiple interfaces to ensure that replies go out on the
+interface being queried.  If a host has multiple IP addresses that will be
+queried, run multiple instances of B<lbcd>, one for each interface.
+
 =head1 OPTIONS
 
 =over 4
