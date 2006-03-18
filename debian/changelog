@@ -2,6 +2,8 @@ lbcd (3.2.4-1) unstable; urgency=low
 
   * New upstream release.
     - Document behavior on systems with multiple interfaces.
+  * Update to standards version 3.6.2 (no changes required).
+  * Update maintainer address.
 
  --
 

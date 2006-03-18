@@ -1,9 +1,9 @@
 Source: lbcd
 Section: net
 Priority: optional
-Maintainer: Russ Allbery <rra@stanford.edu>
+Maintainer: Russ Allbery <rra@debian.org>
 Build-Depends: debhelper (>= 4.0.0)
-Standards-Version: 3.6.1
+Standards-Version: 3.6.2
 
 Package: lbcd
 Architecture: any
