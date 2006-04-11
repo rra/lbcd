@@ -1,5 +1,10 @@
                         User-Visible lbcd Changes
 
+lbcd 3.2.5 (2006-04-10)
+
+    Fixed a misuse of the third argument to waitpid that was causing use
+    of a command to generate weights to fail on some platforms.
+
 lbcd 3.2.4 (2006-03-17)
 
     Document lbcd's behavior on hosts with multiple addresses and the use

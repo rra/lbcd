@@ -170,7 +170,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
       if ((fp = fdopen(fd[0],"r")) == NULL) {
 	return lbcd_unknown_weight(weight_val,incr_val);
       }
-      while(waitpid(child,&stat_loc,lbcd_timeout) < 0) {
+      while(waitpid(child,&stat_loc,0) < 0) {
 	if (errno != EINTR) {
 	  fclose(fp);
 	  if (kill(SIGTERM,child) == -1)
