@@ -1,3 +1,11 @@
+lbcd (3.2.5-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fix a bug in using external commands to generate weights.
+  * Add a watch file.
+
+ -- Russ Allbery <rra@debian.org>  Mon, 10 Apr 2006 20:51:34 -0700
+
 lbcd (3.2.4-1) unstable; urgency=low
 
   * New upstream release.
