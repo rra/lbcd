@@ -51,11 +51,11 @@ lbcd: $(OBJS) $(LIBRARY)
 $(LIBRARY):
 	cd modules && ${MAKE}
 
-lbcd.8: lbcd.pod configure.ac
+$(srcdir)/lbcd.8: lbcd.pod configure.ac
 	pod2man --release=$(VERSION) --center="Maintenance Commands" \
 	    --section=8 $(srcdir)/lbcd.pod > $@
 
-lbcdclient.1: lbcdclient configure.ac
+$(srcdir)/lbcdclient.1: lbcdclient configure.ac
 	pod2man --release=$(VERSION) --center="User Commands" \
 	    --section=1 $(srcdir)/lbcdclient > $@
 
@@ -63,8 +63,8 @@ install: lbcd lbcd.8 lbcdclient.1
 	$(INSTALL) -d $(bindir) $(sbindir) $(man1dir) $(man8dir)
 	$(INSTALL_PROGRAM) lbcd $(sbindir)/lbcd
 	$(INSTALL_SCRIPT) $(srcdir)/lbcdclient $(bindir)/lbcdclient
-	$(INSTALL_DATA) lbcd.8 $(man8dir)/lbcd.8
-	$(INSTALL_DATA) lbcdclient.1 $(man1dir)/lbcdclient.1
+	$(INSTALL_DATA) $(srcdir)/lbcd.8 $(man8dir)/lbcd.8
+	$(INSTALL_DATA) $(srcdir)/lbcdclient.1 $(man1dir)/lbcdclient.1
 
 clean:
 	-rm -f *.o core lbcd
@@ -80,11 +80,11 @@ maintclean: distclean
 	-rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
 	-rm -rf $(TARDIR)
 
-dist: lbcd.8 lbcdclient.1
+dist: $(srcdir)/lbcd.8 $(srcdir)/lbcdclient.1
 	rm -rf $(TARNAME).gz $(TARNAME).gz.md5 $(TARDIR)
 	mkdir $(TARDIR)
-	rsync -C --exclude /debian/ -a ./ $(TARDIR)/
-	rsync -a lbcd.8 lbcdclient.1 $(TARDIR)/
+	rsync -C --exclude /debian/ -a $(srcdir)/ $(TARDIR)/
+	rsync -a $(srcdir)/lbcd.8 $(srcdir)/lbcdclient.1 $(TARDIR)/
 	cd $(TARDIR) && autoconf && autoheader && rm -rf autom4te.cache
 	tar cf $(TARNAME) $(TARDIR)
 	gzip -9 $(TARNAME)
