@@ -5,7 +5,7 @@ lbcd - Report system load for remote load balancing
 =head1 SYNOPSIS
 
 lbcd [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
-[B<-p> I<port>] [B<-T> I<seconds>] [B<-w> I<weight>]
+[B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
 
 lbcd B<-s> [B<-P> I<file>]
 
