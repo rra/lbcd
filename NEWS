@@ -1,5 +1,11 @@
                         User-Visible lbcd Changes
 
+lbcd 3.2.6 (2006-05-16)
+
+    When building from a different build directory than the source
+    directory, the makefile built and looked for the man pages in the
+    wrong path.  Look for and build man pages in the source directory.
+
 lbcd 3.2.5 (2006-04-10)
 
     Fixed a misuse of the third argument to waitpid that was causing use

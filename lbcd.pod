@@ -167,8 +167,8 @@ maintained by Russ Allbery <rra@stanford.edu>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005 Board of
-Trustees, Leland Stanford Jr.  University.
+Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006 Board
+of Trustees, Leland Stanford Jr.  University.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
