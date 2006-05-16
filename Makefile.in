@@ -40,7 +40,7 @@ SRCS   = lbcd.c server.c util.c \
 OBJS   = $(SRCS:.c=.o)
 LIBRARY= modules/liblbcd.a
 
-all: lbcd
+all: lbcd $(srcdir)/lbcd.8 $(srcdir)/lbcdclient.1
 
 .c.o: $(HDRS) $*.c
 	$(CC) -c -I. -I$(srcdir) $(DEFS) $(CFLAGS) $<
@@ -59,7 +59,7 @@ $(srcdir)/lbcdclient.1: lbcdclient configure.ac
 	pod2man --release=$(VERSION) --center="User Commands" \
 	    --section=1 $(srcdir)/lbcdclient > $@
 
-install: lbcd lbcd.8 lbcdclient.1
+install: lbcd $(srcdir)/lbcd.8 $(srcdir)/lbcdclient.1
 	$(INSTALL) -d $(bindir) $(sbindir) $(man1dir) $(man8dir)
 	$(INSTALL_PROGRAM) lbcd $(sbindir)/lbcd
 	$(INSTALL_SCRIPT) $(srcdir)/lbcdclient $(bindir)/lbcdclient
