@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Mostly we want to use the debhelper default.  However, older versions of
+# lbcd didn't ignore failures to stop lbcd in the init script, meaning that if
+# shishid wasn't running, the prerm would fail and the package couldn't be
+# upgraded.  Provide a failure handler that honors failure here and one that
+# ignores failure in the prerm script.  dh_installinit is then told to call
+# these functions instead of its exit $? default using the --error-handler
+# option.
+
+maybe_ignore_failure () {
+    exit $?
+}
+
+#DEBHELPER#
