@@ -13,14 +13,14 @@ DAEMON=/usr/sbin/lbcd
 NAME=lbcd
 DESC=lbcd
 
+set -e
+
 test -x $DAEMON || exit 0
 
 # Include lbcd defaults if available.
 if [ -f /etc/default/lbcd ] ; then
     . /etc/default/lbcd
 fi
-
-set -e
 
 case "$1" in
 start)
@@ -37,7 +37,7 @@ start)
 stop)
     echo -n "Stopping $DESC: "
     start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
-        --exec $DAEMON
+        --oknodo --exec $DAEMON
     echo "$NAME."
     ;;
 reload)
@@ -45,7 +45,7 @@ reload)
 restart|force-reload)
     echo -n "Restarting $DESC: "
     start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
-        --exec $DAEMON
+        --oknodo --exec $DAEMON
     sleep 1
     start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
         --exec $DAEMON -- $DAEMON_OPTS
