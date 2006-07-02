@@ -168,6 +168,8 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
 
       close(fd[1]);
       if ((fp = fdopen(fd[0],"r")) == NULL) {
+	kill(SIGTERM,child);
+	waitpid(child,NULL,0);
 	return lbcd_unknown_weight(weight_val,incr_val);
       }
       while(waitpid(child,&stat_loc,0) < 0) {
@@ -175,6 +177,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
 	  fclose(fp);
 	  if (kill(SIGTERM,child) == -1)
 	    kill(SIGKILL,child);
+	  waitpid(child,NULL,0);
 	  return lbcd_unknown_weight(weight_val,incr_val);
 	}
       }
