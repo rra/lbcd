@@ -23,8 +23,10 @@ last system boot, the time the information about logged in users last
 changed, the load averages (one, five, and fifteen minute), the total and
 unique logged in users, whether a user is logged in on console, percentage
 full of the system F</tmp> directory is full, and percentage full of the
-system F</var/tmp> directory.  The version three protocol can also return
-weight and increment information about a set of services.
+system F</var/tmp> directory.  (See, however, the note below about how
+some of this data is replaced with calculated weights for version two
+responses.)  The version three protocol can also return weight and
+increment information about a set of services.
 
 The service information is based around a model that returns a weight
 (indicating the current utilization of the box -- the higher, the busier)
@@ -34,13 +36,27 @@ one.  The intent is for the load balancer to query the system
 periodically, using the returned weight as the system load, and to
 estimate the system load between queries of B<lbcd> as the last returned
 weight plus the last returned increment times the number of connections
-directed to that system.  By default, only one service is returned (one
-minute load).
+directed to that system.  By default, only one service is returned.  That
+service weight is calculated as follows:
+
+    (<uniq-users> * 100 + 300 * <one-minute-load>
+        + (<total-users> - <unique-users>) * 20) * <tmp-penalty>
+
+where <tmp-penalty> is a multiplier applied for the most full of F</tmp>
+and F</var/tmp> ranging between 2 for 90-93% full up to 32 for 100% full.
+If F</tmp> or F</var/tmp> are completely full, the maximum possible weight
+will be returned.  If you want to use a simple load average instead, pass
+the B<-S> option to B<lbcd> and then the load service will use only the
+one-minute load.
 
 Since B<lbnamed> calculates the weight from the one minute load and the
 number of logged-in users and currently only supports version two, B<lbcd>
 will replace the one-minute load with the weight of the primary service
-when responding to a version two query.
+when responding to a version two query and will set all of the user
+numbers to zero unless B<-S> was given.  If B<-S> was given, the values
+returned will be left alone.  (This means that B<-S> will override B<-R>
+for version two queries, since B<-R> is equivalent to specifying a service
+of rr.)
 
 B<lbcd> responds to any UDP packets on port 4330 (or the port given with
 the B<-p> option).  It has no built-in security, so if you do not want to
@@ -105,15 +121,24 @@ Listen on I<port> rather than the default of 4330.
 =item B<-R>
 
 Use round-robin as the service.  This will always return a weight of one
-and an increment of one.  For version two responses, it will always return
-a one-minute load of one regardless of the actual load average of the
-system.
+and an increment of one.  It is equivalent to B<-w rr>.  For version two
+responses, it will always return a one-minute load of one regardless of
+the actual load average of the system (unless B<-S> is used).
 
 =item B<-r>
 
 Restart a running B<lbcd> process.  This stops the existing B<lbcd>
 process by killing the PID named in F</var/run/lbcd.pid> or the file given
 with the B<-P> option and then starts as the new B<lbcd> process.
+
+=item B<-S>
+
+When answering version two queries, do not attempt to adjust for
+B<lbnamed>'s logic and force it to use the service weight.  Instead,
+report the load averages and number of logged in users accurately.  This
+means that version two responses will not contain any information derived
+from custom services or weight settings and the B<-c>, B<-w>, and B<-R>
+options will be ignored for version two repsonses.
 
 =item B<-s>
 

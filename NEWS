@@ -1,5 +1,16 @@
                         User-Visible lbcd Changes
 
+lbcd 3.3.0 (2006-10-06)
+
+    Add the -S option, which says to return load and user information
+    unmolested when replying to version two queries rather than setting
+    all of the loads to the calculated weight of the first service and
+    zeroing the user information.
+
+    Add considerably better documentation on what weight the default load
+    service calculates, including its various adjustments based on the
+    number of logged-in users.
+
 lbcd 3.2.6 (2006-05-16)
 
     When building from a different build directory than the source

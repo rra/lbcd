@@ -79,7 +79,7 @@ lbcd_proto2_convert(P_LB_RESPONSE *lb)
 }
 
 void
-lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
+lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple)
 {
   double l1,l5,l15;
   time_t bt,ct;
@@ -125,7 +125,7 @@ lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
   /*
    * Backward compatibility
    */
-  if (ph->h.version < 3) {
+  if (!simple && ph->h.version < 3) {
     lbcd_proto2_convert(lb);
   }
 }
@@ -162,7 +162,7 @@ lbcd_test(int argc, char *argv[])
   }
 
   /* Fill reply */
-  lbcd_pack_info(&lb,&ph);
+  lbcd_pack_info(&lb,&ph,0);
 
   /* Print results */
   printf("PROTOCOL %d\n",lb.h.version);

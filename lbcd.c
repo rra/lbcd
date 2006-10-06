@@ -28,12 +28,14 @@ static void version(void);
 static void handle_requests(int port,
 			    const char *pid_file,
 			    const char *lbcd_helper,
-                            struct in_addr *bind_address);
+			    struct in_addr *bind_address,
+			    int simple);
 static void handle_lb_request(int s,
 			      P_HEADER_FULLPTR ph,
 			      int ph_len,
 			      struct sockaddr_in *cli_addr,
-			      int cli_len);
+			      int cli_len,
+			      int simple);
 static int lbcd_recv_udp(int s, struct sockaddr_in *cli_addr,
 			 int cli_len, char *mesg, int max_mesg);
 static int lbcd_send_status(int s, struct sockaddr_in *cli_addr,
@@ -48,6 +50,7 @@ main(int argc, char **argv)
   int port = LBCD_PORTNUM;
   int testmode = 0;
   int restart = 0;
+  int simple = 0;
   char *pid_file = PID_FILE;
   char *lbcd_helper = (char *)0;
   char *service_weight = (char *)0;
@@ -70,7 +73,7 @@ main(int argc, char **argv)
 
   opterr = 1;
   bind_address.s_addr = htonl(INADDR_ANY);
-  while ((c = getopt(argc, argv, "P:Rb:c:dhlp:rstT:w:")) != EOF) {
+  while ((c = getopt(argc, argv, "P:Rb:c:dhlp:rSstT:w:")) != EOF) {
     switch (c) {
     case 'h': /* usage */
       usage(0);
@@ -105,6 +108,9 @@ main(int argc, char **argv)
       break;
     case 'r': /* restart */
       restart = 1;
+      break;
+    case 'S': /* simple, no version two adjustments */
+      simple = 1;
       break;
     case 's': /* stop */
       exit(stop_lbcd(pid_file));
@@ -150,7 +156,7 @@ main(int argc, char **argv)
     util_start_daemon();
 
   /* Become a daemon.  handle_requests never returns */
-  handle_requests(port,pid_file,lbcd_helper,&bind_address);
+  handle_requests(port,pid_file,lbcd_helper,&bind_address,simple);
   return 0;
 }
 
@@ -171,8 +177,8 @@ stop_lbcd(const char *pid_file)
 }
 
 void
-handle_requests(int port, const char *pid_file,
-		const char *lbcd_helper, struct in_addr *bind_address)
+handle_requests(int port, const char *pid_file, const char *lbcd_helper,
+		struct in_addr *bind_address, int simple)
 {
    int s;
    struct sockaddr_in serv_addr, cli_addr;
@@ -212,7 +218,7 @@ handle_requests(int port, const char *pid_file,
       ph = (P_HEADER_FULLPTR) mesg;
       switch (ph->h.op) {
       case op_lb_info_req: 
-	handle_lb_request(s,ph,n,&cli_addr,cli_len);
+	handle_lb_request(s,ph,n,&cli_addr,cli_len,simple);
 	break;
       default:
 	lbcd_send_status(s,&cli_addr,cli_len,&ph->h,status_unknown_op);
@@ -223,9 +229,8 @@ handle_requests(int port, const char *pid_file,
 }
 
 void
-handle_lb_request(int s,
-		  P_HEADER_FULLPTR ph, int ph_len,
-		  struct sockaddr_in *cli_addr, int cli_len)
+handle_lb_request(int s, P_HEADER_FULLPTR ph, int ph_len,
+		  struct sockaddr_in *cli_addr, int cli_len, int simple)
 {
    P_LB_RESPONSE lbr;
    int pkt_size;
@@ -237,7 +242,7 @@ handle_lb_request(int s,
    lbr.h.status  = htons(status_ok);
 
    /* Fill in reply */
-   lbcd_pack_info(&lbr,ph);
+   lbcd_pack_info(&lbr,ph,simple);
 
    /* Compute reply size (maximum packet minus unused service slots) */
    pkt_size = sizeof(lbr) -

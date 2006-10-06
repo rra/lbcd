@@ -44,7 +44,7 @@ extern int get_user_stats(int *total, int *unique,
 extern int tmp_full(char *path);
 
 /* server.c */
-extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph);
+extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* util.c */
