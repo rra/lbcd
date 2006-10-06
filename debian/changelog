@@ -1,3 +1,12 @@
+lbcd (3.3.0-1) unstable; urgency=low
+
+  * New upstream release.
+    - Add -S option for simpler protocol two behavior.
+    - Fix user handling on Linux systems.
+    - Better documentation of the default load calculation.
+
+ -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:01:24 -0700
+
 lbcd (3.2.6-1) unstable; urgency=low
 
   * New upstream release.
