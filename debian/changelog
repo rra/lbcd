@@ -5,8 +5,9 @@ lbcd (3.3.0-1) unstable; urgency=low
     - Fix user handling on Linux systems.
     - Better documentation of the default load calculation.
   * Add LSB information to the init script.
+  * Use a better method of passing system information to configure.
 
- -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:03:43 -0700
+ -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:04:43 -0700
 
 lbcd (3.2.6-1) unstable; urgency=low
 
