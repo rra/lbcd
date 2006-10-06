@@ -16,6 +16,9 @@ lbcd 3.3.0 (2006-10-06)
     service calculates, including its various adjustments based on the
     number of logged-in users.
 
+    In lbcdclient, don't send a one-byte packet to the server before
+    sending the real query.
+
 lbcd 3.2.6 (2006-05-16)
 
     When building from a different build directory than the source

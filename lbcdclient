@@ -100,9 +100,6 @@ sub udp_connect ($$$$) {
     unless ($sin = sockaddr_in($port, $iaddr)) {
 	return 0;
     }
-    unless (send($SH, 0, 0, $sin)) {
-	return 0;
-    }
     unless (connect($SH,$sin)) {
 	close $SH; return undef;
     }
