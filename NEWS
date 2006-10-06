@@ -7,6 +7,11 @@ lbcd 3.3.0 (2006-10-06)
     all of the loads to the calculated weight of the first service and
     zeroing the user information.
 
+    Fix user handling on Linux.  Due to an invalid utmp path, a logic
+    error in caching user login results, and an incorrect path for the
+    console, all the user numbers on Linux were always zero prior to this
+    fix.
+
     Add considerably better documentation on what weight the default load
     service calculates, including its various adjustments based on the
     number of logged-in users.

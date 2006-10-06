@@ -28,6 +28,8 @@ static const char *utmp =
 #ifdef HAVE_UTMPX_H
   #ifdef UTMPX_FILE
     UTMPX_FILE
+  #elif defined(UTMP_FILE)
+    UTMP_FILE
   #else
     "/etc/utmpx"
   #endif
@@ -125,7 +127,8 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
     *user_mtime = sbuf.st_mtime;
   }
 
-  if (*user_mtime == last_user_mtime) { /* used cached values */ 
+  /* used cached values */
+  if (*user_mtime > 0 && *user_mtime == last_user_mtime) {
     *total      = last_total;
     *uniq       = last_uniq;
     *on_console = last_on_console;
@@ -135,6 +138,9 @@ get_user_stats(int *total,int *uniq, int *on_console,time_t *user_mtime)
   uniq_start();
 
   if (stat("/dev/console",&sbuf)==0) {
+    if (sbuf.st_uid != 0) *on_console = 1;
+  }
+  if (stat("/dev/tty1",&sbuf)==0) {
     if (sbuf.st_uid != 0) *on_console = 1;
   }
 
