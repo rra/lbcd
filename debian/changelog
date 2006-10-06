@@ -4,10 +4,11 @@ lbcd (3.3.0-1) unstable; urgency=low
     - Add -S option for simpler protocol two behavior.
     - Fix user handling on Linux systems.
     - Better documentation of the default load calculation.
+    - lbcdclient no longer sends a one-byte packet before the real query.
   * Add LSB information to the init script.
   * Use a better method of passing system information to configure.
 
- -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:04:43 -0700
+ -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:24:34 -0700
 
 lbcd (3.2.6-1) unstable; urgency=low
 
