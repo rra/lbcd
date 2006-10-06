@@ -1,5 +1,15 @@
 #! /bin/sh
-# /etc/init.d/lbcd -- Init script for lbcd load information daemon.
+### BEGIN INIT INFO
+# Provides:             lbcd
+# Required-Start:       $local_fs $remote_fs $network
+# Required-Stop:        $local_fs $remote_fs $network
+# Default-Start:        2 3 4 5
+# Default-Stop:         S 0 1 6
+# Short-Description:    Load balancer client daemon
+# Description:          Provides system load, login, and service information
+#                       via UDP, intended primarily for use with the lbnamed
+#                       load balancing system.
+### END INIT INFO
 #
 # Written by Russ Allbery <rra@stanford.edu>
 # Based on the dh-make template written by:

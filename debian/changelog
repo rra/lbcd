@@ -4,8 +4,9 @@ lbcd (3.3.0-1) unstable; urgency=low
     - Add -S option for simpler protocol two behavior.
     - Fix user handling on Linux systems.
     - Better documentation of the default load calculation.
+  * Add LSB information to the init script.
 
- -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:01:24 -0700
+ -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:03:43 -0700
 
 lbcd (3.2.6-1) unstable; urgency=low
 
