@@ -20,6 +20,7 @@ AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket], ,
     [AC_CHECK_LIB([nsl], [socket], [LIBS="$LIBS -lsocket -lnsl"], ,
         [-lsocket])])
+AC_SEARCH_LIBS([inet_aton], [resolv])
 
 AC_CHECK_FUNCS([hsearch getutent])
 AC_FUNC_ALLOCA
