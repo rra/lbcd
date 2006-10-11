@@ -1,5 +1,9 @@
                         User-Visible lbcd Changes
 
+lbcd 3.3.1 (unreleased)
+
+    Check for inet_aton in libresolv for older versions of Solaris.
+
 lbcd 3.3.0 (2006-10-06)
 
     Add the -S option, which says to return load and user information
