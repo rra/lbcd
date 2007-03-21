@@ -2,6 +2,10 @@
 
 lbcd 3.3.1 (unreleased)
 
+    Update the LDAP check to do something more reasonable.  The old LDAP
+    plugin probably never worked, at least with OpenLDAP.  Thanks to
+    Quanah Gibson-Mount for the fixes.
+
     Check for inet_aton in libresolv for older versions of Solaris.
 
 lbcd 3.3.0 (2006-10-06)
