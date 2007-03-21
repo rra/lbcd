@@ -35,9 +35,11 @@ probe_ldap(char *host, int timeout)
       }
       LDAP_EXEC(PATH_LDAPSEARCH,
 		"ldapsearch",
+		"-x",
+		"-LLL",
 		"-h", host ? host : "localhost",
-		"-b","cn=monitor",
-		"-s","base","objectclass=*");
+		"-b","cn=current,cn=connections,cn=monitor",
+		"-s","sub","monitorCounter");
       exit(1);
     } else { /* parent */
       int stat_loc;
@@ -68,9 +70,9 @@ probe_ldap(char *host, int timeout)
       }
 
       while(fgets(buf,sizeof(buf),fp) != NULL) {
-	if (strncmp(buf,"currentconnections=",19) != 0)
+	if (strncmp(buf,"monitorCounter: ",16) != 0)
 	  continue;
-	retval = atoi(buf+19);
+	retval = atoi(buf+16);
 	break;
       }
       fclose(fp);
