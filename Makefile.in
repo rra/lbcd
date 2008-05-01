@@ -77,7 +77,7 @@ distclean: clean
 
 maintclean: distclean
 	-rm -f config.h.in configure $(TARNAME).gz $(TARNAME).gz.md5
-	-rm -f *.orig.tar.gz $(DEBNAME)* *_$(VERSION)-*.deb
+	-rm -f *.orig.tar.gz *_$(VERSION)-*.deb
 	-rm -rf $(TARDIR)
 
 dist: $(srcdir)/lbcd.8 $(srcdir)/lbcdclient.1
