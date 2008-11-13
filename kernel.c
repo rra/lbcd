@@ -35,6 +35,10 @@
 #endif
 #endif
 
+#if defined(__MACH__)
+#include "arch/darwin.c"
+#endif
+
 #if defined(sgi)
 #include "arch/irix.c"
 #endif

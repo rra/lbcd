@@ -1,6 +1,9 @@
                         User-Visible lbcd Changes
 
-lbcd 3.3.1 (unreleased)
+lbcd 3.4.0 (unreleased)
+
+    Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and
+    Mac OS X 10.4.10, but hopefully will work with other versions.
 
     Update the LDAP check to do something more reasonable.  The old LDAP
     plugin probably never worked, at least with OpenLDAP.  Thanks to
