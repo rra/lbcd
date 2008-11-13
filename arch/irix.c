@@ -1,5 +1,4 @@
 /* irix.c -- lbcd kernel code for IRIX.
-   $Id$
 
    Written by Russ Allbery <rra@stanford.edu>
    Copyright 2000 Board of Trustees, Leland Stanford Jr. University

@@ -1,5 +1,4 @@
 # Makefile for lbcd
-# $Id$
 
 srcdir		= @srcdir@
 VPATH		= @srcdir@
