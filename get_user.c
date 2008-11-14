@@ -13,9 +13,6 @@
 #include <utmpx.h>
 #endif
 #include <utmp.h>
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
 #ifdef HAVE_SEARCH_H
 #include <search.h>
 #endif
