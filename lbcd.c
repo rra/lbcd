@@ -2,8 +2,6 @@
  * lbcd client main
  */
 
-#include "version.h"
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -370,6 +368,6 @@ usage(int exitcode)
 void
 version(void)
 {
-  printf("lbcd protocol %d version %s\n",LBCD_VERSION,VERSION);
+  printf("lbcd protocol %d version %s\n",LBCD_VERSION,PACKAGE_VERSION);
   exit(0);
 }
