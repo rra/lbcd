@@ -14,3 +14,22 @@
   works corectly, and that the daemon works when pounded on.
 
 * Get -r -w load:incr to work in any order.
+
+* Support the port argument for all of the protocol tests except HTTP
+  (which already supports it).
+
+* Add a test suite.
+
+* Convert to my normal logging functions.
+
+* Add the normal portability layer (portable/system.h and so forth).
+
+* Convert to using daemon() instead of rolling the function internally.
+
+* Import space free code from INN and use it for the /tmp checks.
+
+* General coding style cleanup: fix indentation, fix leading comments,
+  collapse header files together, and use struct names rather than
+  all-caps typedefs.
+
+* Use the standard network library for bind and connect functions.
