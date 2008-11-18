@@ -8,6 +8,9 @@
 #include <signal.h>
 #include <errno.h>
 
+#include "lbcdload.h"
+#include "modules/modules.h"
+
 #ifdef PATH_LDAPSEARCH
 #define LDAP_EXEC execl
 #else
@@ -15,8 +18,9 @@
 #define PATH_LDAPSEARCH "ldapsearch"
 #endif
 
-int
-probe_ldap(char *host, int timeout)
+#ifdef HAVE_LDAP
+static int
+probe_ldap(const char *host, int timeout)
 {
   int retval = 0;
   int fd[2];
@@ -39,7 +43,7 @@ probe_ldap(char *host, int timeout)
 		"-LLL",
 		"-h", host ? host : "localhost",
 		"-b","cn=current,cn=connections,cn=monitor",
-		"-s","sub","monitorCounter");
+		"-s","sub","monitorCounter", (char *) 0);
       exit(1);
     } else { /* parent */
       int stat_loc;
@@ -84,11 +88,13 @@ probe_ldap(char *host, int timeout)
 }
 
 int
-lbcd_ldap_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_ldap_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                 char *portarg UNUSED)
 {
   *weight_val = (u_int)probe_ldap("localhost",timeout);
   return (*weight_val == -1) ? -1 : 0;
 }
+#endif /* HAVE_LDAP */
 
 #ifdef MAIN
 int

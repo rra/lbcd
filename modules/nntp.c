@@ -5,17 +5,18 @@
 #include <sys/types.h>
 #include <string.h>
 
-extern int probe_tcp(char *host, char *service, short port,
-		     char *replycheck, int timeout);
+#include "lbcdload.h"
+#include "modules/modules.h"
 
-int
-probe_nntp(char *host, int timeout)
+static int
+probe_nntp(const char *host, int timeout)
 {
   return probe_tcp(host,"nntp",119,"200",timeout);
 }
 
 int
-lbcd_nntp_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_nntp_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                 const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   return *weight_val = probe_nntp("localhost",timeout);
 }

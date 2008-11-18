@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern int udp_connect (char *host, char *protocol, int port);
-extern int monlist(int sd, int timeout);
+#include "lbcdload.h"
+#include "modules/modules.h"
+#include "modules/monlist.h"
 
-int
-probe_ntp(char *host, int timeout)
+static int
+probe_ntp(const char *host, int timeout)
 {
   int sd;
   int retval = 0;
@@ -22,10 +23,11 @@ probe_ntp(char *host, int timeout)
 }
 
 int
-lbcd_ntp_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_ntp_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   *weight_val = (u_int)probe_ntp("localhost",timeout);
-  return (*weight_val == -1) ? -1 : 0;
+  return (*weight_val == (u_int) -1) ? -1 : 0;
 }
 
 #ifdef MAIN

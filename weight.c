@@ -18,9 +18,9 @@
 /*
  * Helper functions
  */
-static lbcd_func_tab_t *service_to_func(char *service);
+static lbcd_func_tab_t *service_to_func(const char *service);
 			/* return function handling service */
-static int is_weights(char *service);
+static int is_weights(const char *service);
 /* static char *service_to_port(char *service); */
 
 /*
@@ -52,15 +52,15 @@ lbcd_func_tab_t service_table[] = {
 /*
  * Module globals
  */
-static char *lbcd_command;
-static char *lbcd_service;
+static const char *lbcd_command;
+static const char *lbcd_service;
 static u_int default_weight;
 static u_int default_increment;
 static lbcd_func_tab_t* lbcd_default_functab;
 static int lbcd_timeout;
 
 int
-lbcd_weight_init(char *cmd, char *service, int timeout)
+lbcd_weight_init(const char *cmd, const char *service, int timeout)
 {
   lbcd_command = cmd;
   lbcd_service = service;
@@ -94,9 +94,9 @@ lbcd_weight_init(char *cmd, char *service, int timeout)
 }
 
 void
-lbcd_setweight(P_LB_RESPONSE *lb, int offset, char *service)
+lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 {
-  int *weight_ptr, *incr_ptr;
+  u_int *weight_ptr, *incr_ptr;
   lbcd_func_tab_t *functab;
 
   weight_ptr = &lb->weights[offset].host_weight;
@@ -107,14 +107,14 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, char *service)
 
   switch (functab->argument) {
   case LBCD_ARGNONE:
-    functab->function(weight_ptr,incr_ptr,lbcd_timeout);
+    functab->function(weight_ptr,incr_ptr,lbcd_timeout,NULL,lb);
     break;
   case LBCD_ARGLB:
-    functab->function(lb,weight_ptr,incr_ptr);
+    functab->function(weight_ptr,incr_ptr,lbcd_timeout,NULL,lb);
     break;
   case LBCD_ARGPORT:
     {
-      char *cp;
+      const char *cp;
 
       /* Obtain port name/number from service */
       cp = !strcmp(service,"default") ? lbcd_service : service;
@@ -122,7 +122,7 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, char *service)
       if (cp) cp++;
 
       /* Call module */
-      functab->function(weight_ptr,incr_ptr,lbcd_timeout,cp);
+      functab->function(weight_ptr,incr_ptr,lbcd_timeout,cp,lb);
       break;
     }
   }
@@ -132,7 +132,8 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, char *service)
  * Service module interfaces
  */
 int
-lbcd_rr_weight(u_int *weight_val, u_int *incr_val)
+lbcd_rr_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
+               const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   *weight_val = default_weight;
   *incr_val = default_increment;
@@ -140,7 +141,8 @@ lbcd_rr_weight(u_int *weight_val, u_int *incr_val)
 }
 
 int
-lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
+lbcd_cmd_weight(u_int *weight_val, u_int *incr_val, int timeout,
+                const char *portarg, P_LB_RESPONSE *lb)
 {
   int fd[2];
 
@@ -151,7 +153,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
     pid_t child;
 
     if ((child = fork()) < 0) {
-      return lbcd_unknown_weight(weight_val,incr_val);
+      return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
     } else if  (child == 0) { /* child */
       close(fd[0]);
       close(2);
@@ -159,7 +161,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
 	dup2(fd[1], 1);
 	close(fd[1]);
       }
-      execl(lbcd_command,lbcd_command,0);
+      execl(lbcd_command,lbcd_command,(char *)0);
       exit(1);
     } else { /* parent */
       int stat_loc;
@@ -170,7 +172,7 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
       if ((fp = fdopen(fd[0],"r")) == NULL) {
 	kill(SIGTERM,child);
 	waitpid(child,NULL,0);
-	return lbcd_unknown_weight(weight_val,incr_val);
+	return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
       }
       while(waitpid(child,&stat_loc,0) < 0) {
 	if (errno != EINTR) {
@@ -178,39 +180,40 @@ lbcd_cmd_weight(u_int *weight_val, u_int *incr_val)
 	  if (kill(SIGTERM,child) == -1)
 	    kill(SIGKILL,child);
 	  waitpid(child,NULL,0);
-	  return lbcd_unknown_weight(weight_val,incr_val);
+	  return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
 	}
       }
       if (WIFEXITED(stat_loc)) {
 	if (WEXITSTATUS(stat_loc) != 0) {
 	  fclose(fp);
-	  return lbcd_unknown_weight(weight_val,incr_val);
+	  return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
 	}
       } else {
 	if (kill(SIGTERM,child) == -1)
 	  kill(SIGKILL,child);
 	fclose(fp);
-	return lbcd_unknown_weight(weight_val,incr_val);
+	return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
       }
 
       if (fgets(buf,sizeof(buf),fp) != NULL) {
 	fclose(fp);
 
 	if (sscanf(buf,"%d%d",weight_val,incr_val) != 2)
-	  return lbcd_unknown_weight(weight_val,incr_val);
+          return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
       } else {
 	fclose(fp);
-	return lbcd_unknown_weight(weight_val,incr_val);
+	return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
       }
     }
   } else {
-    return lbcd_unknown_weight(weight_val,incr_val);
+    return lbcd_unknown_weight(weight_val,incr_val,timeout,portarg,lb);
   }
   return 0;
 }
 
 int
-lbcd_unknown_weight(u_int *weight_val, u_int *incr_val)
+lbcd_unknown_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
+                    const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   *weight_val = (u_int)-1;
   *incr_val = 0;
@@ -221,9 +224,9 @@ lbcd_unknown_weight(u_int *weight_val, u_int *incr_val)
  * Helper routines
  */
 static int
-is_weights(char *service)
+is_weights(const char *service)
 {
-  char *cp;
+  const char *cp;
   int sawcolon;
 
   /* NULL string -- not a weight */
@@ -252,7 +255,7 @@ is_weights(char *service)
 }
 
 static lbcd_func_tab_t*
-service_to_func(char *service)
+service_to_func(const char *service)
 {
   lbcd_func_tab_t *stp;
   LBCD_SERVICE_REQ name;

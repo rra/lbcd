@@ -11,17 +11,18 @@
 #include <sys/select.h>
 #endif
 
-extern int tcp_connect (char *host, char *protocol, int port);
+#include "lbcdload.h"
+#include "modules/modules.h"
 
 #define QUERY "GET / HTTP/1.0\r\n\r\n"
 
-int
-probe_http(char *host, int timeout, char *portarg)
+static int
+probe_http(const char *host, int timeout, const char *portarg)
 {
   int sd;
   int retval = 0;
   short port = 80;		/* default port is 80 */
-  char *service = "http";	/* default service name */
+  const char *service = "http";	/* default service name */
 
   if (portarg != NULL) {
     if ((port = (short)atoi(portarg)) < 1)
@@ -59,8 +60,8 @@ probe_http(char *host, int timeout, char *portarg)
 }
 
 int
-lbcd_http_weight(u_int *weight_val, u_int *incr_val,
-		 int timeout, char *portarg)
+lbcd_http_weight(u_int *weight_val, u_int *incr_val UNUSED,
+		 int timeout, const char *portarg, P_LB_RESPONSE *lb UNUSED)
 {
   return *weight_val = probe_http("localhost",timeout,portarg);
 }

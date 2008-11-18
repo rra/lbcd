@@ -22,8 +22,10 @@
 #include <sys/select.h>
 #endif
 
+#include "modules/modules.h"
+
 int
-lbcd_check_reply(int sd, int timeout, char *token)
+lbcd_check_reply(int sd, int timeout, const char *token)
 {
   struct timeval tv = { timeout, 0 };
   fd_set rset;

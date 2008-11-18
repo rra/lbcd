@@ -16,6 +16,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#include "modules/modules.h"
+
 /* tcp_connect
  *
  * Connect to a host with specified protocol using tcp.
@@ -29,14 +31,13 @@
  *	-1	on failure
  */
 int
-tcp_connect (char *host, char *protocol, int port)
+tcp_connect (const char *host, const char *protocol, int port)
 {
   struct servent *se;
   unsigned int addr;
   struct hostent *he;
   struct sockaddr_in serv_addr;
   int sd;
-  extern int errno;
 
   /* Assign port */
   memset ((char *) &serv_addr, 0, sizeof (serv_addr));
@@ -50,7 +51,7 @@ tcp_connect (char *host, char *protocol, int port)
   endservent();
 
   /* First check if valid IP address.  Otherwise check if valid name. */
-  if ((addr = inet_addr(host)) != -1) {
+  if ((addr = inet_addr(host)) != (in_addr_t) -1) {
     if ((he = gethostbyaddr ((char *)&addr, sizeof(unsigned int),
 			     AF_INET)) == NULL) {
       return -1;

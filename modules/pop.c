@@ -3,17 +3,18 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-extern int probe_tcp(char *host, char *service, short port,
-		     char *replycheck, int timeout);
+#include "lbcdload.h"
+#include "modules/modules.h"
 
-int
-probe_pop(char *host, int timeout)
+static int
+probe_pop(const char *host, int timeout)
 {
   return probe_tcp(host,"pop",110,"+OK",timeout);
 }
 
 int
-lbcd_pop_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_pop_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   return *weight_val = probe_pop("localhost",timeout);
 }

@@ -25,7 +25,7 @@
 /*
  * prototypes
  */
-static int sendrequest(int sd, int implcode, int reqcode, int auth);
+static int sendrequest(int sd, int implcode, int reqcode);
 static int getresponse(int sd, int implcode, int reqcode, int *ritems,
 		       int timeout);
 
@@ -40,7 +40,7 @@ monlist(int sd, int timeout)
   int res, peers;
 
   /* send monlist request */
-  if ((res = sendrequest(sd, IMPL_XNTPD, REQ_MON_GETLIST, 0)) != 0)
+  if ((res = sendrequest(sd, IMPL_XNTPD, REQ_MON_GETLIST)) != 0)
     return -1;
 
   /* get the monlist response */
@@ -55,7 +55,7 @@ monlist(int sd, int timeout)
  * sendrequest - format and send a request packet
  */
 static int
-sendrequest(int sd, int implcode, int reqcode, int auth)
+sendrequest(int sd, int implcode, int reqcode)
 {
   struct req_pkt qpkt;
 

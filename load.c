@@ -6,6 +6,7 @@
  */
 
 #include "lbcd.h"
+#include "lbcdload.h"
 
 #ifndef MAX
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
@@ -28,8 +29,9 @@ static int penalty[] = {
  *          A more elegant approach would be desirable; it might
  *          not be so bad just to call the kernel routines twice.
  */
-void
-lbcd_load_weight(P_LB_RESPONSE *lb, int *weight_val, int *incr_val)
+int
+lbcd_load_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
+                 const char *portarg UNUSED, P_LB_RESPONSE *lb)
 {
   int fudge, weight;
   int tmp_used;
@@ -53,4 +55,5 @@ lbcd_load_weight(P_LB_RESPONSE *lb, int *weight_val, int *incr_val)
 
   *weight_val = weight;
   *incr_val = 200;
+  return weight;
 }

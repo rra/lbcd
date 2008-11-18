@@ -23,8 +23,6 @@
 #endif
 #include "lbcd.h"
 
-extern int errno;
-
 static int util_debug_mode=0;
 
 #ifdef notdef
@@ -92,7 +90,7 @@ util_start_daemon(void)
 static int util_log_init = 0;
 
 static void
-util_log_open()
+util_log_open(void)
 {
   if(util_log_init) return;
 
@@ -112,7 +110,7 @@ util_log_close(void)
 }
 
 void
-util_log_info(char *fmt, ...)
+util_log_info(const char *fmt, ...)
 {
   char buffer[512];
   va_list ap;
@@ -133,7 +131,7 @@ util_log_info(char *fmt, ...)
 }
 
 void
-util_log_error(char *fmt, ...)
+util_log_error(const char *fmt, ...)
 {
   char buffer[512];
   va_list ap;

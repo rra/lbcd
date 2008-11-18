@@ -117,4 +117,6 @@ struct resp_pkt {
 #define NTP_VERSION     ((u_char)3) /* current version number */
 #define MODE_PRIVATE    7       /* implementation defined function */
 
+extern int monlist(int sd, int timeout);
+
 #endif /*  __monlist_h__ */

@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-extern int tcp_connect (char *host, char *protocol, int port);
-extern int lbcd_check_reply(int sd, int timeout, char *token);
+#include "lbcdload.h"
+#include "modules/modules.h"
 
-int
-probe_imap(char *host, int timeout)
+static int
+probe_imap(const char *host, int timeout)
 {
   int sd;
   int retval = 0;
@@ -23,7 +23,8 @@ probe_imap(char *host, int timeout)
 }
 
 int
-lbcd_imap_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_imap_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                 const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   return *weight_val = probe_imap("localhost",timeout);
 }

@@ -10,11 +10,11 @@
  * the arguments to the function are not listed in order to
  * avoid casts.  The three real possible prototypes include:
  *
- * NONE: int weight_func_t(u_int *,u_int *,P_LB_RESPONSE *);
- *   LB: int weight_func_t(u_int *,u_int *,P_LB_RESPONSE *);
- * PORT: int weight_func_t(u_int *,u_int *,char *);
+ * NONE: int weight_func_t(u_int *,u_int *,timeout,P_LB_RESPONSE *);
+ *   LB: int weight_func_t(u_int *,u_int *,timeout,P_LB_RESPONSE *);
+ * PORT: int weight_func_t(u_int *,u_int *,timeout,const char *);
  */
-typedef int weight_func_t();
+typedef int weight_func_t(u_int *,u_int *,int,const char *,P_LB_RESPONSE *);
 
 /* lbcdcmd_t: third argument of weight function
  */

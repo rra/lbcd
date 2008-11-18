@@ -21,6 +21,8 @@
 #include <sys/vfs.h>
 #endif
 
+#include "lbcd.h"
+
 #ifndef USER_FBLOCKS
 /* Percentage of the fblocks on the partition which a user may use. */
 #if defined(__sgi__) || defined(_AIX)

@@ -5,13 +5,13 @@
 #include <ctype.h>
 #include <sys/types.h>
 
-extern int tcp_connect (char *host, char *protocol, int port);
-extern int lbcd_check_reply(int sd, int timeout, char *token);
+#include "lbcdload.h"
+#include "modules/modules.h"
 
 int
-probe_tcp(char *host,
-	  char *service, short port,
-	  char *replycheck,
+probe_tcp(const char *host,
+	  const char *service, short port,
+	  const char *replycheck,
 	  int timeout) 
 {
   int sd;
@@ -31,12 +31,12 @@ probe_tcp(char *host,
 }
 
 int
-lbcd_tcp_weight(u_int *weight_val, u_int *incr_val,
-		int timeout, char *portarg)
+lbcd_tcp_weight(u_int *weight_val, u_int *incr_val UNUSED,
+		int timeout, const char *portarg, P_LB_RESPONSE *lb UNUSED)
 {
-  char *service = NULL;
+  const char *service = NULL;
   short port = 0;
-  char *cp;
+  const char *cp;
 
   /* Parse portarg */
   if (portarg == NULL)		/* we need to connect to something */

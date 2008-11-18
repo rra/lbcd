@@ -4,17 +4,19 @@
 #include <string.h>
 #include <sys/types.h>
 
-extern int probe_tcp(char *host, char *service, short port,
-		     char *replycheck, int timeout);
+#include "lbcd.h"
+#include "lbcdload.h"
+#include "modules/modules.h"
 
-int
-probe_ftp(char *host, int timeout)
+static int
+probe_ftp(const char *host, int timeout)
 {
   return probe_tcp(host,"ftp",21,"220",timeout);
 }
 
 int
-lbcd_ftp_weight(u_int *weight_val, u_int *incr_val, int timeout)
+lbcd_ftp_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+                const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
   return *weight_val = probe_ftp("localhost",timeout);
 }

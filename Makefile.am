@@ -18,9 +18,10 @@ dist_man_MANS = lbcd.8 lbcdclient.1
 
 noinst_LIBRARIES = modules/libmodules.a
 modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c \
-	modules/http.c modules/imap.c modules/ldap.c modules/monlist.c \
-	modules/monlist.h modules/nntp.c modules/ntp.c modules/pop.c \
-	modules/smtp.c modules/tcp.c modules/tcp_socket.c modules/udp_socket.c
+	modules/http.c modules/imap.c modules/ldap.c modules/modules.h \
+	modules/monlist.c modules/monlist.h modules/nntp.c modules/ntp.c \
+	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c \
+	modules/udp_socket.c
 
 $(srcdir)/lbcd.8: lbcd.pod configure.ac
 	pod2man --release=$(VERSION) --center="System Daemons" \

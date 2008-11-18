@@ -20,9 +20,6 @@ AC_PROG_RANLIB
 AC_AIX
 AC_GNU_SOURCE
 
-AC_CHECK_HEADERS([utmp.h utmpx.h sys/statvfs.h sys/vfs.h search.h \
-    sys/select.h])
-
 AC_SEARCH_LIBS([kvm_open], [kvm])
 AC_SEARCH_LIBS([kstat_open], [kstat])
 AC_CHECK_LIB([mld], [main], [LIBS="$LIBS -lmld"])
@@ -32,7 +29,13 @@ AC_SEARCH_LIBS([socket], [socket], ,
     [AC_CHECK_LIB([nsl], [socket], [LIBS="$LIBS -lsocket -lnsl"], ,
         [-lsocket])])
 AC_SEARCH_LIBS([inet_aton], [resolv])
-
+AC_CHECK_HEADERS([utmp.h utmpx.h sys/statvfs.h sys/vfs.h search.h \
+    sys/select.h])
+AC_CHECK_TYPE([socklen_t], ,
+    [AC_DEFINE([socklen_t], [int],
+        [Define to int if <sys/socket.h> does not define.])],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
 AC_CHECK_FUNCS([hsearch getutent])
 AC_FUNC_ALLOCA
 AC_FUNC_SETPGRP
