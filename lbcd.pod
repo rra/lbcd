@@ -43,11 +43,13 @@ service weight is calculated as follows:
         + (<total-users> - <unique-users>) * 20) * <tmp-penalty>
 
 where <tmp-penalty> is a multiplier applied for the most full of F</tmp>
-and F</var/tmp> ranging between 2 for 90-93% full up to 32 for 100% full.
-If F</tmp> or F</var/tmp> are completely full, the maximum possible weight
-will be returned.  If you want to use a simple load average instead, pass
-the B<-S> option to B<lbcd> and then the load service will use only the
-one-minute load.
+and F</var/tmp>.  <tmp-penalty> will be 1 if both are less than 90% full
+and will range between 2 for 90-93% full up to 32 for 100% full.  If
+F</tmp> or F</var/tmp> are completely full, the maximum possible weight
+will be returned.
+
+If you want to use a simple load average instead, pass the B<-S> option to
+B<lbcd> and then the load service will use only the one-minute load.
 
 Since B<lbnamed> calculates the weight from the one minute load and the
 number of logged-in users and currently only supports version two, B<lbcd>
