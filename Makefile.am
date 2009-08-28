@@ -1,12 +1,13 @@
 # Automake makefile for lbcd.
 #
 # Written by Russ Allbery <rra@stanford.edu>
-# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008
+# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009
 #     Board of Trustees, Leland Stanford Jr. University
 #
 # See LICENSE for licensing terms.
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
+ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = LICENSE autogen lbcd.pod
 
 sbin_PROGRAMS = lbcd
