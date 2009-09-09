@@ -1,16 +1,8 @@
 #include "config.h"
 #include "lbcd.h"
 
-#ifdef ultrix
-#include "arch/ultrix.c"
-#endif
-
-#if defined(sun)
 #if defined(__SVR4)
 #include "arch/solaris.c"
-#else
-#include "arch/sunos.c"
-#endif
 #endif
 
 #if defined(_AIX)
@@ -19,10 +11,6 @@
 
 #if defined(__osf__)
 #include "arch/osf.c"
-#endif
-
-#if defined(NeXT)
-#include "arch/next.c"
 #endif
 
 #if defined(__hpux__)

@@ -11,6 +11,10 @@ lbcd 3.4.0 (unreleased)
 
     Check for inet_aton in libresolv for older versions of Solaris.
 
+    Dropped support for NeXTSTEP, ULTRIX, and SunOS.  It's unlikely that
+    lbcd still compiled on those platforms and it's too much effort to
+    support pre-ANSI systems that exist only in museums.
+
 lbcd 3.3.0 (2006-10-06)
 
     Add the -S option, which says to return load and user information
