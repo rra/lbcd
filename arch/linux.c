@@ -1,63 +1,82 @@
 /*
- * lbcd kernel code for Linux
+ * lbcd kernel code for Linux.
+ *
+ * Written by Larry Schwimmer
+ * Copyright 1997, 1998, 2009
+ *     Board of Trustees, Leland Stanford Jr. University
+ *
+ * See LICENSE for licensing terms.
  */
 
-#include <stdio.h>
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
-#include "lbcd.h"
+
+#include <stdio.h>
 #include <time.h>
 
+#include "lbcd.h"
+
+
+/*
+ * Get the current load average from the kernel and return the one minute,
+ * five minute, and fifteen minute averages in the given parameters.  Returns
+ * 0 on success and -1 on failure.
+ */
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-  FILE *fp;
+    FILE *fp;
 
-  if ((fp = fopen ("/proc/loadavg", "r")) == (FILE *)0) {
-    util_log_error("cannot open /proc/loadavg");
-  }
-
-  fscanf(fp, "%lf %lf %lf", l1,l5,l15);
-  fclose(fp);
-
-  return 0;
+    fp = fopen("/proc/loadavg", "r");
+    if (fp == NULL) {
+        util_log_error("cannot open /proc/loadavg");
+        return -1;
+    }
+    fscanf(fp, "%lf %lf %lf", l1, l5, l15);
+    fclose(fp);
+    return 0;
 }
 
+
+/*
+ * Get the system uptime and return it in the boottime parameter.  Returns 0
+ * on success and -1 on failure.
+ */
 int
 kernel_getboottime(time_t *boottime)
 {
-  FILE *fp;
-  double uptime;
-  time_t curr;
+    FILE *fp;
+    double uptime;
+    time_t curr;
 
-  if ((fp = fopen ("/proc/uptime", "r")) == (FILE *)0) {
-    util_log_error("cannot open /proc/uptime");
-  }
-
-  fscanf(fp, "%lf", &uptime);
-  fclose(fp);
-
-  curr = time((time_t *)0);
-  *boottime = curr - uptime;
-
-  return 0;
+    fp = fopen("/proc/uptime", "r");
+    if (fp == NULL) {
+        util_log_error("cannot open /proc/uptime");
+        return -1;
+    }
+    fscanf(fp, "%lf", &uptime);
+    fclose(fp);
+    curr = time(NULL);
+    *boottime = curr - uptime;
+    return 0;
 }
 
+
+/*
+ * Test routine.
+ */
 #ifdef MAIN
 int
-main()
+main(void)
 {
-  double l1,l5,l15;
-  time_t boottime;
+    double l1, l5, l15;
+    time_t boottime;
 
-  if (kernel_getload(&l1,&l5,&l15) == 0) {
-    printf("load %.02f %.02f %.02f\n",l1,l5,l15);
-  }
-  if (kernel_getboottime(&boottime) == 0) {
-    printf("booted at %s",ctime(&boottime));
-  }
-
-  return 0;
+    if (kernel_getload(&l1, &l5, &l15) == 0)
+        printf("load %.02f %.02f %.02f\n", l1, l5, l15);
+    if (kernel_getboottime(&boottime) == 0)
+        printf("booted at %s", ctime(&boottime));
+    return 0;
 }
 #endif
