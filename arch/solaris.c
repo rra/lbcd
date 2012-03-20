@@ -6,7 +6,7 @@
  *
  * Written by Larry Schwimmer
  * Copyright 1997, 1998, 2009
- *     Board of Trustees, Leland Stanford Jr. University
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */

@@ -2,7 +2,8 @@
  * lbcd kernel code for BSD.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2000, 2009 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2000, 2009
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */

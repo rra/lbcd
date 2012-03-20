@@ -5,7 +5,8 @@
  * addresses doesn't seem to work for the time of the last reboot.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2000, 2009 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2000, 2009
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */

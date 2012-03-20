@@ -5,7 +5,8 @@
  * HP-UX, see arch/hpux9.c.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 2009 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 1997, 2009
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
