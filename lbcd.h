@@ -1,5 +1,25 @@
-#ifndef __LBCD_H__
-#define __LBCD_H__
+/*
+ * Prototypes for internal lbcd functions.
+ *
+ * Written by Larry Schwimmer
+ * Copyright 1996, 1997, 1998, 2004, 2006, 2008, 2012
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * See LICENSE for licensing terms.
+ */
+
+#ifndef LBCD_H
+#define LBCD_H 1
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include "protocol.h"
 
 /*
  * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
@@ -16,26 +36,14 @@
 #define UNUSED __attribute__((__unused__))
 
 /*
- * Includes
- */
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "protocol.h"
-
-/*
  * Defines
  */
 #ifndef PROGNAME
-#define PROGNAME "lbcd"
+# define PROGNAME "lbcd"
 #endif
 
 #ifndef PID_FILE
-#define PID_FILE "/var/run/lbcd.pid"
+# define PID_FILE "/var/run/lbcd.pid"
 #endif
 
 /*
@@ -52,7 +60,7 @@ extern int kernel_getboottime(time_t *boottime);
 
 /* get_user.c */
 extern int get_user_stats(int *total, int *unique,
-			  int *onconsole, time_t *user_mtime);
+              int *onconsole, time_t *user_mtime);
 
 /* tmp_free.c */
 extern int tmp_full(const char *path);
@@ -78,4 +86,4 @@ void lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service);
 }
 #endif
 
-#endif /* __LBCD_H__ */
+#endif /* !LBCD_H */

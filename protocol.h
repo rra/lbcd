@@ -1,84 +1,90 @@
+/*
+ * Definition of the lbcd wire protocol.
+ *
+ * Written by Larry Schwimmer
+ * Copyright 1996, 1997, 1998, 2012
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * See LICENSE for licensing terms.
+ */
+
 #ifndef LBCD_PROTOCOL_H
-#define LBCD_PROTOCOL_H
+#define LBCD_PROTOCOL_H 1
 
 #include <sys/types.h>
 
-/*
- * Constants
- */
-
-#define LBCD_PORTNUM 4330	/* default port */
-#define LBCD_MAXMESG 2048	/* max udp message to receive */
-#define LBCD_MAX_SERVICES 5	/* max service requests to allow */
-#define LBCD_VERSION 3		/* protocol version client speaks */
-#define LBCD_TIMEOUT 5		/* default service poll timeout */
+#define LBCD_PORTNUM 4330       /* Default port */
+#define LBCD_MAXMESG 2048       /* Max UDP message to receive */
+#define LBCD_MAX_SERVICES 5     /* Max service requests to allow */
+#define LBCD_VERSION 3          /* Protocol version client speaks */
+#define LBCD_TIMEOUT 5          /* Default service poll timeout */
 
 /*
- * Request/Response codes
+ * Request/Response codes.
  */
-
 typedef enum P_OPS {
-    op_lb_info_req             =1,  /* load balance info, request and reply */
+    op_lb_info_req       = 1,   /* Load balance info, request and reply */
 } p_ops_t;
 
 typedef enum P_STATUS {
-    status_request             =0,  /* a request packet */
-    status_ok                  =1,  /* load balance info, request and reply */
-    status_error               =2,  /* generic error */
-    status_lbcd_version        =3,  /* protocol version error */
-    status_lbcd_error          =4,  /* generic protocol error */
-    status_unknown_op          =5,  /* unknown operation requested */
+    status_request       = 0,   /* A request packet */
+    status_ok            = 1,   /* Load balance info, request and reply */
+    status_error         = 2,   /* Generic error */
+    status_lbcd_version  = 3,   /* Protocol version error */
+    status_lbcd_error    = 4,   /* Generic protocol error */
+    status_unknown_op    = 5,   /* Unknown operation requested */
 } p_status_t;
 
 /*
- * Service request/response types
+ * Service request/response types.
  */
-typedef char LBCD_SERVICE_REQ[32]; /* service name (NUL-terminated) */
+/* Service name (NUL-terminated). */
+typedef char LBCD_SERVICE_REQ[32];
 
 typedef struct LBCD_SERVICE {
-  u_int host_weight;		/* computed host lb weight */
-  u_int host_incr;		/* computed host lb increment */
+    u_int host_weight;          /* Computed host lb weight */
+    u_int host_incr;            /* Computed host lb increment */
 } LBCD_SERVICE;
 
 /*
  * Request packet
  */
 typedef struct {
-  u_short   version;  /* protocol version */
-  u_short   id;       /* requestor's uniq request id */
-  u_short   op;       /* operation requested */
-  u_short   status;   /* number of services requested */
+    u_short version;            /* Protocol version */
+    u_short id;                 /* Requestor's unique request id */
+    u_short op;                 /* Operation requested */
+    u_short status;             /* Number of services requested */
 } P_HEADER,*P_HEADER_PTR;
 
 /*
- * Extended request packet
+ * Extended request packet.
  */
 typedef struct {
-  P_HEADER h;
-  LBCD_SERVICE_REQ names[LBCD_MAX_SERVICES];
+    P_HEADER h;
+    LBCD_SERVICE_REQ names[LBCD_MAX_SERVICES];
 } P_HEADER_FULL, *P_HEADER_FULLPTR;
 
 /*
- * Reply packet
+ * Reply packet.
  */
 typedef struct {
-  P_HEADER h;
-  u_int boot_time;		/* boot time */
-  u_int current_time;		/* host time */
-  u_int user_mtime;		/* time user information last changed */
-  u_short l1;			/* 1 minute load (int) (load*100) */
-  u_short l5;			/* 5 minute load */
-  u_short l15;			/* 15 minute load */
-  u_short tot_users;		/* total number of users logged in */
-  u_short uniq_users;		/* total number of uniq users */
-  u_char on_console;		/* true if somone on console */
-  u_char reserved;		/* future use, padding ... */
-  u_char tmp_full;		/* percent of tmp full */
-  u_char tmpdir_full;		/* percent of P_tmpdir full */
-  u_char pad;			/* padding */
-  u_char services;		/* number of service requests */
-  LBCD_SERVICE weights[LBCD_MAX_SERVICES+1];
-				/* host service weight/increment pairs */
+    P_HEADER h;
+    u_int boot_time;            /* Boot time */
+    u_int current_time;         /* Host time */
+    u_int user_mtime;           /* Time user information last changed */
+    u_short l1;                 /* 1 minute load (int) (load*100) */
+    u_short l5;                 /* 5 minute load */
+    u_short l15;                /* 15 minute load */
+    u_short tot_users;          /* Total number of users logged in */
+    u_short uniq_users;         /* Total number of uniq users */
+    u_char on_console;          /* True if somone on console */
+    u_char reserved;            /* Future use, padding ... */
+    u_char tmp_full;            /* Percent of tmp full */
+    u_char tmpdir_full;         /* Percent of P_tmpdir full */
+    u_char pad;                 /* Padding */
+    u_char services;            /* Nnumber of service requests */
+  LBCD_SERVICE weights[LBCD_MAX_SERVICES + 1];
+                                /* Host service weight/increment pairs */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
 
-#endif
+#endif /* !LBCD_PROTOCOL_H */
