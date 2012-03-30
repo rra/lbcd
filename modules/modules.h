@@ -1,5 +1,15 @@
-#ifndef __modules_h__
-#define __modules_h__
+/*
+ * Prototypes for shared load module functions.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2008, 2012
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * See LICENSE for licensing terms.
+ */
+
+#ifndef MODULES_MODULES_H
+#define MODULES_MODULES_H 1
 
 /*
  * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
@@ -14,10 +24,6 @@
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
-
-/*
- * Prototypes
- */
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,4 +41,4 @@ extern int udp_connect(const char *host, const char *protocol, int port);
 }
 #endif
 
-#endif /* __modules_h__ */
+#endif /* !MODULES_MODULES_H */
