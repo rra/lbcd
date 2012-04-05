@@ -13,16 +13,6 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef __GNUC__
-# define alloca __builtin_alloca
-#elif HAVE_ALLOCA_H
-# include <alloca.h>
-#elif _AIX
-# pragm allocal
-#else
-# define NO_ALLOCA
-#endif
-
 #include <config.h>
 #include <portable/system.h>
 
@@ -45,25 +35,15 @@ lbcd_check_reply(int sd, int timeout, const char *token)
     struct timeval tv = { timeout, 0 };
     fd_set rset;
     int retval = 0;
-#ifdef NO_ALLOCA
-    char buf[1024];
-#else
     char *buf;
-#endif
     int len;
 
     if (token == NULL)
         return -1;
-
     len = strlen(token);
-#ifdef NO_ALLOCA
-    if (len > sizeof(buf) - 1)
-        return -1;
-#else
-    buf = alloca(len + 1);
+    buf = malloc(len + 1);
     if (buf == NULL)
         return -1;
-#endif
 
     FD_ZERO(&rset);
     FD_SET(sd, &rset);
@@ -78,5 +58,6 @@ lbcd_check_reply(int sd, int timeout, const char *token)
     } else {
         retval = -1;
     }
+    free(buf);
     return retval;
 }
