@@ -13,6 +13,7 @@
  */
 
 #include <config.h>
+#include <portable/socket.h>
 #include <portable/system.h>
 
 #include <lbcd.h>

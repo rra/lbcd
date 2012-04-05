@@ -11,13 +11,14 @@
 #ifndef LBCDLOAD_H
 #define LBCDLOAD_H 1
 
-#include "lbcd.h"
+#include <portable/macros.h>
+#include <sys/types.h>
+
+#include <protocol.h>
 
 /*
  * A weight function takes a pointer to the weight and increment and possibly
- * an extra argument and sets the values.  Since C does not support closures
- * or polymorphic functions, the arguments to the function are not listed in
- * order to avoid casts.  The three real possible prototypes include:
+ * an extra response or port argument and sets the values.
  *
  * NONE: int weight_func_t(u_int *, u_int *, timeout, P_LB_RESPONSE *);
  *   LB: int weight_func_t(u_int *, u_int *, timeout, P_LB_RESPONSE *);
@@ -40,9 +41,7 @@ typedef struct lbcd_func_tab {
     lbcdcmd_t argument;
 } lbcd_func_tab_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_DECLS
 
 /* weight.c -- generic routines */
 extern weight_func_t lbcd_rr_weight;      /* Round robin */
@@ -88,15 +87,12 @@ extern weight_func_t lbcd_smtp_weight;
  * wish to extend lbcd, it is pretty simple to write a new module and add it
  * to your local lbcd distribution.  Either as modules/local.c or as something
  * else.  Just include the prototype in lbcdload.h, the .c file in
- * Makefile.in, and the entry in weight.c.
+ * Makefile.am, and the entry in weight.c.
  */
-/* local.c */
 #ifdef HAVE_LOCAL
 extern weight_func_t lbcd_local_weight;
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+END_DECLS
 
 #endif /* !LBCDLOAD_H */

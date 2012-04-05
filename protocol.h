@@ -83,7 +83,7 @@ typedef struct {
     u_char tmpdir_full;         /* Percent of P_tmpdir full */
     u_char pad;                 /* Padding */
     u_char services;            /* Nnumber of service requests */
-  LBCD_SERVICE weights[LBCD_MAX_SERVICES + 1];
+    LBCD_SERVICE weights[LBCD_MAX_SERVICES + 1];
                                 /* Host service weight/increment pairs */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
 

@@ -26,6 +26,8 @@
 #ifndef MODULES_MONLIST_H
 #define MODULES_MONLIST_H 1
 
+#include <portable/macros.h>
+
 typedef unsigned int u_int32;
 typedef int int32;
 
@@ -119,6 +121,10 @@ struct resp_pkt {
 #define NTP_VERSION  ((u_char) 3)       /* Current version number */
 #define MODE_PRIVATE 7                  /* Implementation defined function */
 
+BEGIN_DECLS
+
 extern int monlist(int sd, int timeout);
+
+END_DECLS
 
 #endif /* !MODULES_MONLIST_H */

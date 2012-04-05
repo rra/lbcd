@@ -11,26 +11,10 @@
 #ifndef LBCD_H
 #define LBCD_H 1
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <portable/macros.h>
+#include <time.h>
 
-#include "protocol.h"
-
-/*
- * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
- * could you use the __format__ form of the attributes, which is what we use
- * (to avoid confusion with other macros).
- */
-#ifndef __attribute__
-# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#  define __attribute__(spec)   /* empty */
-# endif
-#endif
+#include <protocol.h>
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
@@ -50,9 +34,7 @@
  * Prototypes
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_DECLS
 
 /* kernel.c */
 extern int kernel_getload(double *l1, double *l5, double *l15);
@@ -81,8 +63,6 @@ int lbcd_default_weight(P_LB_RESPONSE *lb, u_int *weight, u_int *incr);
 int lbcd_weight_init(const char *cmd, const char *service, int timeout);
 void lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service);
 
-#ifdef __cplusplus
-}
-#endif
+END_DECLS
 
 #endif /* !LBCD_H */
