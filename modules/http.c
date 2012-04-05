@@ -54,7 +54,10 @@ probe_http(const char *host, int timeout, const char *portarg)
         fd_set rset;
         char buf[17];
 
-        write(sd, QUERY, sizeof(QUERY));
+        if (write(sd, QUERY, sizeof(QUERY)) < (ssize_t) sizeof(QUERY)) {
+            close(sd);
+            return -1;
+        }
         FD_ZERO(&rset);
         FD_SET(sd, &rset);
         if (select(sd + 1, &rset, NULL, NULL, &tv) > 0) {

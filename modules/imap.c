@@ -31,7 +31,8 @@ probe_imap(const char *host, int timeout)
         return -1;
     else {
         retval = lbcd_check_reply(sd, timeout, "* OK");
-        write(sd, "tag logout\r\n", 12);
+        /* Only for clean shutdown, don't care about failure. */
+        if (write(sd, "tag logout\r\n", 12) < 0) {}
         close(sd);
     }
     return retval;

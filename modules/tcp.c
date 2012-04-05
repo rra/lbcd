@@ -35,7 +35,8 @@ probe_tcp(const char *host, const char *service, short port,
     else {
         if (replycheck) {
             retval = lbcd_check_reply(sd, timeout, replycheck);
-            write(sd, "quit\r\n", 6);
+            /* Only for clean shutdown, don't care about failure. */
+            if (write(sd, "quit\r\n", 6) < 0) {}
         }
         close(sd);
     }
