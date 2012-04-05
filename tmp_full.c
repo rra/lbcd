@@ -13,21 +13,16 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
-#include <stdlib.h>
-#include <stdio.h>
 #ifdef HAVE_SYS_STATVFS_H
 # include <sys/statvfs.h>
-#include <sys/types.h>
-#include <unistd.h>
 #elif HAVE_SYS_VFS_H
 # include <sys/vfs.h>
 #endif
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 #ifndef USER_FBLOCKS
 /* Percentage of the fblocks on the partition which a user may use. */

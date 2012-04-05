@@ -12,8 +12,11 @@
  * See LICENSE for licensing terms.
  */
 
-#include "lbcd.h"
-#include "lbcdload.h"
+#include <config.h>
+#include <portable/system.h>
+
+#include <lbcd.h>
+#include <lbcdload.h>
 
 #ifndef MAX
 # define MAX(a,b) (((a) > (b)) ? (a) : (b))

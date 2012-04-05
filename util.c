@@ -8,32 +8,21 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <config.h>
+#include <portable/socket.h>
+#include <portable/system.h>
 
-#include <arpa/inet.h>
 #include <errno.h>
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-#include <netdb.h>
-#include <netinet/in.h>
+#include <fcntl.h>
 #include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #ifdef SIGTSTP  /* true if BSD system */
 # include <sys/file.h>
 # include <sys/ioctl.h>
 #endif
 #include <sys/param.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <syslog.h>
-#include <unistd.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 /* Whether debug mode is currently enabled. */
 static int util_debug_mode = 0;

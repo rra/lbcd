@@ -5,27 +5,23 @@
  * addresses doesn't seem to work for the time of the last reboot.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2000, 2009
+ * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/sysmp.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <time.h>
 #include <utmpx.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 /* Whether we've opened the kernel already. */
 static int kernel_init = 0;

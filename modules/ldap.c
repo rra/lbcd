@@ -8,18 +8,16 @@
  * See LICENSE for licensing terms.
  */
 
+#include <config.h>
+#include <portable/system.h>
+
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
-#include "lbcdload.h"
-#include "modules/modules.h"
+#include <lbcdload.h>
+#include <modules/modules.h>
 
 /* We test the LDAP server by running ldapsearch and checking its result. */
 #ifdef PATH_LDAPSEARCH

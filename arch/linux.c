@@ -2,20 +2,18 @@
  * lbcd kernel code for Linux.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 1998, 2009
+ * Copyright 1997, 1998, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
-#include <stdio.h>
 #include <time.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 
 /*

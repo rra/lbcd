@@ -9,26 +9,21 @@
  *     University of West Florida
  * Updates by Russ Allbery <rra@stanford.edu>
  * Copyright 2007 Clif Redding
- * Copyright 2009
+ * Copyright 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/times.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 
 /*

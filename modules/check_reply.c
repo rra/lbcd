@@ -23,21 +23,15 @@
 # define NO_ALLOCA
 #endif
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
 #include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#include "modules/modules.h"
+#include <modules/modules.h>
 
 
 /*

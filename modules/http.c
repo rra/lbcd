@@ -8,22 +8,16 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
 #include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#include "lbcdload.h"
-#include "modules/modules.h"
+#include <lbcdload.h>
+#include <modules/modules.h>
 
 /* The most basic HTTP query that we can perform. */
 #define QUERY "GET / HTTP/1.0\r\n\r\n"

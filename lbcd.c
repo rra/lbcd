@@ -11,21 +11,14 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/socket.h>
+#include <portable/system.h>
 
-#include <arpa/inet.h>
 #include <errno.h>
-#include <netinet/in.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 /* The usage message. */
 const char usage_message[] = "\

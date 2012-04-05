@@ -8,13 +8,12 @@
  * See LICENSE for licensing terms.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <config.h>
+#include <portable/system.h>
 
-#include "lbcdload.h"
-#include "modules/modules.h"
-#include "modules/monlist.h"
+#include <lbcdload.h>
+#include <modules/modules.h>
+#include <modules/monlist.h>
 
 
 /*

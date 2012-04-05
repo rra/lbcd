@@ -8,19 +8,14 @@
  * See LICENSE for licensing terms.
  */
 
-#include <arpa/inet.h>
+#include <config.h>
+#include <portable/socket.h>
+#include <portable/system.h>
+
 #include <ctype.h>
 #include <errno.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#include "modules/modules.h"
+#include <modules/modules.h>
 
 /*
  * Connect to a host with specified protocol using UDP.

@@ -2,23 +2,21 @@
  * lbcd kernel code for HP-UX 9.x.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2000, 2009
+ * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
 #include <nlist.h>
-#include <stdio.h>
 #include <sys/param.h>
 #include <sys/time.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 #define C_KMEM   "/dev/kmem"
 #define C_VMUNIX "/hp-ux"

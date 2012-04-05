@@ -5,32 +5,26 @@
  * comp.unix.solaris post <3qh88s$6ho@engnews2.Eng.Sun.COM>.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 1998, 2009
+ * Copyright 1997, 1998, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
 #include <kstat.h>
 #include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <utmp.h>
 #include <utmpx.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 static int kernel_init = 0;
 static kstat_ctl_t *kernel = NULL;

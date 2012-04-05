@@ -20,25 +20,17 @@
  * provided "as is" without express or implied warranty.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/socket.h>
+#include <portable/system.h>
 
-#include <arpa/inet.h>
 #include <ctype.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
-#include <sys/socket.h>
 #include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#include "monlist.h"
+#include <modules/monlist.h>
 
 /* The maximum packets of rely to read from the server. */
 #define MAXPACKETS 100

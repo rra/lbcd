@@ -5,26 +5,23 @@
  * HP-UX, see arch/hpux9.c.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 2009
+ * Copyright 1997, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
-#include <stdio.h>
 #include <sys/param.h>
 #include <sys/pstat.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <utmp.h>
 #include <utmpx.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 
 /*

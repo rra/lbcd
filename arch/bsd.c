@@ -2,32 +2,23 @@
  * lbcd kernel code for BSD.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2000, 2009
+ * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
 #include <kvm.h>
 #include <nlist.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/param.h>
-#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <utmp.h>
-#include <utmpx.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 #define C_KMEM   "/dev/kmem"
 #define C_VMUNIX "/bsd"

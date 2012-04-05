@@ -8,15 +8,12 @@
  * See LICENSE for licensing terms.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <config.h>
+#include <portable/system.h>
 
-#include "lbcd.h"
-#include "lbcdload.h"
-#include "modules/modules.h"
+#include <lbcd.h>
+#include <lbcdload.h>
+#include <modules/modules.h>
 
 
 /*

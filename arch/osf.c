@@ -2,22 +2,19 @@
  * lbcd kernel code for Tru64 (Digital UNIX, OSF/1).
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 1998, 2009
+ * Copyright 1997, 1998, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <sys/types.h>
 #include <sys/table.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 
 /*

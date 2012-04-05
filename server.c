@@ -10,16 +10,12 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
-#include <unistd.h>
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 
 /*

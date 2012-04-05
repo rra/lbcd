@@ -8,18 +8,16 @@
  * See LICENSE for licensing terms.
  */
 
+#include <config.h>
+#include <portable/system.h>
+
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
-#include "lbcd.h"
-#include "lbcdload.h"
+#include <lbcd.h>
+#include <lbcdload.h>
 
 /* Supported services list. */
 static lbcd_func_tab_t service_table[] = {

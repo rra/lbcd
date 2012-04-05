@@ -9,26 +9,20 @@
  * See LICENSE for licensing terms.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <config.h>
+#include <portable/system.h>
 
 #include <fcntl.h>
 #ifdef HAVE_SEARCH_H
 # include <search.h>
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <utmp.h>
 #ifdef HAVE_UTMPX_H
 # include <utmpx.h>
 #endif
 
-#include "lbcd.h"
+#include <lbcd.h>
 
 /* The logged-in user database.  We want to stat it for modification time. */
 #if defined(HAVE_UTMPX_H)
