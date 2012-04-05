@@ -74,7 +74,6 @@ extern void util_log_info(const char *fmt, ...);
 extern void util_log_error(const char *fmt, ...);
 extern pid_t util_get_pid_from_file(const char *file);
 extern int util_write_pid_in_file(const char *file);
-extern void util_start_daemon(void);
 extern void util_log_close(void);
 
 /* weight.c */

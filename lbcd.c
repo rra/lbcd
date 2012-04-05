@@ -370,9 +370,13 @@ main(int argc, char **argv)
     if (testmode)
         lbcd_test(argc - optind, argv + optind);
 
-    /* Fork unless debugging */
+    /*
+     * Background ourself unless debugging.  Do not chdir in case we're
+     * running external probe programs that care about the current working
+     * directory (although that's inadvisable).
+     */
     if (!debug)
-        util_start_daemon();
+        daemon(1, 0);
 
     /* Become a daemon.  handle_requests never returns. */
     handle_requests(port, pid_file, &bind_address, simple);

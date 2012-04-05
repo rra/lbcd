@@ -12,14 +12,7 @@
 #include <portable/socket.h>
 #include <portable/system.h>
 
-#include <errno.h>
-#include <fcntl.h>
 #include <signal.h>
-#ifdef SIGTSTP  /* true if BSD system */
-# include <sys/file.h>
-# include <sys/ioctl.h>
-#endif
-#include <sys/param.h>
 #include <syslog.h>
 
 #include <lbcd.h>
@@ -29,59 +22,6 @@ static int util_debug_mode = 0;
 
 /* Whether logging has been initialized. */
 static int util_log_init = 0;
-
-
-/*
- * Start a daemon that should run in the background.
- */
-void
-util_start_daemon(void)
-{
-    pid_t childpid;
-    int fd;
-
-#ifdef SIGTTOU
-    signal(SIGTTOU, SIG_IGN);
-#endif
-#ifdef SIGTTIN
-    signal(SIGTTIN, SIG_IGN);
-#endif
-#ifdef SIGTSTP
-    signal(SIGTSTP, SIG_IGN);
-#endif
-
-    childpid = fork();
-    if (childpid < 0)
-        util_log_error("can't fork child: %%m");
-    else if (childpid > 0)
-        exit(0);  /* parent */
-
-#if !defined(SETPGRP_VOID)
-    if (setpgrp(0, getpid()) == -1)
-        util_log_error("can't change process group: %%m");
-    fd = open("/dev/tty", O_RDWR);
-    if (fd >= 0) {
-        ioctl(fd, TIOCNOTTY, NULL);
-        close(fd);
-    }
-#else
-    if (setpgrp() == -1)
-        util_log_error("can't change process group: %%m");
-    signal(SIGHUP, SIG_IGN);
-    childpid = fork();
-    if (childpid < 0)
-        util_log_error("can't fork second child: %%m");
-    else if (childpid > 0)
-        exit(0);
-#endif
-
-    /* Close open file descriptors. */
-    for (fd = 0; fd < NOFILE; fd++)
-        close(fd);
-    errno = 0;
-
-    /* chdir("/"); */
-}
 
 
 /*
