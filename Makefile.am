@@ -6,23 +6,26 @@
 #
 # See LICENSE for licensing terms.
 
-AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = LICENSE autogen lbcd.pod
+
+noinst_LIBRARIES = modules/libmodules.a portable/libportable.a
+portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
+        portable/getnameinfo.h portable/macros.h portable/socket.h	 \
+        portable/stdbool.h portable/system.h
+portable_libportable_a_LIBADD = $(LIBOBJS)
+modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
+	modules/http.c modules/imap.c modules/ldap.c modules/modules.h	 \
+	modules/monlist.c modules/monlist.h modules/nntp.c modules/ntp.c \
+	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c	 \
+	modules/udp_socket.c
 
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
 	protocol.h server.c tmp_full.c util.c weight.c
-lbcd_LDADD = modules/libmodules.a
+lbcd_LDADD = modules/libmodules.a portable/libportable.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1
-
-noinst_LIBRARIES = modules/libmodules.a
-modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c \
-	modules/http.c modules/imap.c modules/ldap.c modules/modules.h \
-	modules/monlist.c modules/monlist.h modules/nntp.c modules/ntp.c \
-	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c \
-	modules/udp_socket.c
 
 $(srcdir)/lbcd.8: lbcd.pod configure.ac
 	pod2man --release=$(VERSION) --center="System Daemons" \

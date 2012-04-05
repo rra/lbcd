@@ -1,44 +1,86 @@
-dnl Process this file with autoconf to produce a configure script.
+dnl Autoconf configuration for lbcd.
 dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Based on work by Larry Schwimmer
-dnl Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009
-dnl     Board of Trustees, Leland Stanford Jr. University
+dnl Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012
+dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.64])
 AC_INIT([lbcd], [3.3.0], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.11 check-news silent-rules])
+AM_INIT_AUTOMAKE([1.11 check-news foreign silent-rules subdir-objects
+    -Wall -Werror])
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
-AC_PROG_CC_C_O
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl Probes for networking libraries.
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket], ,
-    [AC_CHECK_LIB([nsl], [socket], [LIBS="$LIBS -lsocket -lnsl"], ,
+    [AC_CHECK_LIB([nsl], [socket], [LIBS="-lnsl -lsocket $LIBS"], [],
         [-lsocket])])
+
+dnl Probes for kernel information libraries.
 AC_SEARCH_LIBS([kvm_open], [kvm])
 AC_SEARCH_LIBS([kstat_open], [kstat])
 AC_CHECK_LIB([mld], [main], [LIBS="$LIBS -lmld"])
 AC_SEARCH_LIBS([nlist], [elf])
-AC_SEARCH_LIBS([inet_aton], [resolv])
-AC_CHECK_HEADERS([utmp.h utmpx.h sys/statvfs.h sys/vfs.h search.h \
-    sys/select.h])
-AC_CHECK_TYPE([socklen_t], ,
-    [AC_DEFINE([socklen_t], [int],
-        [Define to int if <sys/socket.h> does not define.])],
-    [#include <sys/types.h>
-     #include <sys/socket.h>])
-AC_CHECK_FUNCS([hsearch getutent])
+
+dnl General C library probes.
+AC_HEADER_STDBOOL
+AC_CHECK_HEADERS([search.h strings.h sys/bittypes.h sys/select.h \
+    sys/statvfs.h sys/vfs.h utmp.h utmpx.h])
+AC_CHECK_DECLS([snprintf, vsnprintf])
+RRA_C_C99_VAMACROS
+RRA_C_GNU_VAMACROS
+AC_TYPE_LONG_LONG_INT
+AC_TYPE_UINT32_T
+AC_CHECK_TYPES([ssize_t], [], [],
+    [#include <sys/types.h>])
+RRA_FUNC_SNPRINTF
 AC_FUNC_ALLOCA
 AC_FUNC_SETPGRP
+AC_CHECK_FUNCS([getutent hsearch setrlimit setsid])
+AC_REPLACE_FUNCS([asprintf daemon strlcat strlcpy strndup])
+
+dnl Additional probes for networking portability and IPv6.
+AC_CHECK_DECLS([h_errno], [], [], [#include <netdb.h>])
+AC_CHECK_DECLS([inet_aton, inet_ntoa], [], [],
+    [#include <sys/types.h>
+     #include <netinet/in.h>
+     #include <arpa/inet.h>])
+AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
+AC_CHECK_TYPES([socklen_t], [], [],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
+AC_CHECK_TYPES([struct sockaddr_in6],
+    [AC_DEFINE([HAVE_INET6], [1],
+        [Define to 1 if IPv6 library interfaces are available.])], [],
+    [#include <sys/types.h>
+     #include <netinet/in.h>])
+AC_CHECK_TYPES([struct sockaddr_storage],
+    [AC_CHECK_MEMBERS([struct sockaddr_storage.ss_family], [], [],
+        [#include <sys/types.h>
+         #include <sys/socket.h>])], [],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
+RRA_MACRO_IN6_ARE_ADDR_EQUAL
+RRA_MACRO_SA_LEN
+RRA_FUNC_INET_NTOA
+AC_CHECK_FUNCS([getaddrinfo],
+    [RRA_FUNC_GETADDRINFO_ADDRCONFIG],
+    [AC_LIBOBJ([getaddrinfo])])
+AC_REPLACE_FUNCS([getnameinfo inet_aton inet_ntop])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])

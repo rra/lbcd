@@ -9,10 +9,10 @@
 /config.status
 /configure
 /lbcd
-/modules/libmodules.a
 /stamp-h1
 .deps
 .dirstamp
 *.1
 *.8
+*.a
 *.o
