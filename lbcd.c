@@ -362,7 +362,7 @@ main(int argc, char **argv)
 
     /* Initialize default load handler. */
     if (lbcd_weight_init(lbcd_helper, service_weight, service_timeout) != 0) {
-        fprintf(stderr,"could not initialize service handler\n");
+        fprintf(stderr, "could not initialize service handler\n");
         exit(1);
     }
 
@@ -376,7 +376,10 @@ main(int argc, char **argv)
      * directory (although that's inadvisable).
      */
     if (!debug)
-        daemon(1, 0);
+        if (daemon(1, 0) < 0) {
+            fprintf(stderr, "cannot daemonize: %s", strerror(errno));
+            exit(1);
+        }
 
     /* Become a daemon.  handle_requests never returns. */
     handle_requests(port, pid_file, &bind_address, simple);
