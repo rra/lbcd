@@ -75,11 +75,6 @@
 # define snprintf _snprintf
 #endif
 
-/* Define sig_atomic_t if it's not available in signal.h. */
-#ifndef HAVE_SIG_ATOMIC_T
-typedef int sig_atomic_t;
-#endif
-
 /* Windows does not define ssize_t. */
 #ifndef HAVE_SSIZE_T
 typedef ptrdiff_t ssize_t;
@@ -131,18 +126,6 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #endif
 #if !HAVE_DAEMON
 extern int daemon(int, int);
-#endif
-#if !HAVE_ISSETUGID
-extern int issetugid(void);
-#endif
-#if !HAVE_MKSTEMP
-extern int mkstemp(char *);
-#endif
-#if !HAVE_SETENV
-extern int setenv(const char *, const char *, int);
-#endif
-#if !HAVE_SETEUID
-extern int seteuid(uid_t);
 #endif
 #if !HAVE_STRLCAT
 extern size_t strlcat(char *, const char *, size_t);
