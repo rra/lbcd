@@ -103,7 +103,10 @@ util_get_pid_from_file(const char *file)
     if (pid != NULL) {
         pid_t the_pid = 0;
 
-        fscanf(pid, "%d", (int *) &the_pid);
+        if (fscanf(pid, "%d", (int *) &the_pid) < 1) {
+            fclose(pid);
+            return -1;
+        }
         fclose(pid);
         if (the_pid != 0 && kill(the_pid, 0) == 0)
             return the_pid;

@@ -31,7 +31,11 @@ kernel_getload(double *l1, double *l5, double *l15)
         util_log_error("cannot open /proc/loadavg");
         return -1;
     }
-    fscanf(fp, "%lf %lf %lf", l1, l5, l15);
+    if (fscanf(fp, "%lf %lf %lf", l1, l5, l15) < 3) {
+        fclose(fp);
+        util_log_error("cannot parse /proc/loadavg");
+        return -1;
+    }
     fclose(fp);
     return 0;
 }
@@ -53,7 +57,11 @@ kernel_getboottime(time_t *boottime)
         util_log_error("cannot open /proc/uptime");
         return -1;
     }
-    fscanf(fp, "%lf", &uptime);
+    if (fscanf(fp, "%lf", &uptime) < 1) {
+        fclose(fp);
+        util_log_error("cannot parse /proc/uptime");
+        return -1;
+    }
     fclose(fp);
     curr = time(NULL);
     *boottime = curr - uptime;
