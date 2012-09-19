@@ -35,3 +35,5 @@
 * Convert booleans to bool type.
 
 * Convert u_* data types in the protocol to proper uintN_t types.
+
+* Delete the PID file on exit.
