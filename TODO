@@ -20,16 +20,18 @@
 
 * Add a test suite.
 
-* Convert to my normal logging functions.
-
-* Add the normal portability layer (portable/system.h and so forth).
-
-* Convert to using daemon() instead of rolling the function internally.
-
-* Import space free code from INN and use it for the /tmp checks.
-
-* General coding style cleanup: fix indentation, fix leading comments,
-  collapse header files together, and use struct names rather than
-  all-caps typedefs.
+* General coding style cleanup: collapse header files together and use
+  struct names rather than all-caps typedefs.
 
 * Use the standard network library for bind and connect functions.
+
+* Fix hardcoded array size for unique users and possible memory overrun by
+  converting to vectors.
+
+* Drop portability to systems without hsearch.
+
+* Document the -t flag.
+
+* Convert booleans to bool type.
+
+* Convert u_* data types in the protocol to proper uintN_t types.
