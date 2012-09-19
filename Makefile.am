@@ -24,7 +24,7 @@ util_libutil_a_SOURCES = util/macros.h util/messages.c util/messages.h	\
 
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
-	protocol.h server.c tmp_full.c util.c weight.c
+	protocol.h server.c tmp_full.c weight.c
 lbcd_LDADD = modules/libmodules.a portable/libportable.a util/libutil.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1

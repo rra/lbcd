@@ -73,14 +73,21 @@ static int
 stop_lbcd(const char *pid_file)
 {
     pid_t pid;
+    FILE *file;
 
-    pid = util_get_pid_from_file(pid_file);
-    if (pid == (pid_t) -1)
+    file = fopen(pid_file,"r");
+    if (file == NULL)
         return 0;
-    if (kill(pid, SIGTERM) < 0) {
-        syswarn("cannot kill PID %lu", (unsigned long) pid);
-        return -1;
+    if (fscanf(file, "%d", (int *) &pid) < 1) {
+        fclose(file);
+        return 0;
     }
+    fclose(file);
+    if (pid != 0 && kill(pid, 0) == 0)
+        if (kill(pid, SIGTERM) < 0) {
+            syswarn("cannot kill PID %lu", (unsigned long) pid);
+            return -1;
+        }
     return 0;
 }
 
@@ -230,6 +237,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     char mesg[LBCD_MAXMESG];
     char client[INET6_ADDRSTRLEN];
     P_HEADER_FULLPTR ph;
+    FILE *pid;
 
     /* Open UDP socket. */
     s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -243,7 +251,13 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
         sysdie("cannot bind UDP socket");
 
     /* Indicate to the world that we're ready to answer requests. */
-    util_write_pid_in_file(pid_file);
+    pid = fopen(pid_file, "w");
+    if (pid == NULL)
+        warn("cannot create PID file %s", pid_file);
+    else {
+        fprintf(pid, "%d\n", (int) getpid());
+        fclose(pid);
+    }
     notice("ready to accept requests");
 
     /* Main loop.  Continue until we're signaled. */

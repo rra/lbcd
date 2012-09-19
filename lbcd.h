@@ -47,10 +47,6 @@ extern int tmp_full(const char *path);
 extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
-/* util.c */
-extern pid_t util_get_pid_from_file(const char *file);
-extern int util_write_pid_in_file(const char *file);
-
 /* weight.c */
 int lbcd_default_weight(P_LB_RESPONSE *lb, u_int *weight, u_int *incr);
 int lbcd_weight_init(const char *cmd, const char *service, int timeout);
