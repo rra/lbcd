@@ -34,3 +34,6 @@
 * Convert u_* data types in the protocol to proper uintN_t types.
 
 * Delete the PID file on exit.
+
+* Add a portability layer for utmp, and use getutxent by default if it's
+  available.
