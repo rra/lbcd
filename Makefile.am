@@ -31,14 +31,6 @@ lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1
 
-$(srcdir)/lbcd.8: lbcd.pod configure.ac
-	pod2man --release=$(VERSION) --center="System Daemons" \
-	    --section=8 $(srcdir)/lbcd.pod > $@
-
-$(srcdir)/lbcdclient.1: lbcdclient configure.ac
-	pod2man --release=$(VERSION) --center="User Commands" \
-	    --section=1 $(srcdir)/lbcdclient > $@
-
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
 	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
 	build-aux/install-sh build-aux/missing config.h.in config.h.in~ \
