@@ -17,8 +17,10 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <syslog.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 /* The usage message. */
 const char usage_message[] = "\
@@ -75,9 +77,8 @@ stop_lbcd(const char *pid_file)
     pid = util_get_pid_from_file(pid_file);
     if (pid == (pid_t) -1)
         return 0;
-    if (kill(pid,SIGTERM) < 0) {
-        util_log_error("can't kill pid %d: %%m", pid);
-        perror("kill");
+    if (kill(pid, SIGTERM) < 0) {
+        syswarn("cannot kill PID %lu", (unsigned long) pid);
         return -1;
     }
     return 0;
@@ -92,6 +93,7 @@ lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
                  P_HEADER *request_header, p_status_t pstat)
 {
     P_HEADER header;
+    char client[INET6_ADDRSTRLEN];
 
     header.version = htons(LBCD_VERSION);
     header.id      = htons(request_header->id);
@@ -100,7 +102,9 @@ lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
 
     if (sendto(s, &header, sizeof(header), 0, (struct sockaddr *) cli_addr,
                cli_len) != sizeof(header)) {
-        util_log_error("sendto: %%m");
+        if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL)
+            strlcpy(client, "UNKNOWN", sizeof(client));
+        syswarn("client %s: cannot send reply", client);
         return -1;
     }
     return 0;
@@ -120,14 +124,19 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
 {
     int n;
     P_HEADER_FULLPTR ph;
+    char client[INET6_ADDRSTRLEN];
 
-    n = recvfrom(s,mesg, max_mesg, 0, (struct sockaddr *) cli_addr, &cli_len);
+    n = recvfrom(s, mesg, max_mesg, 0, (struct sockaddr *) cli_addr, &cli_len);
     if (n < 0) {
-        util_log_error("recvfrom: %%m");
-        exit(1);
+        syswarn("cannot receive packet");
+        return 0;
+    }
+    if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL) {
+        syswarn("cannot convert client address to string");
+        strlcpy(client, "UNKNOWN", sizeof(client));
     }
     if (n < (int) sizeof(P_HEADER)) {
-        util_log_error("short packet received, len %d",n);
+        warn("client %s: short packet received (length %d)", client, n);
         return 0;
     }
 
@@ -164,7 +173,8 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
         break;
 
     default:
-        util_log_error("protocol version unsupported: %d", ph->h.version);
+        warn("client %s: protocol version %d unsupported", client,
+             ph->h.version);
         lbcd_send_status(s, cli_addr, cli_len, &ph->h, status_lbcd_version);
         return 0;
     }
@@ -181,6 +191,7 @@ handle_lb_request(int s, P_HEADER_FULLPTR ph, struct sockaddr_in *cli_addr,
 {
     P_LB_RESPONSE lbr;
     int pkt_size;
+    char client[INET6_ADDRSTRLEN];
 
     /* Fill in reply header. */
     lbr.h.version = htons(ph->h.version);
@@ -197,8 +208,11 @@ handle_lb_request(int s, P_HEADER_FULLPTR ph, struct sockaddr_in *cli_addr,
 
     /* Send reply */
     if (sendto(s, &lbr, pkt_size, 0, (const struct sockaddr *) cli_addr,
-               cli_len) != pkt_size)
-        util_log_error("sendto: %%m");
+               cli_len) != pkt_size) {
+        if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL)
+            strlcpy(client, "UNKNOWN", sizeof(client));
+        syswarn("client %s: cannot send reply", client);
+    }
 }
 
 
@@ -214,45 +228,40 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     int cli_len;
     int n;
     char mesg[LBCD_MAXMESG];
+    char client[INET6_ADDRSTRLEN];
     P_HEADER_FULLPTR ph;
 
     /* Open UDP socket. */
-    s = socket(AF_INET,SOCK_DGRAM, 0);
-    if (s < 0) {
-        util_log_error("can't open udp socket: %%m");
-        exit(1);
-    }
+    s = socket(AF_INET, SOCK_DGRAM, 0);
+    if (s < 0)
+        sysdie("cannot create UDP socket");
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr = *bind_address;
     serv_addr.sin_port = htons(port);
-
-    if (bind(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        if (errno == EADDRINUSE)
-            util_log_error("lbcd already running?");
-        else
-            util_log_error("cannot bind udp socket: %%m");
-        exit(1);
-    }
+    if (bind(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+        sysdie("cannot bind UDP socket");
 
     /* Indicate to the world that we're ready to answer requests. */
     util_write_pid_in_file(pid_file);
-    util_log_info("ready to accept requests");
+    notice("ready to accept requests");
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {
         cli_len = sizeof(cli_addr);
-        n = lbcd_recv_udp(s, &cli_addr, cli_len,mesg, sizeof(mesg));
+        n = lbcd_recv_udp(s, &cli_addr, cli_len, mesg, sizeof(mesg));
         if (n > 0) {
             ph = (P_HEADER_FULLPTR) mesg;
+            if (inet_ntop(AF_INET, &cli_addr, client, sizeof(client)) == NULL)
+                strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
             case op_lb_info_req:
                 handle_lb_request(s, ph, &cli_addr, cli_len, simple);
                 break;
             default:
+                warn("client %s: unknown op %d requested", client, ph->h.op);
                 lbcd_send_status(s, &cli_addr, cli_len, &ph->h,
                                  status_unknown_op);
-                util_log_error("unknown op requested: %d", ph->h.op);
             }
         }
     }
@@ -266,7 +275,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
 int
 main(int argc, char **argv)
 {
-    int debug = 0;
+    int debugging = 0;
     int port = LBCD_PORTNUM;
     int testmode = 0;
     int restart = 0;
@@ -277,6 +286,9 @@ main(int argc, char **argv)
     struct in_addr bind_address;
     int service_timeout = LBCD_TIMEOUT;
     int c;
+
+    /* Establish identity. */
+    message_program_name = "lbcd";
 
     /* A quick hack to honor --help and --version */
     if (argv[1] != NULL)
@@ -306,20 +318,16 @@ main(int argc, char **argv)
             service_weight = "rr";
             break;
         case 'b': /* bind address */
-            if (inet_aton(optarg, &bind_address) == 0) {
-                fprintf(stderr, "invalid bind address %s", optarg);
-                exit(1);
-            }
+            if (inet_aton(optarg, &bind_address) == 0)
+                die("invalid bind address %s", optarg);
             break;
         case 'c': /* helper command -- must be full path to command */
             lbcd_helper = optarg;
-            if (access(lbcd_helper, X_OK) != 0) {
-                fprintf(stderr, "%s: no such program\n", optarg);
-                exit(1);
-            }
+            if (access(lbcd_helper, X_OK) != 0)
+                sysdie("cannot access %s", optarg);
             break;
         case 'd': /* debugging mode */
-            debug = 1;
+            debugging = 1;
             break;
         case 'l': /* log requests */
             /* FIXME: implement */
@@ -341,11 +349,9 @@ main(int argc, char **argv)
             break;
         case 'T': /* timeout */
             service_timeout = atoi(optarg);
-            if (service_timeout < 1 || service_timeout > 300) {
-                fprintf(stderr, "timeout (%d) must be between 1 and 300"
-                        " seconds\n", service_timeout);
-                exit(1);
-            }
+            if (service_timeout < 1 || service_timeout > 300)
+                die("timeout (%d) must be between 1 and 300 seconds",
+                    service_timeout);
             break;
         case 'w': /* weight or service */
             service_weight = optarg;
@@ -361,25 +367,26 @@ main(int argc, char **argv)
         exit(1);
 
     /* Initialize default load handler. */
-    if (lbcd_weight_init(lbcd_helper, service_weight, service_timeout) != 0) {
-        fprintf(stderr, "could not initialize service handler\n");
-        exit(1);
-    }
+    if (lbcd_weight_init(lbcd_helper, service_weight, service_timeout) != 0)
+        die("cannot initialize service handler");
 
     /* If testing, print default output and terminate */
     if (testmode)
         lbcd_test(argc - optind, argv + optind);
 
     /*
-     * Background ourself unless debugging.  Do not chdir in case we're
-     * running external probe programs that care about the current working
-     * directory (although that's inadvisable).
+     * Background ourself and switch to syslog logging unless debugging.  Do
+     * not chdir in case we're running external probe programs that care about
+     * the current working directory (although that's inadvisable).
      */
-    if (!debug)
-        if (daemon(1, 0) < 0) {
-            fprintf(stderr, "cannot daemonize: %s", strerror(errno));
-            exit(1);
-        }
+    if (!debugging) {
+        if (daemon(1, 0) < 0)
+            sysdie("cannot daemonize");
+        openlog("lbcd", LOG_PID | LOG_NDELAY, LOG_DAEMON);
+        message_handlers_notice(1, message_log_syslog_info);
+        message_handlers_warn(1, message_log_syslog_warning);
+        message_handlers_die(1, message_log_syslog_err);
+    }
 
     /* Become a daemon.  handle_requests never returns. */
     handle_requests(port, pid_file, &bind_address, simple);

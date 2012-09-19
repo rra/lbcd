@@ -2,7 +2,7 @@
  * Get statistics about logged-in users.
  *
  * Written by Larry Schwimmer
- * Updates by Russ Allbery
+ * Updates by Russ Allbery <rra@stanford.edu>
  * Copyright 1996, 1997, 1998, 2006, 2008, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -23,6 +23,7 @@
 #endif
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 /* The logged-in user database.  We want to stat it for modification time. */
 #if defined(HAVE_UTMPX_H)
@@ -206,7 +207,7 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
 
         fd = open(utmp, O_RDONLY);
         if (fd < 0) {
-            util_log_error("can't open %s: %%ms", utmp);
+            syswarn("cannot open %s", utmp);
             return -1;
         }
         while (read(fd, &ut, sizeof(ut)) > 0) {

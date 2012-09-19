@@ -17,6 +17,7 @@
 #include <sys/time.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"
 #define C_VMUNIX "/hp-ux"
@@ -38,14 +39,10 @@ static int
 kernel_open(void)
 {
     kernel_fd = open(C_KMEM, O_RDONLY);
-    if (kernel_fd < 0) {
-        util_log_error("can't open %s: %%m", C_KMEM);
-        exit(1);
-    }
-    if (nlist(C_VMUNIX, nl) < 0) {
-        util_log_error("no namelist for %s", C_VMUNIX);
-        exit(1);
-    }
+    if (kernel_fd < 0)
+        sysdie("cannot open %s", C_KMEM);
+    if (nlist(C_VMUNIX, nl) < 0)
+        sysdie("no namelist for %s", C_VMUNIX);
     kernel_init = 1;
     return 0;
 }
@@ -67,21 +64,16 @@ kernel_close(void)
  * Read a value from kernel memory, given its offset, and store it in the dest
  * buffer.  That buffer has space for dest_len octets.
  */
-static int
+static void
 kernel_read(off_t where, void *dest, int dest_len)
 {
     ssize_t status;
 
-    if (lseek(kernel_fd, where, SEEK_SET) < 0) {
-        util_log_error("can't lseek in %s: %%m", C_KMEM);
-        exit(1);
-    }
+    if (lseek(kernel_fd, where, SEEK_SET) < 0)
+        sysdie("cannot lseek in %s", C_KMEM);
     status = read(kernel_fd, dest, dest_len);
-    if (status < 0) {
-        util_log_error("kernel read %s: %%m", C_KMEM);
-        exit(1);
-    }
-    return status;
+    if (status < 0)
+        sysdie("kernel read of %s failed", C_KMEM);
 }
 
 
@@ -94,17 +86,12 @@ int
 kernel_getload(double *l1, double *l5, double *l15)
 {
     double load[3];
-    int status;
 
     if (!kernel_init)
         kernel_open();
     if (nl[0].n_type == 0)
         return -1;
-    status = kernel_read(nl[0].n_value, (void *) load, sizeof(load));
-    if (status < 0) {
-        util_log_error("kernel loadaverage read error: %%m");
-        return -1;
-    }
+    kernel_read(nl[0].n_value, (void *) load, sizeof(load));
     *l1  = kern_avenrun[0];
     *l5  = kern_avenrun[1];
     *l15 = kern_avenrun[2];
@@ -120,17 +107,12 @@ int
 kernel_getboottime(time_t *boottime)
 {
     struct timeval boot;
-    int status;
 
     if (!kernel_init)
         kernel_open();
     if (nl[1].n_type == 0)
         return -1;
-    status = kernel_read(nl[1].n_value, (void *) &boot, sizeof(boot));
-    if (status < 0) {
-        util_log_error("kernel boottime read error: %%m");
-        return -1;
-    }
+    kernel_read(nl[1].n_value, (void *) &boot, sizeof(boot));
     *boottime = boot.tv_sec;
     return 0;
 }

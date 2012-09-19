@@ -19,6 +19,7 @@
 #include <sys/times.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"
 #define C_VMUNIX "/bsd"
@@ -44,14 +45,10 @@ static int
 kernel_open(void)
 {
     kernel = kvm_open(NULL, NULL, NULL, O_RDONLY, PROGNAME);
-    if (kernel == NULL) {
-        util_log_error("kvm_open: %%m");
-        exit(1);
-    }
-    if (kvm_nlist(kernel, nl) != 0) {
-        util_log_error("kvm_nlist error");
-        exit(1);
-    }
+    if (kernel == NULL)
+        sysdie("kvm_open failed");
+    if (kvm_nlist(kernel, nl) != 0)
+        sysdie("kvm_nlist failed");
     kernel_init = 1;
     return 0;
 }
@@ -73,17 +70,14 @@ kernel_close(void)
  * Read a value from kernel memory, given its offset, and store it in the dest
  * buffer.  That buffer has space for dest_len octets.
  */
-static int
+static void
 kernel_read(off_t where, void *dest, int dest_len)
 {
     int status;
 
     status = kvm_read(kernel, where, dest, dest_len);
-    if (status != 0) {
-        util_log_error("kvm_read : %%m");
-        exit(1);
-    }
-    return 0;
+    if (status != 0)
+        sysdie("kvm_read failed");
 }
 
 
@@ -96,17 +90,12 @@ int
 kernel_getload(double *l1, double *l5, double *l15)
 {
     long load[3];
-    int status;
 
     if (!kernel_init)
         kernel_open();
     if (nl[0].n_type == 0)
         return -1;
-    status = kernel_read(nl[0].n_value, (void *) load, sizeof(load));
-    if (status < 0) {
-        util_log_error("kernel loadaverage read error: %%m");
-        return -1;
-    }
+    kernel_read(nl[0].n_value, (void *) load, sizeof(load));
     *l1  = (double) load[0] / FSCALE;
     *l5  = (double) load[1] / FSCALE;
     *l15 = (double) load[2] / FSCALE;
@@ -122,17 +111,12 @@ int
 kernel_getboottime(time_t *boottime)
 {
     struct timeval boot;
-    int status;
 
     if (!kernel_init)
         kernel_open();
     if (nl[1].n_type == 0)
         return -1;
-    status = kernel_read(nl[0].n_value, (void *) &boot, sizeof(boot));
-    if (status < 0) {
-        util_log_error("kernel boottime read error: %%m");
-        return -1;
-    }
+    kernel_read(nl[0].n_value, (void *) &boot, sizeof(boot));
     *boottime = boot.tv_sec;
     return 0;
 }

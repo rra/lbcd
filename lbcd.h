@@ -22,10 +22,6 @@
 /*
  * Defines
  */
-#ifndef PROGNAME
-# define PROGNAME "lbcd"
-#endif
-
 #ifndef PID_FILE
 # define PID_FILE "/var/run/lbcd.pid"
 #endif
@@ -52,11 +48,8 @@ extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* util.c */
-extern void util_log_info(const char *fmt, ...);
-extern void util_log_error(const char *fmt, ...);
 extern pid_t util_get_pid_from_file(const char *file);
 extern int util_write_pid_in_file(const char *file);
-extern void util_log_close(void);
 
 /* weight.c */
 int lbcd_default_weight(P_LB_RESPONSE *lb, u_int *weight, u_int *incr);

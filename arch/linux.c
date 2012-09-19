@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 
 /*
@@ -28,12 +29,12 @@ kernel_getload(double *l1, double *l5, double *l15)
 
     fp = fopen("/proc/loadavg", "r");
     if (fp == NULL) {
-        util_log_error("cannot open /proc/loadavg");
+        syswarn("cannot open /proc/loadavg");
         return -1;
     }
     if (fscanf(fp, "%lf %lf %lf", l1, l5, l15) < 3) {
         fclose(fp);
-        util_log_error("cannot parse /proc/loadavg");
+        warn("cannot parse /proc/loadavg");
         return -1;
     }
     fclose(fp);
@@ -54,12 +55,12 @@ kernel_getboottime(time_t *boottime)
 
     fp = fopen("/proc/uptime", "r");
     if (fp == NULL) {
-        util_log_error("cannot open /proc/uptime");
+        syswarn("cannot open /proc/uptime");
         return -1;
     }
     if (fscanf(fp, "%lf", &uptime) < 1) {
         fclose(fp);
-        util_log_error("cannot parse /proc/uptime");
+        warn("cannot parse /proc/uptime");
         return -1;
     }
     fclose(fp);

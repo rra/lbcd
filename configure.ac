@@ -37,7 +37,7 @@ AC_SEARCH_LIBS([nlist], [elf])
 dnl General C library probes.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([search.h strings.h sys/bittypes.h sys/select.h \
-    sys/statvfs.h sys/vfs.h utmp.h utmpx.h])
+    sys/statvfs.h sys/vfs.h syslog.h utmp.h utmpx.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 RRA_C_C99_VAMACROS
 RRA_C_GNU_VAMACROS

@@ -22,6 +22,7 @@
 #include <utmpx.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 /* Whether we've opened the kernel already. */
 static int kernel_init = 0;
@@ -43,15 +44,11 @@ kernel_open(void)
     int ldav_off;
 
     kmem_fd = open("/dev/kmem", O_RDONLY);
-    if (kmem_fd < 0) {
-        util_log_error("open of /dev/kmem failed: %%m");
-        exit(1);
-    }
+    if (kmem_fd < 0)
+        sysdie("cannot open /dev/kmem");
     ldav_off = sysmp(MP_KERNADDR, MPKA_AVENRUN);
-    if (ldav_off < 0) {
-        util_log_error("sysmp: %%m");
-        exit(1);
-    }
+    if (ldav_off < 0)
+        sysdie("sysmp failed");
     kernel_offset = (long) ldav_off & 0x7fffffff;
     kernel_init = 1;
 }
@@ -82,15 +79,11 @@ kernel_getload(double *load1, double *load5, double *load15)
 
     if (!kernel_init)
         kernel_open();
-    if (lseek(kmem_fd, offset, 0) < 0) {
-        util_log_error("can't lseek in /dev/kmem: %%m");
-        exit(1);
-    }
+    if (lseek(kmem_fd, offset, 0) < 0)
+        sysdie("cannot lseek in /dev/kmem");
     status = read(kmem_fd, (void *) load, sizeof(load));
-    if (status != sizeof(load)) {
-        util_log_error("read only %d bytes: %%m", status);
-        exit(1);
-    }
+    if (status != sizeof(load))
+        sysdie("kernel read failed");
     *load1  = (double) load[0] / 1000.0;
     *load5  = (double) load[1] / 1000.0;
     *load15 = (double) load[2] / 1000.0;
@@ -112,7 +105,7 @@ kernel_getboottime(time_t *boottime)
     result = getutxid(&query);
     endutxent();
     if (result == NULL) {
-        util_log_error("getutxid failed to find BOOT_TIME");
+        syswarn("getutxid failed to find BOOT_TIME");
         return -1;
     }
     *boottime = result->ut_tv.tv_sec;

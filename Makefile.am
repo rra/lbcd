@@ -1,15 +1,15 @@
 # Automake makefile for lbcd.
 #
 # Written by Russ Allbery <rra@stanford.edu>
-# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009
-#     Board of Trustees, Leland Stanford Jr. University
+# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012
+#     The Board of Trustees of the Leland Stanford Junior University
 #
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = LICENSE autogen lbcd.pod
 
-noinst_LIBRARIES = modules/libmodules.a portable/libportable.a
+noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
         portable/getnameinfo.h portable/macros.h portable/socket.h	 \
         portable/stdbool.h portable/system.h
@@ -19,11 +19,13 @@ modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
 	modules/monlist.c modules/monlist.h modules/nntp.c modules/ntp.c \
 	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c	 \
 	modules/udp_socket.c
+util_libutil_a_SOURCES = util/macros.h util/messages.c util/messages.h	\
+	util/xmalloc.c util/xmalloc.h
 
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
 	protocol.h server.c tmp_full.c util.c weight.c
-lbcd_LDADD = modules/libmodules.a portable/libportable.a
+lbcd_LDADD = modules/libmodules.a portable/libportable.a util/libutil.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1
 

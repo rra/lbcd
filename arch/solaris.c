@@ -25,6 +25,7 @@
 #include <utmpx.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 static int kernel_init = 0;
 static kstat_ctl_t *kernel = NULL;
@@ -37,10 +38,8 @@ static int
 kernel_open(void)
 {
     kernel = kstat_open();
-    if (kernel == NULL) {
-        util_log_error("kstat_open failed: %%m");
-        exit(1);
-    }
+    if (kernel == NULL)
+        sysdie("kstat_open failed");
     kernel_init = 1;
     return 0;
 }

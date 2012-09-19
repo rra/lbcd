@@ -24,6 +24,7 @@
 #include <sys/times.h>
 
 #include <lbcd.h>
+#include <util/messages.h>
 
 
 /*
@@ -42,7 +43,7 @@ kernel_getload(double *l1, double *l5, double *l15)
     mib[1] = VM_LOADAVG;
     size = sizeof(dyn_info);
     if (sysctl(mib, 2, &dyn_info, &size, NULL, 0) < 0) {
-        util_log_error("kernel loadaverage read error: %%m");
+        syswarn("error reading kernel load average");
         return -1;
     }
 
@@ -69,7 +70,7 @@ kernel_getboottime(time_t *boottime)
     mib[1] = KERN_BOOTTIME;
     size = sizeof(boot);
     if (sysctl(mib, 2, &boot, &size, NULL, 0) < 0) {
-        util_log_error("kernel boottime read error: %%m");
+        syswarm("error reding kernel boot time");
         return -1;
     }
     *boottime = boot.tv_sec;
