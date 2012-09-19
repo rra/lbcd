@@ -9,6 +9,7 @@
  */
 
 #include <config.h>
+#include <portable/socket.h>
 #include <portable/system.h>
 
 #include <lbcdload.h>
@@ -24,17 +25,17 @@
 static int
 probe_imap(const char *host, int timeout)
 {
-    int sd;
+    socket_type sd;
     int retval = 0;
 
     sd = tcp_connect(host ? host : "localhost", "imap", 143);
-    if (sd == -1)
+    if (sd == INVALID_SOCKET)
         return -1;
     else {
         retval = lbcd_check_reply(sd, timeout, "* OK");
         /* Only for clean shutdown, don't care about failure. */
-        if (write(sd, "tag logout\r\n", 12) < 0) {}
-        close(sd);
+        if (socket_write(sd, "tag logout\r\n", 12) < 0) {}
+        socket_close(sd);
     }
     return retval;
 }

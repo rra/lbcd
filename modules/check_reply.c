@@ -14,6 +14,7 @@
  */
 
 #include <config.h>
+#include <portable/socket.h>
 #include <portable/system.h>
 
 #ifdef HAVE_SYS_SELECT_H
@@ -30,7 +31,7 @@
  * on failure.
  */
 int
-lbcd_check_reply(int sd, int timeout, const char *token)
+lbcd_check_reply(socket_type sd, int timeout, const char *token)
 {
     struct timeval tv = { timeout, 0 };
     fd_set rset;
@@ -49,7 +50,7 @@ lbcd_check_reply(int sd, int timeout, const char *token)
     FD_SET(sd, &rset);
     if (select(sd + 1, &rset, NULL, NULL, &tv) > 0) {
         buf[len] = '\0';
-        if (read(sd, buf, len) > 0) {
+        if (socket_read(sd, buf, len) > 0) {
             if (strcmp(buf, token) != 0)
                 retval = -1;
         } else {

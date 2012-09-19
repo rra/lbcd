@@ -12,6 +12,7 @@
 #define MODULES_MODULES_H 1
 
 #include <portable/macros.h>
+#include <portable/socket.h>    /* socket_type */
 
 BEGIN_DECLS
 
@@ -20,7 +21,8 @@ extern int lbcd_check_reply(int sd, int timeout, const char *token);
 extern int probe_tcp(const char *host, const char *service, short port,
 		     const char *replycheck, int timeout);
 
-extern int tcp_connect(const char *host, const char *protocol, int port);
+extern socket_type tcp_connect(const char *host, const char *protocol,
+                               int port);
 extern int udp_connect(const char *host, const char *protocol, int port);
 
 END_DECLS

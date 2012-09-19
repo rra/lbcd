@@ -11,6 +11,9 @@ portable/snprintf
 portable/strlcat
 portable/strlcpy
 portable/strndup
+util/fdflag
 util/messages
+util/network
 util/vector
 util/xmalloc
+util/xwrite

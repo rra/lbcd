@@ -22,9 +22,12 @@
 /tests/portable/strlcpy-t
 /tests/portable/strndup-t
 /tests/runtests
+/tests/util/fdflag-t
 /tests/util/messages-t
+/tests/util/network-t
 /tests/util/vector-t
 /tests/util/xmalloc
+/tests/util/xwrite-t
 .deps
 .dirstamp
 *.1

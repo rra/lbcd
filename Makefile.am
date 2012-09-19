@@ -19,8 +19,10 @@ modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
 	modules/monlist.c modules/monlist.h modules/nntp.c modules/ntp.c \
 	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c	 \
 	modules/udp_socket.c
-util_libutil_a_SOURCES = util/macros.h util/messages.c util/messages.h	\
-	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h
+util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
+	util/messages.c util/messages.h util/network.c util/network.h	\
+	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h	\
+	util/xwrite.c util/xwrite.h
 
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
@@ -69,7 +71,8 @@ check_PROGRAMS = tests/runtests tests/portable/asprintf-t		\
 	tests/portable/inet_ntoa-t tests/portable/inet_ntop-t		\
 	tests/portable/snprintf-t tests/portable/strlcat-t		\
 	tests/portable/strlcpy-t tests/portable/strndup-t		\
-	tests/util/messages-t tests/util/vector-t tests/util/xmalloc
+	tests/util/fdflag-t tests/util/messages-t tests/util/network-t	\
+	tests/util/vector-t tests/util/xmalloc tests/util/xwrite-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
         -DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/tap/libtap.a
@@ -112,11 +115,19 @@ tests_portable_strlcpy_t_LDADD = tests/tap/libtap.a portable/libportable.a
 tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
 	tests/portable/strndup.c
 tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_util_fdflag_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
 tests_util_messages_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_util_network_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 tests_util_vector_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 tests_util_xmalloc_LDADD = util/libutil.a portable/libportable.a
+tests_util_xwrite_t_SOURCES = tests/util/fakewrite.c tests/util/xwrite.c \
+	tests/util/xwrite-t.c
+tests_util_xwrite_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
 
 check-local: $(check_PROGRAMS)
 	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS

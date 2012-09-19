@@ -9,6 +9,7 @@
  */
 
 #include <config.h>
+#include <portable/socket.h>
 #include <portable/system.h>
 
 #ifdef HAVE_SYS_SELECT_H
@@ -35,7 +36,7 @@
 static int
 probe_http(const char *host, int timeout, const char *portarg)
 {
-    int sd;
+    socket_type sd;
     int retval = 0;
     short port = 80;
     const char *service = "http";
@@ -48,22 +49,22 @@ probe_http(const char *host, int timeout, const char *portarg)
             service = NULL;     /* Force use of supplied port number. */
     }
     sd = tcp_connect(host ? host : "localhost", service, port);
-    if (sd == -1)
+    if (sd == INVALID_SOCKET)
         return -1;
     else {
         struct timeval tv = { timeout, 0 };
         fd_set rset;
         char buf[17];
 
-        if (write(sd, QUERY, sizeof(QUERY)) < (ssize_t) sizeof(QUERY)) {
-            close(sd);
+        if (socket_write(sd, QUERY, sizeof(QUERY)) < (ssize_t) sizeof(QUERY)) {
+            socket_close(sd);
             return -1;
         }
         FD_ZERO(&rset);
         FD_SET(sd, &rset);
         if (select(sd + 1, &rset, NULL, NULL, &tv) > 0) {
             buf[sizeof(buf) - 1] = '\0';
-            if (read(sd, buf, sizeof(buf) - 1) > 0) {
+            if (socket_read(sd, buf, sizeof(buf) - 1) > 0) {
                 if (strstr(buf, "200") != NULL)
                     retval = 0;
             } else {
@@ -72,7 +73,7 @@ probe_http(const char *host, int timeout, const char *portarg)
         } else {
             retval = -1;
         }
-        close(sd);
+        socket_close(sd);
     }
     return retval;
 }

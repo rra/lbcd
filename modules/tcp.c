@@ -9,6 +9,7 @@
  */
 
 #include <config.h>
+#include <portable/socket.h>
 #include <portable/system.h>
 
 #include <ctype.h>
@@ -27,19 +28,19 @@ int
 probe_tcp(const char *host, const char *service, short port,
           const char *replycheck, int timeout)
 {
-    int sd;
+    socket_type sd;
     int retval = 0;
 
     sd = tcp_connect(host ? host : "localhost", service, port);
-    if (sd == -1)
+    if (sd == INVALID_SOCKET)
         return -1;
     else {
         if (replycheck) {
             retval = lbcd_check_reply(sd, timeout, replycheck);
             /* Only for clean shutdown, don't care about failure. */
-            if (write(sd, "quit\r\n", 6) < 0) {}
+            if (socket_write(sd, "quit\r\n", 6) < 0) {}
         }
-        close(sd);
+        socket_close(sd);
     }
     return retval;
 }
