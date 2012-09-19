@@ -18,6 +18,7 @@
 
 #include <lbcdload.h>
 #include <modules/modules.h>
+#include <util/macros.h>
 
 /* The most basic HTTP query that we can perform. */
 #define QUERY "GET / HTTP/1.0\r\n\r\n"

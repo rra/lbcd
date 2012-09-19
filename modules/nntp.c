@@ -11,10 +11,9 @@
 #include <config.h>
 #include <portable/system.h>
 
-#include <sys/time.h>
-
 #include <lbcdload.h>
 #include <modules/modules.h>
+#include <util/macros.h>
 
 
 /*

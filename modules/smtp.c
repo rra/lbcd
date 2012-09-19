@@ -13,6 +13,7 @@
 
 #include <lbcdload.h>
 #include <modules/modules.h>
+#include <util/macros.h>
 
 
 /*

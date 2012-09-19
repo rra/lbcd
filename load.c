@@ -18,6 +18,7 @@
 
 #include <lbcd.h>
 #include <lbcdload.h>
+#include <util/macros.h>
 
 #ifndef MAX
 # define MAX(a,b) (((a) > (b)) ? (a) : (b))

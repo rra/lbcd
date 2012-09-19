@@ -14,6 +14,7 @@
 #include <lbcdload.h>
 #include <modules/modules.h>
 #include <modules/monlist.h>
+#include <util/macros.h>
 
 
 /*

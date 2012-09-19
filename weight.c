@@ -18,6 +18,7 @@
 
 #include <lbcd.h>
 #include <lbcdload.h>
+#include <util/macros.h>
 
 /* Supported services list. */
 static lbcd_func_tab_t service_table[] = {

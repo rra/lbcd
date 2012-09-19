@@ -16,9 +16,6 @@
 
 #include <protocol.h>
 
-/* Used for unused parameters to silence gcc warnings. */
-#define UNUSED __attribute__((__unused__))
-
 /*
  * Defines
  */

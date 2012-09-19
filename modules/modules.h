@@ -13,9 +13,6 @@
 
 #include <portable/macros.h>
 
-/* Used for unused parameters to silence gcc warnings. */
-#define UNUSED __attribute__((__unused__))
-
 BEGIN_DECLS
 
 extern int lbcd_check_reply(int sd, int timeout, const char *token);
