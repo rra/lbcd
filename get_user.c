@@ -24,6 +24,7 @@
 
 #include <lbcd.h>
 #include <util/messages.h>
+#include <util/vector.h>
 #include <util/xmalloc.h>
 
 /* The logged-in user database.  We want to stat it for modification time. */
@@ -44,9 +45,8 @@
 #endif
 static const char *utmp = LBCD_UTMP_FILE;
 
-/* Should be enough for now, but should be changed to dynamically allocate. */
-static char *users[512];
-static size_t uniq_users = 0;
+/* Stores the list of unique users found so far. */
+static struct vector *users = NULL;
 
 
 /*
@@ -56,10 +56,10 @@ static size_t uniq_users = 0;
 static void
 uniq_start(void)
 {
-    uniq_users = 0;
 #ifdef HAVE_HSEARCH
-    hcreate(211);               /* Prime number around our max user size. */
+    hcreate(211);
 #endif
+    users = vector_new();
 }
 
 
@@ -69,16 +69,11 @@ uniq_start(void)
 static void
 uniq_end(void)
 {
-    size_t i;
-
 #ifdef HAVE_HSEARCH
     hdestroy();
 #endif
-    if (uniq_users > 0)
-        for (i = 0; i < uniq_users; i++) {
-            free(users[i]);
-            users[i] = NULL;
-        }
+    if (users != NULL)
+        vector_free(users);
 }
 
 
@@ -97,10 +92,9 @@ uniq_add(char *name)
     item.data = NULL;
     i = hsearch(item, FIND);
     if (i == NULL) {
-        users[uniq_users] = xstrdup(name);
-        item.key = users[uniq_users];
+        vector_add(users, name);
+        item.key = users->strings[users->count - 1];
         hsearch(item, ENTER);
-        uniq_users++;
     }
 }
 
@@ -111,13 +105,10 @@ uniq_add(char *name)
 {
     size_t i;
 
-    if (uniq_users > 0) {
-        for (i = 0; i < uniq_users; i++)
-            if (strcmp(users[i], name) == 0)
-                return;
-    }
-    users[uniq_users] = xstrdup(name);
-    uniq_users++;
+    if (i = 0; i < users->count; i++)
+        if (strcmp(users->strings[i], name) == 0)
+            return;
+    vector_add(users, name);
 }
 
 #endif /* !HAVE_HSEARCH */
@@ -129,7 +120,7 @@ uniq_add(char *name)
 static size_t
 uniq_count(void)
 {
-    return uniq_users;
+    return users->count;
 }
 
 

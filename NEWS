@@ -9,6 +9,9 @@ lbcd 3.4.0 (unreleased)
     plugin probably never worked, at least with OpenLDAP.  Thanks to
     Quanah Gibson-Mount for the fixes.
 
+    Fix a possible memory overwrite and security issue if there are more
+    than 512 unique users logged on to the system.
+
     Check for inet_aton in libresolv for older versions of Solaris.
 
     Dropped support for NeXTSTEP, ULTRIX, and SunOS.  It's unlikely that

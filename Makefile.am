@@ -20,12 +20,12 @@ modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
 	modules/pop.c modules/smtp.c modules/tcp.c modules/tcp_socket.c	 \
 	modules/udp_socket.c
 util_libutil_a_SOURCES = util/macros.h util/messages.c util/messages.h	\
-	util/xmalloc.c util/xmalloc.h
+	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h
 
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
 	protocol.h server.c tmp_full.c weight.c
-lbcd_LDADD = modules/libmodules.a portable/libportable.a util/libutil.a
+lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1
 
