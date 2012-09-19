@@ -24,6 +24,7 @@
 
 #include <lbcd.h>
 #include <util/messages.h>
+#include <util/xmalloc.h>
 
 /* The logged-in user database.  We want to stat it for modification time. */
 #if defined(HAVE_UTMPX_H)
@@ -96,9 +97,8 @@ uniq_add(char *name)
     item.data = NULL;
     i = hsearch(item, FIND);
     if (i == NULL) {
-        users[uniq_users] = malloc(strlen(name) + 1);
+        users[uniq_users] = xstrdup(name);
         item.key = users[uniq_users];
-        strcpy(item.key, name);
         hsearch(item, ENTER);
         uniq_users++;
     }
@@ -116,8 +116,7 @@ uniq_add(char *name)
             if (strcmp(users[i], name) == 0)
                 return;
     }
-    users[uniq_users] = malloc(strlen(name) + 1);
-    strcpy(users[uniq_users], name);
+    users[uniq_users] = xstrdup(name);
     uniq_users++;
 }
 
