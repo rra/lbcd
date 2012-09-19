@@ -1,3 +1,7 @@
+=for stopwords
+lbcd -dhlRrt UDP DNS-based balancer lbnamed lbnamed's iptables IP
+Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT
+
 =head1 NAME
 
 lbcd - Report system load for remote load balancing
@@ -58,7 +62,7 @@ when responding to a version two query and will set all of the user
 numbers to zero unless B<-S> was given.  If B<-S> was given, the values
 returned will be left alone.  (This means that B<-S> will override B<-R>
 for version two queries, since B<-R> is equivalent to specifying a service
-of rr.)
+of C<rr>.)
 
 B<lbcd> responds to any UDP packets on port 4330 (or the port given with
 the B<-p> option).  It has no built-in security, so if you do not want to
@@ -123,7 +127,7 @@ Listen on I<port> rather than the default of 4330.
 =item B<-R>
 
 Use round-robin as the service.  This will always return a weight of one
-and an increment of one.  It is equivalent to B<-w rr>.  For version two
+and an increment of one.  It is equivalent to C<-w rr>.  For version two
 responses, it will always return a one-minute load of one regardless of
 the actual load average of the system (unless B<-S> is used).
 
@@ -140,7 +144,7 @@ B<lbnamed>'s logic and force it to use the service weight.  Instead,
 report the load averages and number of logged in users accurately.  This
 means that version two responses will not contain any information derived
 from custom services or weight settings and the B<-c>, B<-w>, and B<-R>
-options will be ignored for version two repsonses.
+options will be ignored for version two responses.
 
 =item B<-s>
 
@@ -162,9 +166,10 @@ name of a service module, in which case that service will be probed and
 its weight will be returned as the service weight (and the one-minute load
 with version two queries).
 
-The currently supported services are load (the default), ftp, http, imap,
-nntp, ntp, pop, smtp, tcp, and rr (round-robin, the same as B<-R>).  The
-http and tcp services must be followed by a colon and a port number.
+The currently supported services are C<load> (the default), C<ftp>,
+C<http>, C<imap>, C<nntp>, C<ntp>, C<pop>, C<smtp>, C<tcp>, and C<rr>
+(round-robin, the same as B<-R>).  The C<http> and C<tcp> services must be
+followed by a colon and a port number.
 
 =back
 

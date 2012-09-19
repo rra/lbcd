@@ -60,3 +60,63 @@ WARNINGS = -g -O -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wendif-labels	    \
 
 warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)'
+	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
+
+# The bits below are for the test suite, not for the main package.
+check_PROGRAMS = tests/runtests tests/portable/asprintf-t		\
+	tests/portable/daemon-t tests/portable/getaddrinfo-t		\
+	tests/portable/getnameinfo-t tests/portable/inet_aton-t		\
+	tests/portable/inet_ntoa-t tests/portable/inet_ntop-t		\
+	tests/portable/snprintf-t tests/portable/strlcat-t		\
+	tests/portable/strlcpy-t tests/portable/strndup-t		\
+	tests/util/messages-t tests/util/vector-t tests/util/xmalloc
+tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
+        -DBUILD='"$(abs_top_builddir)/tests"'
+check_LIBRARIES = tests/tap/libtap.a
+tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h	\
+	tests/tap/macros.h tests/tap/process.c tests/tap/process.h	\
+	tests/tap/string.c tests/tap/string.h
+
+# All of the test programs.
+tests_portable_asprintf_t_SOURCES = tests/portable/asprintf-t.c \
+	tests/portable/asprintf.c
+tests_portable_asprintf_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_daemon_t_SOURCES = tests/portable/daemon-t.c \
+	tests/portable/daemon.c
+tests_portable_daemon_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_getaddrinfo_t_SOURCES = tests/portable/getaddrinfo-t.c \
+	tests/portable/getaddrinfo.c
+tests_portable_getaddrinfo_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_getnameinfo_t_SOURCES = tests/portable/getnameinfo-t.c \
+	tests/portable/getnameinfo.c
+tests_portable_getnameinfo_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_portable_inet_aton_t_SOURCES = tests/portable/inet_aton-t.c \
+	tests/portable/inet_aton.c
+tests_portable_inet_aton_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_inet_ntoa_t_SOURCES = tests/portable/inet_ntoa-t.c \
+	tests/portable/inet_ntoa.c
+tests_portable_inet_ntoa_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_inet_ntop_t_SOURCES = tests/portable/inet_ntop-t.c \
+	tests/portable/inet_ntop.c
+tests_portable_inet_ntop_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_snprintf_t_SOURCES = tests/portable/snprintf-t.c \
+	tests/portable/snprintf.c
+tests_portable_snprintf_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_strlcat_t_SOURCES = tests/portable/strlcat-t.c \
+	tests/portable/strlcat.c
+tests_portable_strlcat_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_strlcpy_t_SOURCES = tests/portable/strlcpy-t.c \
+	tests/portable/strlcpy.c
+tests_portable_strlcpy_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
+	tests/portable/strndup.c
+tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_util_messages_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_util_vector_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_util_xmalloc_LDADD = util/libutil.a portable/libportable.a
+
+check-local: $(check_PROGRAMS)
+	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS

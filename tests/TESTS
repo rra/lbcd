@@ -1,0 +1,16 @@
+docs/pod
+docs/pod-spelling
+portable/asprintf
+portable/daemon
+portable/getaddrinfo
+portable/getnameinfo
+portable/inet_aton
+portable/inet_ntoa
+portable/inet_ntop
+portable/snprintf
+portable/strlcat
+portable/strlcpy
+portable/strndup
+util/messages
+util/vector
+util/xmalloc

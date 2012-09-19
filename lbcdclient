@@ -161,6 +161,9 @@ sub print_results($) {
 }
 __END__
 
+=for stopwords
+lbcdclient lbcd btime tmp Schwimmer Allbery
+
 =head1 NAME
 
 lbcdclient - Query a remote lbcd daemon for system load
