@@ -14,59 +14,36 @@
  */
 
 #include <config.h>
+#include <portable/statvfs.h>
 #include <portable/system.h>
-
-#ifdef HAVE_SYS_STATVFS_H
-# include <sys/statvfs.h>
-#elif HAVE_SYS_VFS_H
-# include <sys/vfs.h>
-#endif
 
 #include <lbcd.h>
 
-#ifndef USER_FBLOCKS
-/* Percentage of the fblocks on the partition which a user may use. */
-# if defined(__sgi__) || defined(_AIX)
-#  define USER_FBLOCKS 1.0
-# else
-#  define USER_FBLOCKS 0.9
-# endif
-#endif
-
 
 /*
- * Returns the percent full of the file system at the given path.
+ * Returns the percent full of the file system at the given path.  Assume,
+ * just to be safe, that the user can only use 95% of the available blocks.
+ * (This number, minfree, may vary, but we don't have a good way of
+ * determining it.)
  */
 int
 tmp_full(const char *path)
 {
+    struct statvfs info;
     int percent = 0;
+    double total;
 
-#if defined(HAVE_SYS_STATVFS_H) || defined(HAVE_SYS_VFS_H)
-    if (chdir(path) == 0) {
-# ifdef HAVE_SYS_STATVFS_H
-        struct statvfs tmp;
-# elif HAVE_SYS_VFS_H
-        struct statfs tmp;
-# endif
-
-# ifdef HAVE_SYS_STATVFS_H
-        if (statvfs(".", &tmp) == 0) {
-# else
-        if (statfs(".", &tmp) == 0) {
-# endif
-            float pct = ((tmp.f_blocks * USER_FBLOCKS) - tmp.f_bavail) * 100 /
-                (tmp.f_blocks * USER_FBLOCKS);
-            percent = pct + 0.5;  /* round result */
-        }
-
-        /* Sanity check */
+    if (chdir(path) == 0 && statvfs(".", &info) == 0) {
+        if (info.f_bavail > info.f_blocks * 0.95)
+            total = info.f_blocks;
+        else
+            total = info.f_blocks * 0.95;
+        percent = (total - info.f_bavail) * 100.0 / total + 0.5;
         if (percent < 0)
             percent = 0;
-        else if (percent > 100)
+        if (percent > 100)
             percent = 100;
     }
-#endif
     return percent;
 }
 
@@ -78,7 +55,7 @@ tmp_full(const char *path)
 int
 main(void)
 {
-    printf("%%%d percent tmp full.\n", tmp_full("/tmp"));
+    printf("%%%d percent tmp full.\n", tmp_full("/"));
 # ifdef P_tmpdir
     printf("%%%d percent P_tmpdir full.\n", tmp_full(P_tmpdir));
 # endif
