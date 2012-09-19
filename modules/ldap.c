@@ -107,10 +107,10 @@ probe_ldap(const char *host, int timeout)
  * (success) or -1 (failure).
  */
 int
-lbcd_ldap_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+lbcd_ldap_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED, int timeout,
                  char *portarg UNUSED)
 {
-    *weight_val = (u_int) probe_ldap("localhost", timeout);
+    *weight_val = (uint32_t) probe_ldap("localhost", timeout);
     return (*weight_val == -1) ? -1 : 0;
 }
 #endif /* HAVE_LDAP */

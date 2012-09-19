@@ -31,7 +31,7 @@ probe_pop(const char *host, int timeout)
  * The module interface with the rest of lbcd.
  */
 int
-lbcd_pop_weight(u_int *weight_val, u_int *incr_val UNUSED, int timeout,
+lbcd_pop_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED, int timeout,
                 const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
     return *weight_val = probe_pop("localhost", timeout);

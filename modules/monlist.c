@@ -46,8 +46,8 @@ sendrequest(int sd, int implcode, int reqcode)
 
     memset(&qpkt, 0, sizeof qpkt);
     qpkt.rm_vn_mode = RM_VN_MODE(0, 0);
-    qpkt.implementation = (u_char) implcode;
-    qpkt.request = (u_char) reqcode;
+    qpkt.implementation = (uint8_t) implcode;
+    qpkt.request = (uint8_t) reqcode;
     qpkt.err_nitems = ERR_NITEMS(0, 0);
     qpkt.mbz_itemsize = MBZ_ITEMSIZE(0);
     qpkt.auth_seq = AUTH_SEQ(0, 0);

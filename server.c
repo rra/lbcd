@@ -58,13 +58,13 @@ lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
 static void
 lbcd_proto2_convert(P_LB_RESPONSE *lb)
 {
-    u_int weightval_i;
-    u_short weightval_s;
+    uint32_t weightval_i;
+    uint16_t weightval_s;
 
     /* Convert host weight to a short, handling network byte order */
     weightval_i = ntohl(lb->weights[0].host_weight);
-    if (weightval_i > (u_short) -1)
-        weightval_s = (u_short) -1;
+    if (weightval_i > (uint16_t) -1)
+        weightval_s = (uint16_t) -1;
     else
         weightval_s = weightval_i;
 
@@ -99,9 +99,9 @@ lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple)
 
     /* Load. */
     kernel_getload(&l1,&l5,&l15);
-    lb->l1 = htons((u_short)(l1 * 100));
-    lb->l5 = htons((u_short)(l5 * 100));
-    lb->l15 = htons((u_short)(l15 * 100));
+    lb->l1 = htons((uint16_t) (l1 * 100));
+    lb->l5 = htons((uint16_t) (l5 * 100));
+    lb->l15 = htons((uint16_t) (l15 * 100));
 
     /* Users. */
     get_user_stats(&tu,&uu,&oc,&umtime);

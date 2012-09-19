@@ -43,7 +43,7 @@ static int penalty[] = {
  * call the kernel routines twice.
  */
 int
-lbcd_load_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
+lbcd_load_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout UNUSED,
                  const char *portarg UNUSED, P_LB_RESPONSE *lb)
 {
     int fudge, weight;
@@ -56,14 +56,14 @@ lbcd_load_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
     tmp_used = MAX(lb->tmp_full, lb->tmpdir_full);
     if (tmp_used >= 90) {
         if (tmp_used > 100)
-            weight = (u_int) -1;
+            weight = (uint32_t) -1;
         else
             weight *= penalty[tmp_used - 90];
     }
 
     /* Do not hand out if /etc/nologin exists. */
     if (access("/etc/nologin", F_OK) == 0)
-        weight = (u_int)-1;
+        weight = (uint32_t) -1;
 
     /* Return weight and increment. */
     *weight_val = weight;

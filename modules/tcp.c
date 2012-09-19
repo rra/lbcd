@@ -51,7 +51,7 @@ probe_tcp(const char *host, const char *service, short port,
  * probe.  Always probes localhost.  Returns the weight or -1 on error.
  */
 int
-lbcd_tcp_weight(u_int *weight_val, u_int *incr_val UNUSED,
+lbcd_tcp_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED,
                 int timeout, const char *portarg, P_LB_RESPONSE *lb UNUSED)
 {
     const char *service = NULL;
@@ -77,7 +77,8 @@ lbcd_tcp_weight(u_int *weight_val, u_int *incr_val UNUSED,
     }
 
     /* Connect to the port, set weight, and return */
-    *weight_val = (u_int) probe_tcp("localhost", service, port, NULL, timeout);
+    *weight_val = (uint32_t) probe_tcp("localhost", service, port, NULL,
+                                       timeout);
     return *weight_val;
 }
 
@@ -90,7 +91,7 @@ int
 main(int argc, char *argv[])
 {
     int status;
-    u_int i;
+    uint32_t i;
 
     status = probe_tcp(argv[1], "smtp", 25, "220", 5);
     printf("%s service %savailable\n", "smtp", status ? "not " : "");

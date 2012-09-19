@@ -42,6 +42,8 @@ AC_CHECK_DECLS([snprintf, vsnprintf])
 RRA_C_C99_VAMACROS
 RRA_C_GNU_VAMACROS
 AC_TYPE_LONG_LONG_INT
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])

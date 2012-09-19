@@ -50,8 +50,8 @@ static lbcd_func_tab_t service_table[] = {
 /* Module globals. */
 static const char *lbcd_command;
 static const char *lbcd_service;
-static u_int default_weight;
-static u_int default_increment;
+static uint32_t default_weight;
+static uint32_t default_increment;
 static lbcd_func_tab_t* lbcd_default_functab;
 static int lbcd_timeout;
 
@@ -178,7 +178,7 @@ lbcd_weight_init(const char *cmd, const char *service, int timeout)
 void
 lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 {
-    u_int *weight_ptr, *incr_ptr;
+    uint32_t *weight_ptr, *incr_ptr;
     lbcd_func_tab_t *functab;
     const char *cp;
 
@@ -209,10 +209,11 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
  * The unknown weight function.  Return the maximum weight.
  */
 int
-lbcd_unknown_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
-                    const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
+lbcd_unknown_weight(uint32_t *weight_val, uint32_t *incr_val,
+                    int timeout UNUSED, const char *portarg UNUSED,
+                    P_LB_RESPONSE *lb UNUSED)
 {
-    *weight_val = (u_int) -1;
+    *weight_val = (uint32_t) -1;
     *incr_val = 0;
     return 0;
 }
@@ -222,7 +223,7 @@ lbcd_unknown_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
  * The simple round-robin load function.
  */
 int
-lbcd_rr_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
+lbcd_rr_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout UNUSED,
                const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
 {
     *weight_val = default_weight;
@@ -235,7 +236,7 @@ lbcd_rr_weight(u_int *weight_val, u_int *incr_val, int timeout UNUSED,
  * Run an external command and set the weight and increment from its output.
  */
 int
-lbcd_cmd_weight(u_int *weight_val, u_int *incr_val, int timeout,
+lbcd_cmd_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout,
                 const char *portarg, P_LB_RESPONSE *lb)
 {
     int fd[2];

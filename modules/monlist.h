@@ -28,16 +28,13 @@
 
 #include <portable/macros.h>
 
-typedef unsigned int u_int32;
-typedef int int32;
-
 typedef struct {
     union {
-        u_int Xl_ui;
+        uint32_t Xl_ui;
         int Xl_i;
     } Ul_i;
     union {
-        u_int Xl_uf;
+        uint32_t Xl_uf;
         int Xl_f;
     } Ul_f;
 } l_fp;
@@ -45,15 +42,15 @@ typedef struct {
 /*
  * A request packet.  These are almost a fixed length. */
 struct req_pkt {
-    u_char rm_vn_mode;          /* Response, more, version, mode */
-    u_char auth_seq;            /* Key, sequence number */
-    u_char implementation;      /* Implementation number */
-    u_char request;             /* Request number */
-    u_short err_nitems;         /* Error code/number of data items */
-    u_short mbz_itemsize;       /* Item size */
+    uint8_t rm_vn_mode;         /* Response, more, version, mode */
+    uint8_t auth_seq;           /* Key, sequence number */
+    uint8_t implementation;     /* Implementation number */
+    uint8_t request;            /* Request number */
+    uint16_t err_nitems;        /* Error code/number of data items */
+    uint16_t mbz_itemsize;      /* Item size */
     char data[32];              /* Data area */
     l_fp tstamp;                /* Time stamp, for authentication */
-    u_int32 keyid;              /* Encryption key */
+    uint32_t keyid;             /* Encryption key */
 };
 
 /* Input packet lengths.  One with the mac, one without. */
@@ -68,12 +65,12 @@ struct req_pkt {
 #define RESP_DATA_SIZE          (500)
 
 struct resp_pkt {
-    u_char rm_vn_mode;          /* Response, more, version, mode */
-    u_char auth_seq;            /* Key, sequence number */
-    u_char implementation;      /* Implementation number */
-    u_char request;             /* Request number */
-    u_short err_nitems;         /* Error code/number of data items */
-    u_short mbz_itemsize;       /* Item size */
+    uint8_t rm_vn_mode;         /* Response, more, version, mode */
+    uint8_t auth_seq;           /* Key, sequence number */
+    uint8_t implementation;     /* Implementation number */
+    uint8_t request;            /* Request number */
+    uint16_t err_nitems;        /* Error code/number of data items */
+    uint16_t mbz_itemsize;      /* Item size */
     char data[RESP_DATA_SIZE];  /* Data area */
 };
 
@@ -91,34 +88,34 @@ struct resp_pkt {
 
 #define ISRESPONSE(rm_vn_mode)   (((rm_vn_mode) & RESP_BIT) != 0)
 #define ISMORE(rm_vn_mode)       (((rm_vn_mode) & MORE_BIT) != 0)
-#define INFO_VERSION(rm_vn_mode) ((u_char)(((rm_vn_mode) >> 3) & 0x7))
+#define INFO_VERSION(rm_vn_mode) ((uint8_t)(((rm_vn_mode) >> 3) & 0x7))
 #define INFO_MODE(rm_vn_mode)    ((rm_vn_mode) & 0x7)
 
 #define RM_VN_MODE(resp, more) \
-    ((u_char)(((resp) ? RESP_BIT : 0) | ((more) ? MORE_BIT : 0) \
+    ((uint8_t)(((resp) ? RESP_BIT : 0) | ((more) ? MORE_BIT : 0) \
               | ((NTP_VERSION) << 3) | (MODE_PRIVATE)))
 
 #define INFO_IS_AUTH(auth_seq)   (((auth_seq) & 0x80) != 0)
 #define INFO_SEQ(auth_seq)       ((auth_seq) & 0x7f)
 #define AUTH_SEQ(auth, seq) \
-    ((u_char)((((auth) != 0) ? 0x80 : 0) | ((seq) & 0x7f)))
+    ((uint8_t)((((auth) != 0) ? 0x80 : 0) | ((seq) & 0x7f)))
 
-#define INFO_ERR(err_nitems)     ((u_short)((ntohs(err_nitems) >> 12) & 0xf))
-#define INFO_NITEMS(err_nitems)  ((u_short)(ntohs(err_nitems) & 0xfff))
+#define INFO_ERR(err_nitems)     ((uint16_t)((ntohs(err_nitems) >> 12) & 0xf))
+#define INFO_NITEMS(err_nitems)  ((uint16_t)(ntohs(err_nitems) & 0xfff))
 #define ERR_NITEMS(err, nitems) \
-    (htons((u_short)((((u_short)(err) << 12) & 0xf000) \
-                     | ((u_short)(nitems) & 0xfff))))
+    (htons((uint16_t)((((uint16_t)(err) << 12) & 0xf000) \
+                     | ((uint16_t)(nitems) & 0xfff))))
 
 #define INFO_MBZ(mbz_itemsize)      ((ntohs(mbz_itemsize) >> 12) & 0xf)
 #define INFO_ITEMSIZE(mbz_itemsize) (ntohs(mbz_itemsize) & 0xfff)
-#define MBZ_ITEMSIZE(itemsize)      (htons((u_short)(itemsize)))
+#define MBZ_ITEMSIZE(itemsize)      (htons((uint16_t)(itemsize)))
 
 /* XNTPD request codes. */
 #define REQ_MON_GETLIST 20      /* Return data collected by monitor */
 
 /* Other defines. */
 #define IMPL_XNTPD   2
-#define NTP_VERSION  ((u_char) 3)       /* Current version number */
+#define NTP_VERSION  ((uint8_t) 3)       /* Current version number */
 #define MODE_PRIVATE 7                  /* Implementation defined function */
 
 BEGIN_DECLS

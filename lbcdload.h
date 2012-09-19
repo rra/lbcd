@@ -20,11 +20,11 @@
  * A weight function takes a pointer to the weight and increment and possibly
  * an extra response or port argument and sets the values.
  *
- * NONE: int weight_func_t(u_int *, u_int *, timeout, P_LB_RESPONSE *);
- *   LB: int weight_func_t(u_int *, u_int *, timeout, P_LB_RESPONSE *);
- * PORT: int weight_func_t(u_int *, u_int *, timeout, const char *);
+ * NONE: int weight_func_t(uint32_t *, uint32_t *, timeout, P_LB_RESPONSE *);
+ *   LB: int weight_func_t(uint32_t *, uint32_t *, timeout, P_LB_RESPONSE *);
+ * PORT: int weight_func_t(uint32_t *, uint32_t *, timeout, const char *);
  */
-typedef int weight_func_t(u_int *, u_int *, int, const char *,
+typedef int weight_func_t(uint32_t *, uint32_t *, int, const char *,
                           P_LB_RESPONSE *);
 
 /* lbcdcmd_t: third argument of weight function. */

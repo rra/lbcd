@@ -45,7 +45,7 @@ extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* weight.c */
-int lbcd_default_weight(P_LB_RESPONSE *lb, u_int *weight, u_int *incr);
+int lbcd_default_weight(P_LB_RESPONSE *lb, uint32_t *weight, uint32_t *incr);
 int lbcd_weight_init(const char *cmd, const char *service, int timeout);
 void lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service);
 
