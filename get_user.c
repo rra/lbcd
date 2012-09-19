@@ -144,7 +144,7 @@ uniq_count(void)
 int
 get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
 {
-    char name[9];
+    char *name;
     struct stat sbuf;
     static int last_total = 0;
     static int last_uniq = 0;
@@ -178,7 +178,8 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
     if (stat("/dev/tty1", &sbuf) == 0 && sbuf.st_uid  != 0)
         *on_console = 1;
 
-    /* Now count the number of unique users.  There are two implementations
+    /*
+     * Now count the number of unique users.  There are two implementations
      * depending on whether we have getutent or have to read the utmp file
      * ourselves.
      */
@@ -193,9 +194,9 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
             (*total)++;
             if (strncmp(ut->ut_line, "console", 7) == 0)
                 *on_console = 1;
-            strncpy(name,ut->ut_user, 8);
-            name[8] = '\0';
+            name = xstrndup(ut->ut_user, sizeof(ut->ut_user));
             uniq_add(name);
+            free(name);
         }
         endutent();
     }
@@ -220,9 +221,9 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
             (*total)++;
             if (strncmp(ut.ut_line, "console", 7) == 0)
                 *on_console = 1;
-            strncpy(name,ut.ut_name, 8);
-            name[8] = 0;
+            name = xstrndup(ut.ut_name, sizeof(ut.ut_name));
             uniq_add(name);
+            free(name);
         }
         close(fd);
     }
@@ -244,8 +245,6 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
  * Test routine.
  */
 #ifdef MAIN
-void util_log_error(char *fmt, ...) { }
-
 int
 main(void)
 {

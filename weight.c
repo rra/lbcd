@@ -112,8 +112,8 @@ service_to_func(const char *service)
         return lbcd_default_functab;
 
     /* Obtain service name portion (service:port). */
-    strcpy(name, service);
-    cp = strchr(name,':');
+    strlcpy(name, service, sizeof(name));
+    cp = strchr(name, ':');
     if (cp != NULL)
         *cp ='\0';
 
