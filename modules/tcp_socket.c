@@ -35,6 +35,7 @@ tcp_connect(const char *host, const char *protocol, int port)
     struct addrinfo *ai, hints;
     char *p;
     int status;
+    socket_type fd;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
@@ -47,5 +48,7 @@ tcp_connect(const char *host, const char *protocol, int port)
     }
     if (status != 0)
         return -1;
-    return network_connect(ai, NULL, 0);
+    fd = network_connect(ai, NULL, 0);
+    freeaddrinfo(ai);
+    return fd;
 }
