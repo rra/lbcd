@@ -33,28 +33,16 @@
 #endif
 
 /*
- * A weight function takes a pointer to the weight and increment and possibly
- * an extra response or port argument and sets the values.
- *
- * NONE: int weight_func_t(uint32_t *, uint32_t *, timeout, P_LB_RESPONSE *);
- *   LB: int weight_func_t(uint32_t *, uint32_t *, timeout, P_LB_RESPONSE *);
- * PORT: int weight_func_t(uint32_t *, uint32_t *, timeout, const char *);
+ * A weight function takes a pointer to the weight and increment, a timeout, a
+ * port argument, and the response argument.
  */
 typedef int weight_func_t(uint32_t *, uint32_t *, int, const char *,
                           P_LB_RESPONSE *);
-
-/* lbcdcmd_t: third argument of weight function. */
-typedef enum {
-    LBCD_ARGNONE    = 0,
-    LBCD_ARGLB      = 1,
-    LBCD_ARGPORT    = 2
-} lbcdcmd_t;
 
 /* A weight function. */
 typedef struct lbcd_func_tab {
     LBCD_SERVICE_REQ service;
     weight_func_t *function;
-    lbcdcmd_t argument;
 } lbcd_func_tab_t;
 
 BEGIN_DECLS

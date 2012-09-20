@@ -20,30 +20,30 @@
 #include <util/macros.h>
 
 /* Supported services list. */
-static lbcd_func_tab_t service_table[] = {
+static const lbcd_func_tab_t service_table[] = {
     /* Default. */
-    { "load",    &lbcd_load_weight,    LBCD_ARGLB },
+    { "load",    &lbcd_load_weight    },
 
     /* Internal built-ins. */
-    { "cmd",     &lbcd_cmd_weight,     LBCD_ARGNONE },
-    { "rr",      &lbcd_rr_weight,      LBCD_ARGNONE },
-    { "unknown", &lbcd_unknown_weight, LBCD_ARGNONE },
+    { "cmd",     &lbcd_cmd_weight     },
+    { "rr",      &lbcd_rr_weight      },
+    { "unknown", &lbcd_unknown_weight },
 
     /* Modules. */
-    { "ftp",     &lbcd_ftp_weight,     LBCD_ARGNONE },
-    { "http",    &lbcd_http_weight,    LBCD_ARGPORT },
-    { "imap",    &lbcd_imap_weight,    LBCD_ARGNONE },
+    { "ftp",     &lbcd_ftp_weight     },
+    { "http",    &lbcd_http_weight    },
+    { "imap",    &lbcd_imap_weight    },
 #ifdef HAVE_LDAP
-    { "ldap",    &lbcd_ldap_weight,    LBCD_ARGNONE },
+    { "ldap",    &lbcd_ldap_weight    },
 #endif
-    { "nntp",    &lbcd_nntp_weight,    LBCD_ARGNONE },
-    { "ntp",     &lbcd_ntp_weight,     LBCD_ARGNONE },
-    { "pop",     &lbcd_pop_weight,     LBCD_ARGNONE },
-    { "smtp",    &lbcd_smtp_weight,    LBCD_ARGNONE },
-    { "tcp",     &lbcd_tcp_weight,     LBCD_ARGPORT },
+    { "nntp",    &lbcd_nntp_weight    },
+    { "ntp",     &lbcd_ntp_weight     },
+    { "pop",     &lbcd_pop_weight     },
+    { "smtp",    &lbcd_smtp_weight    },
+    { "tcp",     &lbcd_tcp_weight     },
 
-    /* Last element is NULLs */
-    { "",        NULL,                 LBCD_ARGNONE }
+    /* Last element is NULLs. */
+    { "",      NULL                   }
 };
 
 /* Module globals. */
@@ -51,7 +51,7 @@ static const char *lbcd_command;
 static const char *lbcd_service;
 static uint32_t default_weight;
 static uint32_t default_increment;
-static lbcd_func_tab_t* lbcd_default_functab;
+static const lbcd_func_tab_t *lbcd_default_functab;
 static int lbcd_timeout;
 
 
@@ -100,10 +100,10 @@ is_weights(const char *service)
  * Given the name of a service, return the function table entry for it or
  * NULL on failure.
  */
-static lbcd_func_tab_t *
+static const lbcd_func_tab_t *
 service_to_func(const char *service)
 {
-    lbcd_func_tab_t *stp;
+    const lbcd_func_tab_t *stp;
     LBCD_SERVICE_REQ name;
     char *cp;
 
@@ -118,12 +118,12 @@ service_to_func(const char *service)
         *cp ='\0';
 
     /* Check table for exact match on service */
-    for (stp = service_table; *stp->service != '\0'; stp++)
+    for (stp = service_table; stp->service[0] != '\0'; stp++)
         if (strcmp(name, stp->service) == 0)
             return stp;
 
     /* Return unknown service */
-    for (stp = service_table; *stp->service != '\0'; stp++)
+    for (stp = service_table; stp->service[0] != '\0'; stp++)
         if (strcmp("unknown", stp->service) == 0)
             return stp;
 
@@ -178,29 +178,21 @@ void
 lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 {
     uint32_t *weight_ptr, *incr_ptr;
-    lbcd_func_tab_t *functab;
-    const char *cp;
+    const lbcd_func_tab_t *functab;
+    const char *cp = NULL;
 
     weight_ptr = &lb->weights[offset].host_weight;
     incr_ptr = &lb->weights[offset].host_incr;
     *incr_ptr = default_increment;
 
     functab = service_to_func(service);
-    switch (functab->argument) {
-    case LBCD_ARGNONE:
-        functab->function(weight_ptr, incr_ptr, lbcd_timeout, NULL, lb);
-        break;
-    case LBCD_ARGLB:
-        functab->function(weight_ptr, incr_ptr, lbcd_timeout, NULL, lb);
-        break;
-    case LBCD_ARGPORT:
-        cp = !strcmp(service,"default") ? lbcd_service : service;
+    if (strcmp(service, "default") != 0 || lbcd_service != NULL) {
+        cp = strcmp(service, "default") == 0 ? lbcd_service : service;
         cp = strchr(cp, ':');
         if (cp != NULL)
             cp++;
-        functab->function(weight_ptr, incr_ptr, lbcd_timeout, cp, lb);
-        break;
     }
+    functab->function(weight_ptr, incr_ptr, lbcd_timeout, cp, lb);
 }
 
 
