@@ -34,12 +34,13 @@ tcp_connect(const char *host, const char *protocol, int port)
 {
     struct addrinfo *ai, hints;
     char *p;
-    int status;
+    int status = EAI_NONAME;
     socket_type fd;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
-    status = getaddrinfo(host, protocol, &hints, &ai);
+    if (protocol != NULL)
+        status = getaddrinfo(host, protocol, &hints, &ai);
     if (status != 0 && port != 0) {
         xasprintf(&p, "%d", port);
         hints.ai_flags = AI_NUMERICSERV;
