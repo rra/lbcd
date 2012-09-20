@@ -36,14 +36,14 @@
  * A weight function takes a pointer to the weight and increment, a timeout, a
  * port argument, and the response argument.
  */
-typedef int weight_func_t(uint32_t *, uint32_t *, int, const char *,
-                          P_LB_RESPONSE *);
+typedef int weight_func_type(uint32_t *, uint32_t *, int, const char *,
+                             P_LB_RESPONSE *);
 
-/* A weight function. */
-typedef struct lbcd_func_tab {
+/* A mapping from service to weight function. */
+struct lbcd_service {
     LBCD_SERVICE_REQ service;
-    weight_func_t *function;
-} lbcd_func_tab_t;
+    weight_func_type *function;
+};
 
 BEGIN_DECLS
 
@@ -68,41 +68,41 @@ int lbcd_weight_init(const char *cmd, const char *service, int timeout);
 void lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service);
 
 /* weight.c -- generic routines */
-extern weight_func_t lbcd_rr_weight;      /* Round robin */
-extern weight_func_t lbcd_cmd_weight;     /* External command */
-extern weight_func_t lbcd_unknown_weight; /* Error function */
+extern weight_func_type lbcd_rr_weight;      /* Round robin */
+extern weight_func_type lbcd_cmd_weight;     /* External command */
+extern weight_func_type lbcd_unknown_weight; /* Error function */
 
 /* tcp.c -- arbitrary tcp port */
-extern weight_func_t lbcd_tcp_weight;
+extern weight_func_type lbcd_tcp_weight;
 
 /* load.c -- Default module */
-extern weight_func_t lbcd_load_weight;
+extern weight_func_type lbcd_load_weight;
 
 /* ftp.c */
-extern weight_func_t lbcd_ftp_weight;
+extern weight_func_type lbcd_ftp_weight;
 
 /* http.c */
-extern weight_func_t lbcd_http_weight;
+extern weight_func_type lbcd_http_weight;
 
 /* imap.c */
-extern weight_func_t lbcd_imap_weight;
+extern weight_func_type lbcd_imap_weight;
 
 /* ldap.c */
 #ifdef HAVE_LDAP
-extern weight_func_t lbcd_ldap_weight;
+extern weight_func_type lbcd_ldap_weight;
 #endif
 
 /* nntp.c */
-extern weight_func_t lbcd_nntp_weight;
+extern weight_func_type lbcd_nntp_weight;
 
 /* ntp.c  */
-extern weight_func_t lbcd_ntp_weight;
+extern weight_func_type lbcd_ntp_weight;
 
 /* pop.c  */
-extern weight_func_t lbcd_pop_weight;
+extern weight_func_type lbcd_pop_weight;
 
 /* smtp.c */
-extern weight_func_t lbcd_smtp_weight;
+extern weight_func_type lbcd_smtp_weight;
 
 /*
  * Extending lbcd locally
@@ -114,7 +114,7 @@ extern weight_func_t lbcd_smtp_weight;
  * Makefile.am, and the entry in weight.c.
  */
 #ifdef HAVE_LOCAL
-extern weight_func_t lbcd_local_weight;
+extern weight_func_type lbcd_local_weight;
 #endif
 
 END_DECLS

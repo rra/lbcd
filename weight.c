@@ -20,7 +20,7 @@
 #include <util/macros.h>
 
 /* Supported services list. */
-static const lbcd_func_tab_t service_table[] = {
+static const struct lbcd_service service_table[] = {
     /* Default. */
     { "load",    &lbcd_load_weight    },
 
@@ -51,7 +51,7 @@ static const char *lbcd_command;
 static const char *lbcd_service;
 static uint32_t default_weight;
 static uint32_t default_increment;
-static const lbcd_func_tab_t *lbcd_default_functab;
+static const struct lbcd_service *lbcd_default_functab;
 static int lbcd_timeout;
 
 
@@ -100,10 +100,10 @@ is_weights(const char *service)
  * Given the name of a service, return the function table entry for it or
  * NULL on failure.
  */
-static const lbcd_func_tab_t *
+static const struct lbcd_service *
 service_to_func(const char *service)
 {
-    const lbcd_func_tab_t *stp;
+    const struct lbcd_service *stp;
     LBCD_SERVICE_REQ name;
     char *cp;
 
@@ -178,7 +178,7 @@ void
 lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 {
     uint32_t *weight_ptr, *incr_ptr;
-    const lbcd_func_tab_t *functab;
+    const struct lbcd_service *functab;
     const char *cp = NULL;
 
     weight_ptr = &lb->weights[offset].host_weight;
@@ -186,12 +186,10 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
     *incr_ptr = default_increment;
 
     functab = service_to_func(service);
-    if (strcmp(service, "default") != 0 || lbcd_service != NULL) {
-        cp = strcmp(service, "default") == 0 ? lbcd_service : service;
-        cp = strchr(cp, ':');
-        if (cp != NULL)
-            cp++;
-    }
+    cp = strcmp(service, "default") == 0 ? functab->service : service;
+    cp = strchr(cp, ':');
+    if (cp != NULL)
+        cp++;
     functab->function(weight_ptr, incr_ptr, lbcd_timeout, cp, lb);
 }
 
