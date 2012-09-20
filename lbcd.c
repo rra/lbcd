@@ -97,9 +97,9 @@ stop_lbcd(const char *pid_file)
  */
 static int
 lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
-                 P_HEADER *request_header, enum lbcd_status pstat)
+                 struct lbcd_header *request_header, enum lbcd_status pstat)
 {
-    P_HEADER header;
+    struct lbcd_header header;
     char client[INET6_ADDRSTRLEN];
 
     header.version = htons(LBCD_VERSION);
@@ -129,7 +129,7 @@ static int
 lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
               char *mesg, int max_mesg)
 {
-    int n;
+    ssize_t n;
     P_HEADER_FULLPTR ph;
     char client[INET6_ADDRSTRLEN];
 
@@ -142,7 +142,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
         syswarn("cannot convert client address to string");
         strlcpy(client, "UNKNOWN", sizeof(client));
     }
-    if (n < (int) sizeof(P_HEADER)) {
+    if ((size_t) n < sizeof(struct lbcd_header)) {
         warn("client %s: short packet received (length %d)", client, n);
         return 0;
     }

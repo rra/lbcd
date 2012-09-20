@@ -55,20 +55,21 @@ struct lbcd_service {
 };
 
 /*
- * Request packet
+ * Packet header.  This is the entirety of the v2 request, and the header of
+ * the v3 request.  It's also the header of the response from the server.
  */
-typedef struct {
+struct lbcd_header {
     uint16_t version;           /* Protocol version */
     uint16_t id;                /* Requestor's unique request id */
     uint16_t op;                /* Operation requested */
     uint16_t status;            /* Number of services requested */
-} P_HEADER,*P_HEADER_PTR;
+};
 
 /*
  * Extended request packet.
  */
 typedef struct {
-    P_HEADER h;
+    struct lbcd_header h;
     lbcd_name_type names[LBCD_MAX_SERVICES];
 } P_HEADER_FULL, *P_HEADER_FULLPTR;
 
@@ -76,7 +77,7 @@ typedef struct {
  * Reply packet.
  */
 typedef struct {
-    P_HEADER h;
+    struct lbcd_header h;
     uint32_t boot_time;         /* Boot time */
     uint32_t current_time;      /* Host time */
     uint32_t user_mtime;        /* Time user information last changed */
