@@ -172,19 +172,19 @@ lbcd_test(int argc, char *argv[])
     printf("PROTOCOL %d\n", lb.h.version);
     printf("\n");
     printf("MACHINE STATUS:\n");
-    printf("l1           = %d\n", ntohs(lb.l1));
-    printf("l5           = %d\n", ntohs(lb.l5));
-    printf("l15          = %d\n", ntohs(lb.l15));
+    printf("l1           = %d\n", (int) ntohs(lb.l1));
+    printf("l5           = %d\n", (int) ntohs(lb.l5));
+    printf("l15          = %d\n", (int) ntohs(lb.l15));
     printf("current_time = %d\n", (int) ntohl(lb.current_time));
     printf("boot_time    = %d\n", (int) ntohl(lb.boot_time));
     printf("user_mtime   = %d\n", (int) ntohl(lb.user_mtime));
-    printf("tot_users    = %d\n", ntohs(lb.tot_users));
-    printf("uniq_users   = %d\n", ntohs(lb.uniq_users));
-    printf("on_console   = %d\n", lb.on_console);
-    printf("tmp_full     = %d\n", lb.tmp_full);
-    printf("tmpdir_full  = %d\n", lb.tmpdir_full);
+    printf("tot_users    = %d\n", (int) ntohs(lb.tot_users));
+    printf("uniq_users   = %d\n", (int) ntohs(lb.uniq_users));
+    printf("on_console   = %d\n", (int) lb.on_console);
+    printf("tmp_full     = %d\n", (int) lb.tmp_full);
+    printf("tmpdir_full  = %d\n", (int) lb.tmpdir_full);
     printf("\n");
-    printf("SERVICES: %d\n", lb.services);
+    printf("SERVICES: %d\n", (int) lb.services);
     for (i = 0; i <= lb.services; i++)
         printf("%d: weight %8d increment %8d name %s\n", i,
                (int) ntohl(lb.weights[i].host_weight),
