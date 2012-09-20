@@ -12,6 +12,7 @@
 #include <portable/socket.h>
 #include <portable/system.h>
 
+#include <ctype.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
@@ -55,6 +56,7 @@ probe_http(const char *host, int timeout, const char *portarg)
         struct timeval tv = { timeout, 0 };
         fd_set rset;
         char buf[17];
+        char *p;
 
         if (socket_write(sd, QUERY, sizeof(QUERY)) < (ssize_t) sizeof(QUERY)) {
             socket_close(sd);
@@ -62,16 +64,18 @@ probe_http(const char *host, int timeout, const char *portarg)
         }
         FD_ZERO(&rset);
         FD_SET(sd, &rset);
+        retval = -1;
         if (select(sd + 1, &rset, NULL, NULL, &tv) > 0) {
             buf[sizeof(buf) - 1] = '\0';
+
+            /* Look for a response starting with 20x or 30x. */
             if (socket_read(sd, buf, sizeof(buf) - 1) > 0) {
-                if (strstr(buf, "200") != NULL)
+                p = strstr(buf, "20");
+                if (p == NULL)
+                    p = strstr(buf, "30");
+                if (p != NULL && isdigit((int) p[2]))
                     retval = 0;
-            } else {
-                retval = -1;
             }
-        } else {
-            retval = -1;
         }
         socket_close(sd);
     }
