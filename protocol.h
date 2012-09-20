@@ -71,10 +71,8 @@ struct lbcd_request {
     lbcd_name_type names[LBCD_MAX_SERVICES];
 };
 
-/*
- * Reply packet.
- */
-typedef struct {
+/* Reply packet. */
+struct lbcd_reply {
     struct lbcd_header h;
     uint32_t boot_time;         /* Boot time */
     uint32_t current_time;      /* Host time */
@@ -92,6 +90,6 @@ typedef struct {
     uint8_t services;           /* Nnumber of service requests */
     struct lbcd_service weights[LBCD_MAX_SERVICES + 1];
                                 /* Host service weight/increment pairs */
-} P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
+};
 
 #endif /* !LBCD_PROTOCOL_H */

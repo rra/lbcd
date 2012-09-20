@@ -89,7 +89,8 @@ probe_http(const char *host, int timeout, const char *portarg)
  */
 int
 lbcd_http_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED,
-		 int timeout, const char *portarg, P_LB_RESPONSE *lb UNUSED)
+		 int timeout, const char *portarg,
+                 struct lbcd_reply *lb UNUSED)
 {
     return *weight_val = probe_http("localhost", timeout, portarg);
 }

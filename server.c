@@ -23,7 +23,7 @@
  * Set the waits and increments in the response.
  */
 static void
-lbcd_set_load(P_LB_RESPONSE *lb, struct lbcd_request *ph)
+lbcd_set_load(struct lbcd_reply *lb, struct lbcd_request *ph)
 {
     int i, numserv;
 
@@ -56,7 +56,7 @@ lbcd_set_load(P_LB_RESPONSE *lb, struct lbcd_request *ph)
  * hard-coded.
  */
 static void
-lbcd_proto2_convert(P_LB_RESPONSE *lb)
+lbcd_proto2_convert(struct lbcd_reply *lb)
 {
     uint32_t weightval_i;
     uint16_t weightval_s;
@@ -84,7 +84,7 @@ lbcd_proto2_convert(P_LB_RESPONSE *lb)
  * Obtain all of our response information and store it in the response struct.
  */
 void
-lbcd_pack_info(P_LB_RESPONSE *lb, struct lbcd_request *ph, int simple)
+lbcd_pack_info(struct lbcd_reply *lb, struct lbcd_request *ph, int simple)
 {
     double l1, l5, l15;
     time_t bt, ct;
@@ -138,7 +138,7 @@ lbcd_pack_info(P_LB_RESPONSE *lb, struct lbcd_request *ph, int simple)
 void
 lbcd_test(int argc, char *argv[])
 {
-    P_LB_RESPONSE lb;
+    struct lbcd_reply lb;
     struct lbcd_request ph;
     int i;
 

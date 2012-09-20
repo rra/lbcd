@@ -37,7 +37,7 @@
  * port argument, and the response argument.
  */
 typedef int weight_func_type(uint32_t *, uint32_t *, int, const char *,
-                             P_LB_RESPONSE *);
+                             struct lbcd_reply *);
 
 BEGIN_DECLS
 
@@ -53,14 +53,15 @@ extern int get_user_stats(int *total, int *unique, int *onconsole,
 extern int tmp_full(const char *path);
 
 /* server.c */
-extern void lbcd_pack_info(P_LB_RESPONSE *lb, struct lbcd_request *ph,
+extern void lbcd_pack_info(struct lbcd_reply *lb, struct lbcd_request *ph,
                            int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* weight.c */
-int lbcd_default_weight(P_LB_RESPONSE *lb, uint32_t *weight, uint32_t *incr);
+int lbcd_default_weight(struct lbcd_reply *lb, uint32_t *weight,
+                        uint32_t *incr);
 int lbcd_weight_init(const char *cmd, const char *service, int timeout);
-void lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service);
+void lbcd_setweight(struct lbcd_reply *lb, int offset, const char *service);
 
 /* weight.c -- generic routines */
 extern weight_func_type lbcd_rr_weight;      /* Round robin */

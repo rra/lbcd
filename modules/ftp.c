@@ -32,7 +32,7 @@ probe_ftp(const char *host, int timeout)
  */
 int
 lbcd_ftp_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED, int timeout,
-                const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
+                const char *portarg UNUSED, struct lbcd_reply *lb UNUSED)
 {
     *weight_val = probe_ftp("localhost", timeout);
     return *weight_val;

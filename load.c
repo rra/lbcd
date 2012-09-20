@@ -36,14 +36,14 @@ static int penalty[] = {
  * Determine the weight for the node and store it in weight_val.  Always use
  * an increment of 100.
  *
- * Since this deals with the raw P_LB_RESPONSE packet, it must convert from
- * network to host order and is thus dependent on the data types in protcol.h.
- * A more elegant approach would be desirable; it might not be so bad just to
- * call the kernel routines twice.
+ * Since this deals with the raw struct lbcd_reply packet, it must convert
+ * from network to host order and is thus dependent on the data types in
+ * protcol.h.  A more elegant approach would be desirable; it might not be so
+ * bad just to call the kernel routines twice.
  */
 int
 lbcd_load_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout UNUSED,
-                 const char *portarg UNUSED, P_LB_RESPONSE *lb)
+                 const char *portarg UNUSED, struct lbcd_reply *lb)
 {
     int fudge, weight;
     int tmp_used;

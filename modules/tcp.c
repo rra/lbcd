@@ -53,7 +53,7 @@ probe_tcp(const char *host, const char *service, short port,
  */
 int
 lbcd_tcp_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED,
-                int timeout, const char *portarg, P_LB_RESPONSE *lb UNUSED)
+                int timeout, const char *portarg, struct lbcd_reply *lb UNUSED)
 {
     const char *service = NULL;
     short port = 0;

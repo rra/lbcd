@@ -178,7 +178,7 @@ lbcd_weight_init(const char *cmd, const char *service, int timeout)
  * response.
  */
 void
-lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
+lbcd_setweight(struct lbcd_reply *lb, int offset, const char *service)
 {
     uint32_t *weight_ptr, *incr_ptr;
     const struct service_mapping *functab;
@@ -203,7 +203,7 @@ lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 int
 lbcd_unknown_weight(uint32_t *weight_val, uint32_t *incr_val,
                     int timeout UNUSED, const char *portarg UNUSED,
-                    P_LB_RESPONSE *lb UNUSED)
+                    struct lbcd_reply *lb UNUSED)
 {
     *weight_val = (uint32_t) -1;
     *incr_val = 0;
@@ -216,7 +216,7 @@ lbcd_unknown_weight(uint32_t *weight_val, uint32_t *incr_val,
  */
 int
 lbcd_rr_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout UNUSED,
-               const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
+               const char *portarg UNUSED, struct lbcd_reply *lb UNUSED)
 {
     *weight_val = default_weight;
     *incr_val = default_increment;
@@ -229,7 +229,7 @@ lbcd_rr_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout UNUSED,
  */
 int
 lbcd_cmd_weight(uint32_t *weight_val, uint32_t *incr_val, int timeout,
-                const char *portarg, P_LB_RESPONSE *lb)
+                const char *portarg, struct lbcd_reply *lb)
 {
     int fd[2];
 

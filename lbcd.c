@@ -196,7 +196,7 @@ static void
 handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr_in *cli_addr,
                   int cli_len, int simple)
 {
-    P_LB_RESPONSE lbr;
+    struct lbcd_reply lbr;
     int pkt_size;
     char client[INET6_ADDRSTRLEN];
 

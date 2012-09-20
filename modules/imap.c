@@ -46,7 +46,7 @@ probe_imap(const char *host, int timeout)
  */
 int
 lbcd_imap_weight(uint32_t *weight_val, uint32_t *incr_val UNUSED, int timeout,
-                 const char *portarg UNUSED, P_LB_RESPONSE *lb UNUSED)
+                 const char *portarg UNUSED, struct lbcd_reply *lb UNUSED)
 {
     return *weight_val = probe_imap("localhost", timeout);
 }
