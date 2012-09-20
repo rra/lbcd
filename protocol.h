@@ -65,13 +65,11 @@ struct lbcd_header {
     uint16_t status;            /* Number of services requested */
 };
 
-/*
- * Extended request packet.
- */
-typedef struct {
+/* Extended request packet. */
+struct lbcd_request {
     struct lbcd_header h;
     lbcd_name_type names[LBCD_MAX_SERVICES];
-} P_HEADER_FULL, *P_HEADER_FULLPTR;
+};
 
 /*
  * Reply packet.

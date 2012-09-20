@@ -53,7 +53,8 @@ extern int get_user_stats(int *total, int *unique, int *onconsole,
 extern int tmp_full(const char *path);
 
 /* server.c */
-extern void lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple);
+extern void lbcd_pack_info(P_LB_RESPONSE *lb, struct lbcd_request *ph,
+                           int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* weight.c */

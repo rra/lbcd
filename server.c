@@ -23,7 +23,7 @@
  * Set the waits and increments in the response.
  */
 static void
-lbcd_set_load(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph)
+lbcd_set_load(P_LB_RESPONSE *lb, struct lbcd_request *ph)
 {
     int i, numserv;
 
@@ -84,7 +84,7 @@ lbcd_proto2_convert(P_LB_RESPONSE *lb)
  * Obtain all of our response information and store it in the response struct.
  */
 void
-lbcd_pack_info(P_LB_RESPONSE *lb, P_HEADER_FULLPTR ph, int simple)
+lbcd_pack_info(P_LB_RESPONSE *lb, struct lbcd_request *ph, int simple)
 {
     double l1, l5, l15;
     time_t bt, ct;
@@ -139,7 +139,7 @@ void
 lbcd_test(int argc, char *argv[])
 {
     P_LB_RESPONSE lb;
-    P_HEADER_FULL ph;
+    struct lbcd_request ph;
     int i;
 
     /* Create query packet. */

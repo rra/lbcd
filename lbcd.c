@@ -127,10 +127,10 @@ lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
  */
 static int
 lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
-              char *mesg, int max_mesg)
+              void *mesg, int max_mesg)
 {
     ssize_t n;
-    P_HEADER_FULLPTR ph;
+    struct lbcd_request *ph;
     char client[INET6_ADDRSTRLEN];
 
     n = recvfrom(s, mesg, max_mesg, 0, (struct sockaddr *) cli_addr, &cli_len);
@@ -148,7 +148,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
     }
 
     /* Convert request to host format. */
-    ph = (P_HEADER_FULLPTR) mesg;
+    ph = mesg;
     ph->h.version = ntohs(ph->h.version);
     ph->h.id      = ntohs(ph->h.id);
     ph->h.op      = ntohs(ph->h.op);
@@ -193,7 +193,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
  * Handle an incoming request.
  */
 static void
-handle_lb_request(int s, P_HEADER_FULLPTR ph, struct sockaddr_in *cli_addr,
+handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr_in *cli_addr,
                   int cli_len, int simple)
 {
     P_LB_RESPONSE lbr;
@@ -236,7 +236,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     int n;
     char mesg[LBCD_MAXMESG];
     char client[INET6_ADDRSTRLEN];
-    P_HEADER_FULLPTR ph;
+    struct lbcd_request *ph;
     FILE *pid;
 
     /* Open UDP socket. */
@@ -265,7 +265,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
         cli_len = sizeof(cli_addr);
         n = lbcd_recv_udp(s, &cli_addr, cli_len, mesg, sizeof(mesg));
         if (n > 0) {
-            ph = (P_HEADER_FULLPTR) mesg;
+            ph = (struct lbcd_request *) mesg;
             if (inet_ntop(AF_INET, &cli_addr, client, sizeof(client)) == NULL)
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
