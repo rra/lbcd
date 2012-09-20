@@ -19,8 +19,11 @@
 #include <internal.h>
 #include <util/macros.h>
 
-/* Supported services list. */
-static const struct lbcd_service service_table[] = {
+/* Supported services list and a mapping from service to weight function. */
+struct service_mapping {
+    lbcd_name_type service;
+    weight_func_type *function;
+} service_table[] = {
     /* Default. */
     { "load",    &lbcd_load_weight    },
 
@@ -51,7 +54,7 @@ static const char *lbcd_command;
 static const char *lbcd_service;
 static uint32_t default_weight;
 static uint32_t default_increment;
-static const struct lbcd_service *lbcd_default_functab;
+static const struct service_mapping *lbcd_default_functab;
 static int lbcd_timeout;
 
 
@@ -100,11 +103,11 @@ is_weights(const char *service)
  * Given the name of a service, return the function table entry for it or
  * NULL on failure.
  */
-static const struct lbcd_service *
+static const struct service_mapping *
 service_to_func(const char *service)
 {
-    const struct lbcd_service *stp;
-    LBCD_SERVICE_REQ name;
+    const struct service_mapping *stp;
+    lbcd_name_type name;
     char *cp;
 
     /* Return default if service is NULL or "default". */
@@ -178,7 +181,7 @@ void
 lbcd_setweight(P_LB_RESPONSE *lb, int offset, const char *service)
 {
     uint32_t *weight_ptr, *incr_ptr;
-    const struct lbcd_service *functab;
+    const struct service_mapping *functab;
     const char *cp = NULL;
 
     weight_ptr = &lb->weights[offset].host_weight;

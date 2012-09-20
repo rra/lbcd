@@ -30,32 +30,29 @@
 #define LBCD_VERSION 3          /* Protocol version client speaks */
 #define LBCD_TIMEOUT 5          /* Default service poll timeout */
 
-/*
- * Request/Response codes.
- */
+/* Protocol operation codes.  Currently, there's only one. */
 enum lbcd_op {
     LBCD_OP_LBINFO = 1          /* Load balance info, request and reply */
 };
 
-typedef enum P_STATUS {
-    status_request       = 0,   /* A request packet */
-    status_ok            = 1,   /* Load balance info, request and reply */
-    status_error         = 2,   /* Generic error */
-    status_lbcd_version  = 3,   /* Protocol version error */
-    status_lbcd_error    = 4,   /* Generic protocol error */
-    status_unknown_op    = 5,   /* Unknown operation requested */
-} p_status_t;
+/* Status codes returned in the header.  Some of these aren't used. */
+enum lbcd_status {
+    LBCD_STATUS_REQUEST    = 0, /* A request packet */
+    LBCD_STATUS_OK         = 1, /* Load balance info, request and reply */
+    LBCD_STATUS_ERROR      = 2, /* Generic error */
+    LBCD_STATUS_VERSION    = 3, /* Protocol version error */
+    LBCD_STATUS_PROTOCOL   = 4, /* Generic protocol error */
+    LBCD_STATUS_UNKNOWN_OP = 5, /* Unknown operation requested */
+};
 
-/*
- * Service request/response types.
- */
-/* Service name (NUL-terminated). */
-typedef char LBCD_SERVICE_REQ[32];
+/* Service name as sent on the wire (nul-terminated). */
+typedef char lbcd_name_type[32];
 
-typedef struct LBCD_SERVICE {
+/* Service weight information as included in the reply. */
+struct lbcd_service {
     uint32_t host_weight;       /* Computed host lb weight */
     uint32_t host_incr;         /* Computed host lb increment */
-} LBCD_SERVICE;
+};
 
 /*
  * Request packet
@@ -72,7 +69,7 @@ typedef struct {
  */
 typedef struct {
     P_HEADER h;
-    LBCD_SERVICE_REQ names[LBCD_MAX_SERVICES];
+    lbcd_name_type names[LBCD_MAX_SERVICES];
 } P_HEADER_FULL, *P_HEADER_FULLPTR;
 
 /*
@@ -94,7 +91,7 @@ typedef struct {
     uint8_t tmpdir_full;        /* Percent of P_tmpdir full */
     uint8_t pad;                /* Padding */
     uint8_t services;           /* Nnumber of service requests */
-    LBCD_SERVICE weights[LBCD_MAX_SERVICES + 1];
+    struct lbcd_service weights[LBCD_MAX_SERVICES + 1];
                                 /* Host service weight/increment pairs */
 } P_LB_RESPONSE, *P_LB_RESPONSE_PTR;
 

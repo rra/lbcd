@@ -39,12 +39,6 @@
 typedef int weight_func_type(uint32_t *, uint32_t *, int, const char *,
                              P_LB_RESPONSE *);
 
-/* A mapping from service to weight function. */
-struct lbcd_service {
-    LBCD_SERVICE_REQ service;
-    weight_func_type *function;
-};
-
 BEGIN_DECLS
 
 /* kernel.c */

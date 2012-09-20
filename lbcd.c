@@ -97,7 +97,7 @@ stop_lbcd(const char *pid_file)
  */
 static int
 lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
-                 P_HEADER *request_header, p_status_t pstat)
+                 P_HEADER *request_header, enum lbcd_status pstat)
 {
     P_HEADER header;
     char client[INET6_ADDRSTRLEN];
@@ -172,7 +172,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
         if (ph->h.status > LBCD_MAX_SERVICES)
             ph->h.status = LBCD_MAX_SERVICES;
         for (i = 0; i < ph->h.status; i++)
-            ph->names[i][sizeof(LBCD_SERVICE_REQ) - 1] = '\0';
+            ph->names[i][sizeof(ph->names[i]) - 1] = '\0';
         break;
     }
 
@@ -182,7 +182,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
     default:
         warn("client %s: protocol version %d unsupported", client,
              ph->h.version);
-        lbcd_send_status(s, cli_addr, cli_len, &ph->h, status_lbcd_version);
+        lbcd_send_status(s, cli_addr, cli_len, &ph->h, LBCD_STATUS_VERSION);
         return 0;
     }
     return n;
@@ -204,14 +204,14 @@ handle_lb_request(int s, P_HEADER_FULLPTR ph, struct sockaddr_in *cli_addr,
     lbr.h.version = htons(ph->h.version);
     lbr.h.id      = htons(ph->h.id);
     lbr.h.op      = htons(ph->h.op);
-    lbr.h.status  = htons(status_ok);
+    lbr.h.status  = htons(LBCD_STATUS_OK);
 
     /* Fill in reply. */
     lbcd_pack_info(&lbr, ph, simple);
 
     /* Compute reply size (maximum packet minus unused service slots). */
     pkt_size = sizeof(lbr) -
-        (LBCD_MAX_SERVICES - lbr.services) * sizeof(LBCD_SERVICE);
+        (LBCD_MAX_SERVICES - lbr.services) * sizeof(struct lbcd_service);
 
     /* Send reply */
     if (sendto(s, &lbr, pkt_size, 0, (const struct sockaddr *) cli_addr,
@@ -275,7 +275,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
             default:
                 warn("client %s: unknown op %d requested", client, ph->h.op);
                 lbcd_send_status(s, &cli_addr, cli_len, &ph->h,
-                                 status_unknown_op);
+                                 LBCD_STATUS_UNKNOWN_OP);
             }
         }
     }

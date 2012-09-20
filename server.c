@@ -161,7 +161,7 @@ lbcd_test(int argc, char *argv[])
         for (i = 0; i < argc; i++) {
             if (i >= LBCD_MAX_SERVICES)
                 break;
-            strlcpy(ph.names[i], argv[i], sizeof(LBCD_SERVICE_REQ));
+            strlcpy(ph.names[i], argv[i], sizeof(ph.names[i]));
         }
     }
 
