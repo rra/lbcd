@@ -17,7 +17,7 @@
 #include <sys/times.h>
 #include <time.h>
 
-#include <lbcd.h>
+#include <internal.h>
 #include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"

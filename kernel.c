@@ -9,7 +9,6 @@
  */
 
 #include <config.h>
-#include <lbcd.h>
 
 #if defined(__SVR4)
 # include "arch/solaris.c"

@@ -21,7 +21,7 @@
 #include <utmp.h>
 #include <utmpx.h>
 
-#include <lbcd.h>
+#include <internal.h>
 
 
 /*

@@ -24,7 +24,7 @@
 #include <utmp.h>
 #include <utmpx.h>
 
-#include <lbcd.h>
+#include <internal.h>
 #include <util/messages.h>
 
 static int kernel_init = 0;

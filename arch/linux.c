@@ -13,7 +13,7 @@
 
 #include <time.h>
 
-#include <lbcd.h>
+#include <internal.h>
 #include <util/messages.h>
 
 

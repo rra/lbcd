@@ -25,8 +25,8 @@ util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
 	util/xwrite.c util/xwrite.h
 
 sbin_PROGRAMS = lbcd
-lbcd_SOURCES = get_user.c kernel.c lbcd.c lbcd.h lbcdload.h load.c \
-	protocol.h server.c tmp_full.c weight.c
+lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
+	server.c tmp_full.c weight.c
 lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcd.8 lbcdclient.1

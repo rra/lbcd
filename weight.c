@@ -16,8 +16,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include <lbcd.h>
-#include <lbcdload.h>
+#include <internal.h>
 #include <util/macros.h>
 
 /* Supported services list. */

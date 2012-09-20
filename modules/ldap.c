@@ -16,7 +16,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
-#include <lbcdload.h>
+#include <internal.h>
 #include <modules/modules.h>
 
 /* We test the LDAP server by running ldapsearch and checking its result. */

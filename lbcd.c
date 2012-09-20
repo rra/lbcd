@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <syslog.h>
 
-#include <lbcd.h>
+#include <internal.h>
 #include <util/messages.h>
 
 /* The usage message. */

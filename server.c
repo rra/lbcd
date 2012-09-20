@@ -16,7 +16,7 @@
 
 #include <time.h>
 
-#include <lbcd.h>
+#include <internal.h>
 
 
 /*

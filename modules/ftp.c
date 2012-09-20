@@ -11,8 +11,7 @@
 #include <config.h>
 #include <portable/system.h>
 
-#include <lbcd.h>
-#include <lbcdload.h>
+#include <internal.h>
 #include <modules/modules.h>
 #include <util/macros.h>
 
