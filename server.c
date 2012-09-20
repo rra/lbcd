@@ -145,7 +145,7 @@ lbcd_test(int argc, char *argv[])
     /* Create query packet. */
     lb.h.version = ph.h.version = LBCD_VERSION;
     lb.h.id      = ph.h.id = 0;
-    lb.h.op      = ph.h.op = op_lb_info_req;
+    lb.h.op      = ph.h.op = LBCD_OP_LBINFO;
     lb.h.status  = ph.h.status = 0;
 
     /* Handle version 2 option. */

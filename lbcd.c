@@ -269,7 +269,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
             if (inet_ntop(AF_INET, &cli_addr, client, sizeof(client)) == NULL)
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
-            case op_lb_info_req:
+            case LBCD_OP_LBINFO:
                 handle_lb_request(s, ph, &cli_addr, cli_len, simple);
                 break;
             default:

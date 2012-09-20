@@ -33,9 +33,9 @@
 /*
  * Request/Response codes.
  */
-typedef enum P_OPS {
-    op_lb_info_req       = 1,   /* Load balance info, request and reply */
-} p_ops_t;
+enum lbcd_op {
+    LBCD_OP_LBINFO = 1          /* Load balance info, request and reply */
+};
 
 typedef enum P_STATUS {
     status_request       = 0,   /* A request packet */
