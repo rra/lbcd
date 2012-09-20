@@ -28,8 +28,13 @@ sub usage();			# program usage
 	shift;
 	@services = split(',',$1);
     }
+    my $port = 4330;
+    if ($ARGV[0] =~ /^-p(.*)/) {
+	shift;
+	$port = $1;
+    }
     foreach my $server (@ARGV) {
-	next unless udp_connect(\*SH,$server,"lbcd",4330);
+	next unless udp_connect(\*SH,$server,"lbcd",$port);
 	next unless send_query(\*SH,\$reply,$version,10,@services) == 0;
 	&print_results($reply);
     }
@@ -44,7 +49,7 @@ sub send_query ($$$$@) {
     my($SH,$reply,$version,$timeout,@services) = @_;
     my($num_services);
 
-    # struct P_HEADER
+    # struct lbcd_header
     # u_short   version;  /* protocol version */
     # u_short   id;       /* requestor's uniq request id */
     # u_short   op;       /* operation requested */
@@ -116,7 +121,7 @@ sub print_results($) {
     my ($reply) = @_;
 
     # Response packet
-    # struct P_HEADER;
+    #  struct lbcd_header;
     #  u_int boot_time;
     #  u_int current_time;
     #  u_int user_mtime;  /* time user information last changed */
