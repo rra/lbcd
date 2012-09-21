@@ -4,7 +4,7 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow,+pie
 
 %:
-	dh $@ --with autoreconf
+	dh $@ --parallel --with autoreconf
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
