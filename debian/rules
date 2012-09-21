@@ -49,7 +49,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs NEWS
 	dh_installdocs README TODO
-	dh_installinit --error-handler=maybe_ignore_failure
+	dh_installinit
 	dh_installman
 	dh_link
 	dh_strip

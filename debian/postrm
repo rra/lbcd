@@ -1,6 +1,8 @@
 #!/bin/sh
 
-if [ "$1" = "purge" ]; then
+set -e
+
+if [ "$1" = purge ]; then
     deluser --quiet --system lbcd > /dev/null || true
 fi
 
