@@ -12,7 +12,7 @@ Vcs-Browser: http://git.eyrie.org/?p=system/lbcd.git
 Package: lbcd
 Architecture: any
 Multi-Arch: foreign
-Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, adduser
 Description: Return system load via UDP for remote load balancers
  lbcd is a daemon that answers UDP queries for system load information and
  returns such information as uptime, load, number of logged-in users,
