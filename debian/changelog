@@ -27,6 +27,7 @@ lbcd (3.4.0-1) UNRELEASED; urgency=low
   * Switch to xz compression for the binary packages.
   * Use dh-autoreconf to rebuild the build system.
   * Mark lbcd as Multi-Arch: foreign.
+  * Update Debian source package format to 3.0 (quilt).
   * Rewrite debian/copyright in copyright-format 1.0.
   * Update standards version to 3.9.4.
 
