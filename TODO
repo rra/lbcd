@@ -1,37 +1,59 @@
                              lbcd To-Do List
 
-* It's not clear whether protocol v3 is worth it, and it's definitely
-  unclear how service information is requested by the client and returned
-  as part of the v3 support.  Better documentation is needed here, if v3
-  ends up being worthwhile to keep.
+lbcd:
 
-* The reported load numbers can wrap around at high loads.
+ * Delete the PID file on exit.
 
-* The on_console code doesn't work properly on IRIX.
+ * Rework the client handling so that we store all the information about
+   the incoming connection in a struct that's passed to various other
+   functions.  This will be needed for better logging.
 
-* More testing is needed to make sure that file descriptors are not leaked
-  when doing service probes, that querying multiple services remotely
-  works corectly, and that the daemon works when pounded on.
+Modules:
 
-* Get -r -w load:incr to work in any order.
+ * The reported load numbers can wrap around at high loads.
 
-* Support the port argument for all of the protocol tests except HTTP
-  (which already supports it).
+ * Get -r -w load:incr to work in any order.
 
-* Add a test suite.
+ * Support the port argument for all of the protocol tests except HTTP
+   (which already supports it).
 
-* General coding style cleanup: collapse header files together and use
-  struct names rather than all-caps typedefs.
+Portability:
 
-* Use the standard network library for bind and connect functions.
+ * The on_console code doesn't work properly on IRIX.
 
-* Drop portability to systems without hsearch.
+ * Drop portability to systems without hsearch.
 
-* Document the -t flag.
+ * Add a portability layer for utmp, and use getutxent by default if it's
+   available.
 
-* Convert booleans to bool type.
+Code Cleanup:
 
-* Delete the PID file on exit.
+ * Move the various standard modules out of the main code into the modules
+   directory so that they're treated like all other modules.
 
-* Add a portability layer for utmp, and use getutxent by default if it's
-  available.
+ * Use the standard network library for bind and connect functions.  This
+   will require updating that library to handle binding UDP sockets.
+
+ * Convert booleans to bool type.
+
+ * Change all the uses of atoi to strtol with proper input checking.
+
+ * Pass lbcd_service structs into the check modules instead of separate
+   uint32_t pointers.
+
+Test Suite:
+
+ * Add a test suite for lbcd itself.
+
+ * More testing is needed to make sure that file descriptors are not
+   leaked when doing service probes, that querying multiple services
+   remotely works corectly, and that the daemon works when pounded on.
+
+Documentation:
+
+ * It's not clear whether protocol v3 is worth it, and it's definitely
+   unclear how service information is requested by the client and returned
+   as part of the v3 support.  Better documentation is needed here, if v3
+   ends up being worthwhile to keep.
+
+ * Document the -t flag.
