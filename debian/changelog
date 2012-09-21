@@ -1,3 +1,37 @@
+lbcd (3.4.0-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - Update the LDAP check to do something more reasonable.
+    - Fix the HTTP check to correctly verify the server status, and allow
+      any 20x or 30x status code as a success.  Previously, any status
+      code response would have accidentally been considered a success.
+    - Fix possible memory overwrite and security issue when run on a
+      system with more than 512 unique logged-in users.
+  * Rewrite the init script.
+    - Use LSB functions for output and logging.
+    - Add a status action.
+    - Be more correct about the exit status.
+    - Remove the PID file after stop.
+    - Remove set -e to avoid spurious init script failures.
+  * Remove old init script failure workaround.  We no longer need to worry
+    about upgrades from old init scripts that failed if lbcd couldn't be
+    stopped.  The old versions were never in Debian.
+  * Use set -e in maintainer scripts.
+  * Always create the lbcd user if missing, even on postinst maintainer
+    script actions other than configure.
+  * Improve comments in /etc/default/lbcd.
+  * Update to debhelper compatibility level V9.
+    - Switch to debhelper rule minimization.
+    - Enable hardening flags.
+    - Add ${misc:Depends} to dependencies.
+  * Switch to xz compression for the binary packages.
+  * Use dh-autoreconf to rebuild the build system.
+  * Mark lbcd as Multi-Arch: foreign.
+  * Rewrite debian/copyright in copyright-format 1.0.
+  * Update standards version to 3.9.4.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 20 Sep 2012 23:21:53 -0700
+
 lbcd (3.3.0-1) unstable; urgency=low
 
   * [4107c5d] Imported Upstream version 3.3.0
