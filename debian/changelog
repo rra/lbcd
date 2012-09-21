@@ -1,4 +1,4 @@
-lbcd (3.4.0-1) UNRELEASED; urgency=low
+lbcd (3.4.0-1) experimental; urgency=low
 
   * New upstream release.
     - Update the LDAP check to do something more reasonable.
@@ -34,7 +34,7 @@ lbcd (3.4.0-1) UNRELEASED; urgency=low
   * Rewrite debian/copyright in copyright-format 1.0.
   * Update standards version to 3.9.4.
 
- -- Russ Allbery <rra@debian.org>  Thu, 20 Sep 2012 23:34:05 -0700
+ -- Russ Allbery <rra@debian.org>  Thu, 20 Sep 2012 23:42:51 -0700
 
 lbcd (3.3.0-1) unstable; urgency=low
 
