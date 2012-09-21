@@ -199,8 +199,8 @@ maintained by Russ Allbery <rra@stanford.edu>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2012
-The Board of Trustees of the Leland Stanford Junior University
+Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006,
+2009, 2012 The Board of Trustees of the Leland Stanford Junior University
 
 Copying and distribution of this file, with or without modification, are
 permitted in any medium without royalty provided the copyright notice and
