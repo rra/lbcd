@@ -7,10 +7,11 @@
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = LICENSE arch/aix.c arch/bsd.c arch/darwin.c arch/hpux10.c	    \
-	arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c arch/solaris.c	    \
-	autogen lbcd.pod tests/README tests/TESTS tests/docs/pod-spelling-t \
-	tests/docs/pod-t tests/tap/libtap.sh tests/util/xmalloc-t
+EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	\
+	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	\
+	arch/solaris.c autogen lbcd.pod tests/README tests/TESTS	\
+	tests/docs/pod-spelling-t tests/docs/pod-t tests/tap/libtap.sh	\
+	tests/util/xmalloc-t
 
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
