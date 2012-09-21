@@ -12,7 +12,8 @@ EXTRA_DIST = LICENSE autogen lbcd.pod
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
         portable/getnameinfo.h portable/macros.h portable/socket.h	 \
-        portable/stdbool.h portable/system.h
+        portable/statvfs.h portable/stdbool.h portable/system.h		 \
+        portable/uio.h
 portable_libportable_a_LIBADD = $(LIBOBJS)
 modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
 	modules/http.c modules/imap.c modules/ldap.c modules/modules.h	 \
