@@ -1,8 +1,9 @@
 lbcd (3.4.0-2) experimental; urgency=low
 
   * Pass $DAEMON_OPTS to lbcd when starting.
+  * Tell update-rc.d to not create stop links by default.
 
- -- Russ Allbery <rra@debian.org>  Fri, 21 Sep 2012 00:21:48 -0700
+ -- Russ Allbery <rra@debian.org>  Fri, 21 Sep 2012 00:28:45 -0700
 
 lbcd (3.4.0-1) experimental; urgency=low
 
