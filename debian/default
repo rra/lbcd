@@ -4,9 +4,12 @@
 # behavior of the init script.  This file must follow standard POSIX shell
 # syntax.
 
-# To not start lbcd at boot commount or remove this line
-NO_START=0
+# Uncomment this line to not start lbcd at boot time.  Use of this option
+# is supported for backward compatibility but is deprecated.  The best way
+# to stop lbcd from starting at boot is "update-rc.d disable lbcd".
+#NO_START=1
 
 # Additional options to pass to lbcd.  This is the place to put -R, -c, or
-# any similar options that are needed.
-DAEMON_OPTS="-P/var/run/lbcd/lbcd.pid"
+# any similar options that are needed.  Keep the -P option so that the init
+# script will continue working properly.
+DAEMON_OPTS="-P /var/run/lbcd/lbcd.pid"
