@@ -26,8 +26,6 @@ PIDDIR=/var/run/lbcd
 OWNER=lbcd
 GROUP=lbcd
 
-set -e
-
 test -x $DAEMON || exit 0
 
 # Include lbcd defaults if available.
