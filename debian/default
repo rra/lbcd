@@ -4,9 +4,9 @@
 # behavior of the init script.  This file must follow standard POSIX shell
 # syntax.
 
-# To start lbcd at boot, comment out this line.
-NO_START=1
+# To not start lbcd at boot commount or remove this line
+NO_START=0
 
 # Additional options to pass to lbcd.  This is the place to put -R, -c, or
 # any similar options that are needed.
-DAEMON_OPTS=""
+DAEMON_OPTS="-P/var/run/lbcd/lbcd.pid"

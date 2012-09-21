@@ -1,14 +1,25 @@
 lbcd (3.3.0-1) unstable; urgency=low
 
-  * New upstream release.
-    - Add -S option for simpler protocol two behavior.
-    - Fix user handling on Linux systems.
-    - Better documentation of the default load calculation.
-    - lbcdclient no longer sends a one-byte packet before the real query.
-  * Add LSB information to the init script.
-  * Use a better method of passing system information to configure.
+  * [4107c5d] Imported Upstream version 3.3.0
+  * [965cd57] create a pid dir since lbcd runs non root
+  * [db4ed40] bump standards version
 
- -- Russ Allbery <rra@debian.org>  Fri,  6 Oct 2006 16:24:34 -0700
+ -- Guido Guenther <agx@sigxcpu.org>  Wed, 17 Sep 2008 10:06:02 +0200
+
+lbcd (3.2.6-3) unstable; urgency=low
+
+  * Upload to unstable (Closes: #488372) 
+
+ -- Guido Guenther <agx@sigxcpu.org>  Mon, 30 Jun 2008 18:55:49 -0300
+
+lbcd (3.2.6-2) unstable; urgency=low
+
+  * [0c80707] add myself to uploaders
+  * [ef07945] init script: add LSB header
+  * [e150623] start lbcd by default
+  * [78b3ac6] don't run lbcd as root
+
+ -- Guido Guenther <agx@sigxcpu.org>  Sat, 28 Jun 2008 00:04:49 +0200
 
 lbcd (3.2.6-1) unstable; urgency=low
 

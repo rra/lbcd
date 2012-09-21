@@ -12,4 +12,15 @@ maybe_ignore_failure () {
     exit $?
 }
 
+case "$1" in
+    configure)
+        if ! getent passwd lbcd >/dev/null; then
+		adduser --disabled-password --quiet --system --no-create-home \
+			 --gecos "Load Balancing Client Daemon" --group lbcd
+	fi
+	;;
+    *)
+    ;;
+esac
+
 #DEBHELPER#

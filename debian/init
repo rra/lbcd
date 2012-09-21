@@ -1,15 +1,5 @@
 #! /bin/sh
-### BEGIN INIT INFO
-# Provides:             lbcd
-# Required-Start:       $local_fs $remote_fs $network
-# Required-Stop:        $local_fs $remote_fs $network
-# Default-Start:        2 3 4 5
-# Default-Stop:         S 0 1 6
-# Short-Description:    Load balancer client daemon
-# Description:          Provides system load, login, and service information
-#                       via UDP, intended primarily for use with the lbnamed
-#                       load balancing system.
-### END INIT INFO
+# /etc/init.d/lbcd -- Init script for lbcd load information daemon.
 #
 # Written by Russ Allbery <rra@stanford.edu>
 # Based on the dh-make template written by:
@@ -17,11 +7,23 @@
 #     Written by Miquel van Smoorenburg <miquels@cistron.nl>.
 #     Modified for Debian 
 #     by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#
+### BEGIN INIT INFO
+# Provides:          lbcd
+# Required-Start:    $syslog $remote_fs
+# Required-Stop:     $syslog $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: lb client daemon
+### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/sbin/lbcd
 NAME=lbcd
 DESC=lbcd
+PIDDIR=/var/run/lbcd/
+OWNER=lbcd
+GROUP=lbcd
 
 set -e
 
@@ -32,6 +34,13 @@ if [ -f /etc/default/lbcd ] ; then
     . /etc/default/lbcd
 fi
 
+# Create a dir for the pidfile since lbcd runs nonroot
+create_piddir()
+{
+    mkdir -p $PIDDIR
+    chown $OWNER:$GROUP $PIDDIR
+}
+
 case "$1" in
 start)
     # Don't start lbcd if NO_START is set.
@@ -40,13 +49,14 @@ start)
         exit 0
     fi
     echo -n "Starting $DESC: "
-    start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
+    create_piddir
+    start-stop-daemon -c lbcd -g lbcd --start --quiet --pidfile $PIDDIR$NAME.pid \
         --exec $DAEMON -- $DAEMON_OPTS
     echo "$NAME."
     ;;
 stop)
     echo -n "Stopping $DESC: "
-    start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+    start-stop-daemon --stop --quiet --pidfile $PIDDIR$NAME.pid \
         --oknodo --exec $DAEMON
     echo "$NAME."
     ;;
@@ -54,10 +64,10 @@ reload)
     ;;
 restart|force-reload)
     echo -n "Restarting $DESC: "
-    start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+    start-stop-daemon --stop --quiet --pidfile $PIDDIR$NAME.pid \
         --oknodo --exec $DAEMON
     sleep 1
-    start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
+    start-stop-daemon -c lbcd -g lbcd --start --quiet --pidfile $PIDDIR$NAME.pid \
         --exec $DAEMON -- $DAEMON_OPTS
     echo "$NAME."
     ;;

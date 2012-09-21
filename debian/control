@@ -2,12 +2,13 @@ Source: lbcd
 Section: net
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
+Uploaders: Guido Guenther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 4.0.0)
-Standards-Version: 3.7.2
+Standards-Version: 3.8.0
 
 Package: lbcd
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, adduser
 Description: Return system load via UDP for remote load balancers
  lbcd is a daemon that answers UDP queries for system load information and
  returns such information as uptime, load, number of logged-in users,
