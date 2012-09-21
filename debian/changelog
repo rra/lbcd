@@ -24,7 +24,8 @@ lbcd (3.4.0-1) UNRELEASED; urgency=low
     - Switch to debhelper rule minimization.
     - Enable hardening flags.
     - Add ${misc:Depends} to dependencies.
-  * Switch to xz compression for the binary packages.
+  * Switch to xz compression for the upstream source, Debian tarball, and
+    binary packages.
   * Use dh-autoreconf to rebuild the build system.
   * Mark lbcd as Multi-Arch: foreign.
   * Update Debian source package format to 3.0 (quilt).
