@@ -1,12 +1,26 @@
                         User-Visible lbcd Changes
 
-lbcd 3.3.1 (unreleased)
+lbcd 3.4.0 (2012-09-20)
+
+    Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and
+    Mac OS X 10.4.10, but hopefully will work with other versions.
 
     Update the LDAP check to do something more reasonable.  The old LDAP
     plugin probably never worked, at least with OpenLDAP.  Thanks to
     Quanah Gibson-Mount for the fixes.
 
+    Fix the HTTP check to correctly verify that the server returns a 20x
+    or 30x status code.  Previously, any status code response would have
+    accidentally been considered a success.
+
+    Fix a possible memory overwrite and security issue if there are more
+    than 512 unique users logged on to the system.
+
     Check for inet_aton in libresolv for older versions of Solaris.
+
+    Dropped support for NeXTSTEP, ULTRIX, and SunOS.  It's unlikely that
+    lbcd still compiled on those platforms and it's too much effort to
+    support pre-ANSI systems that exist only in museums.
 
 lbcd 3.3.0 (2006-10-06)
 
