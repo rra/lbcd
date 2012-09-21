@@ -10,72 +10,110 @@
 #                       via UDP, intended primarily for use with the lbnamed
 #                       load balancing system.
 ### END INIT INFO
-#
-# Written by Russ Allbery <rra@stanford.edu>
-# Based on the dh-make template written by:
-#
-#     Written by Miquel van Smoorenburg <miquels@cistron.nl>.
-#     Modified for Debian 
-#     by Ian Murdock <imurdock@gnu.ai.mit.edu>.
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/sbin/lbcd
+# Author: Russ Allbery <rra@debian.org>
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DESC="load balancer client daemon"
 NAME=lbcd
-DESC=lbcd
-PIDDIR=/var/run/lbcd
+DAEMON=/usr/sbin/$NAME
+DAEMON_OPTS=
+PIDDIR=/var/run/$NAME
+PIDFILE=${PIDDIR}/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
 OWNER=lbcd
 GROUP=lbcd
 
-test -x $DAEMON || exit 0
+# Exit if the package is not installed.
+[ -x "$DAEMON" ] || exit 0
 
-# Include lbcd defaults if available.
-if [ -f /etc/default/lbcd ] ; then
-    . /etc/default/lbcd
-fi
+# Read configuration variable file if it is present.
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
-# Create a dir for the pidfile since lbcd runs nonroot
+# Load the VERBOSE setting and other rcS variables.
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+. /lib/lsb/init-functions
+
+# Create a directory for the PID file, since lbcd runs as a non-root user and
+# creates its own PID file.
 create_piddir()
 {
-    mkdir -p $PIDDIR
-    chown $OWNER:$GROUP $PIDDIR
+    mkdir -p "$PIDDIR"
+    chown "$OWNER":"$GROUP" "$PIDDIR"
+}
+
+# Start the daemon.
+do_start()
+{
+    create_piddir
+    start-stop-daemon --start --quiet --chuid "$USER":"$GROUP" \
+        --pidfile "$PIDFILE" --exec "$DAEMON" --test > /dev/null || return 1
+    start-stop-daemon --start --quiet --chuid "$USER":"$GROUP" \
+        --pidfile "$PIDFILE" --exec "$DAEMON" || return 2
+}
+
+# Stop the daemon.
+do_stop()
+{
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 \
+        --pidfile "$PIDFILE" --name "$NAME"
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    rm -f "$PIDFILE"
+    return "$RETVAL"
 }
 
 case "$1" in
-start)
-    # Don't start lbcd if NO_START is set.
-    if [ "$NO_START" = 1 ] ; then
-        echo "Not starting $DESC (see /etc/default/$NAME)"
-        exit 0
-    fi
-    echo -n "Starting $DESC: "
-    create_piddir
-    start-stop-daemon -c lbcd -g lbcd --start --quiet \
-        --pidfile $PIDDIR/$NAME.pid --exec $DAEMON -- $DAEMON_OPTS
-    echo "$NAME."
-    ;;
-stop)
-    echo -n "Stopping $DESC: "
-    start-stop-daemon --stop --quiet --pidfile $PIDDIR/$NAME.pid \
-        --oknodo --exec $DAEMON
-    echo "$NAME."
-    ;;
-reload)
-    ;;
-restart|force-reload)
-    echo -n "Restarting $DESC: "
-    create_piddir
-    start-stop-daemon --stop --quiet --pidfile $PIDDIR/$NAME.pid \
-        --oknodo --exec $DAEMON
-    sleep 1
-    start-stop-daemon -c lbcd -g lbcd --start --quiet \
-        --pidfile $PIDDIR/$NAME.pid --exec $DAEMON -- $DAEMON_OPTS
-    echo "$NAME."
-    ;;
-*)
-    N=/etc/init.d/$NAME
-    echo "Usage: $N {start|stop|restart|force-reload}" >&2
-    exit 1
-    ;;
+    start)
+        if [ "$NO_START" = 1 ] ; then
+            log_warning_msg "Not starting $NAME (see /etc/default/$NAME)"
+            exit 0
+        fi
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+        do_start
+        case "$?" in
+            0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+            2)   [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+    stop)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        case "$?" in
+            0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+            2)   [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+    status)
+        status_of_proc -p "$PIDFILE" "$DAEMON" "$NAME" && exit 0 || exit $?
+        ;;
+    reload|force-reload)
+        # No need to reload, as there's no configuration.
+        ;;
+    restart)
+        log_daemon_msg "Restarting $DESC" "$NAME"
+        do_stop
+        case "$?" in
+            0|1)
+                do_start
+                case "$?" in
+                    0) log_end_msg 0 ;;
+                    1) log_end_msg 1 ;; # Old process is still running
+                    *) log_end_msg 1 ;; # Failed to start
+                esac
+                ;;
+            *)
+                # Failed to stop.
+                log_end_msg 1
+                ;;
+        esac
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+        exit 3
+        ;;
 esac
 
-exit 0
+:
