@@ -8,6 +8,11 @@ lbcd:
    the incoming connection in a struct that's passed to various other
    functions.  This will be needed for better logging.
 
+lbcdclient:
+
+ * Rewrite in either modern Perl or as a C program that uses the same
+   underlying code as lbcd to handle the wire protocol.
+
 Modules:
 
  * The reported load numbers can wrap around at high loads.
