@@ -1,6 +1,6 @@
                         User-Visible lbcd Changes
 
-lbcd 3.4.0 (unreleased)
+lbcd 3.4.0 (2012-09-20)
 
     Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and
     Mac OS X 10.4.10, but hopefully will work with other versions.
