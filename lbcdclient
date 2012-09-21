@@ -1,4 +1,26 @@
 #!/usr/bin/perl
+#
+# Written by Larry Schwimmer
+# Copyright 2000, 2004, 2006, 2012
+#     The Board of Trustees of the Leland Stanford Junior University
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
 
 require 5.004;
 use strict;
@@ -28,8 +50,13 @@ sub usage();			# program usage
 	shift;
 	@services = split(',',$1);
     }
+    my $port = 4330;
+    if ($ARGV[0] =~ /^-p(.*)/) {
+	shift;
+	$port = $1;
+    }
     foreach my $server (@ARGV) {
-	next unless udp_connect(\*SH,$server,"lbcd",4330);
+	next unless udp_connect(\*SH,$server,"lbcd",$port);
 	next unless send_query(\*SH,\$reply,$version,10,@services) == 0;
 	&print_results($reply);
     }
@@ -44,7 +71,7 @@ sub send_query ($$$$@) {
     my($SH,$reply,$version,$timeout,@services) = @_;
     my($num_services);
 
-    # struct P_HEADER
+    # struct lbcd_header
     # u_short   version;  /* protocol version */
     # u_short   id;       /* requestor's uniq request id */
     # u_short   op;       /* operation requested */
@@ -116,7 +143,7 @@ sub print_results($) {
     my ($reply) = @_;
 
     # Response packet
-    # struct P_HEADER;
+    #  struct lbcd_header;
     #  u_int boot_time;
     #  u_int current_time;
     #  u_int user_mtime;  /* time user information last changed */
@@ -160,6 +187,9 @@ sub print_results($) {
     }
 }
 __END__
+
+=for stopwords
+lbcdclient lbcd btime tmp Schwimmer Allbery
 
 =head1 NAME
 

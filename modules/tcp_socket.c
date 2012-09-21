@@ -1,76 +1,55 @@
 /*
- * socket.c
- * Larry Schwimmer (schwim@cs.stanford.edu)
+ * Generic TCP connection code.
  *
- * Generic tcp routines
+ * Written by Larry Schwimmer
+ * Copyright 1997, 2008, 2012
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * See LICENSE for licensing terms.
  */
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+
+#include <config.h>
+#include <portable/socket.h>
+#include <portable/system.h>
+
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
+#include <errno.h>
 
-/* tcp_connect
+#include <modules/modules.h>
+#include <util/network.h>
+#include <util/xmalloc.h>
+
+
+/*
+ * Connect to a host with specified protocol using TCP.  Takes the name of the
+ * server to connect to, the name of the protocol, and the port to use if the
+ * protocol name cannot be resolved to a port.  If the port is 0, the check
+ * will fail if the protocol name cannot be resolved to a port.
  *
- * Connect to a host with specified protocol using tcp.
- * Input:
- *	host		name of server to connect to
- *	protocol	protocol to use
- *	[port]		port to use if protocol is unknown (use 0 if
- *			default port is not wanted)
- * Returns:
- *	file descriptor number of the socket connection on success
- *	-1	on failure
+ * Returns the file descriptor of the connected socket on success and
+ * INVALID_SOCKET on failure.
  */
-int
-tcp_connect (char *host, char *protocol, int port)
+socket_type
+tcp_connect(const char *host, const char *protocol, int port)
 {
-  struct servent *se;
-  unsigned int addr;
-  struct hostent *he;
-  struct sockaddr_in serv_addr;
-  int sd;
-  extern int errno;
+    struct addrinfo *ai, hints;
+    char *p;
+    int status = EAI_NONAME;
+    socket_type fd;
 
-  /* Assign port */
-  memset ((char *) &serv_addr, 0, sizeof (serv_addr));
-  if ((protocol != NULL &&
-       (se = getservbyname (protocol, "tcp")) != NULL) ||
-      (port && (se = getservbyport(htons(port),"tcp")) != NULL)) {
-    serv_addr.sin_port = se->s_port;
-  } else if (port) {
-    serv_addr.sin_port = htons(port);
-  }
-  endservent();
-
-  /* First check if valid IP address.  Otherwise check if valid name. */
-  if ((addr = inet_addr(host)) != -1) {
-    if ((he = gethostbyaddr ((char *)&addr, sizeof(unsigned int),
-			     AF_INET)) == NULL) {
-      return -1;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    if (protocol != NULL)
+        status = getaddrinfo(host, protocol, &hints, &ai);
+    if (status != 0 && port != 0) {
+        xasprintf(&p, "%d", port);
+        hints.ai_flags = AI_NUMERICSERV;
+        status = getaddrinfo(host, p, &hints, &ai);
+        free(p);
     }
-  } else if ((he = gethostbyname (host)) == NULL) {
-    return -1;
-  }
-
-  /* Set up socket connection */
-  serv_addr.sin_family = AF_INET;
-  memcpy (&serv_addr.sin_addr, he->h_addr, he->h_length);
-
-  if ((sd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-    return -1;
-  }
-
-  if (connect (sd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0 ) {
-    (void)close(sd); /* Back out */
-    return -1;
-  }
-
-  return sd;
+    if (status != 0)
+        return -1;
+    fd = network_connect(ai, NULL, 0);
+    freeaddrinfo(ai);
+    return fd;
 }
