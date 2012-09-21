@@ -33,7 +33,7 @@ lbcd (3.4.0-1) UNRELEASED; urgency=low
   * Rewrite debian/copyright in copyright-format 1.0.
   * Update standards version to 3.9.4.
 
- -- Russ Allbery <rra@stanford.edu>  Thu, 20 Sep 2012 23:21:53 -0700
+ -- Russ Allbery <rra@debian.org>  Thu, 20 Sep 2012 23:34:05 -0700
 
 lbcd (3.3.0-1) unstable; urgency=low
 
