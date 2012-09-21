@@ -1,65 +1,13 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
-# Written by by Russ Allbery <rra@stanford.edu>
-# Based on the dh_make template, GNU copyright 1997 to 1999 by Joey Hess.
 
-# These are used for cross-compiling and for saving the configure script
-# from having to guess our platform (since we know it already)
-DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+# Enable compiler hardening flags.
+export DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow,+pie
 
-CFLAGS = -Wall -g
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-    CFLAGS += -O0
-else
-    CFLAGS += -O2
-endif
+%:
+	dh $@ --with autoreconf
 
-config.status: configure
-	dh_testdir
-	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) \
-	    --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr \
-	    --mandir=\$${prefix}/share/man
-
-build: build-arch build-indep
-build-arch: build-stamp
-build-indep:
-build-stamp: config.status
-	dh_testdir
-	$(MAKE)
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
-	[ ! -f Makefile ] || $(MAKE) distclean
-	dh_clean
-
-install: build-stamp
-	dh_testdir
-	dh_testroot
-	dh_clean
-	$(MAKE) install prefix=$(CURDIR)/debian/lbcd/usr
-
-binary: binary-arch binary-indep
-binary-indep:
-binary-arch: build install
-	dh_testdir
-	dh_testroot
+override_dh_installchangelogs:
 	dh_installchangelogs NEWS
-	dh_installdocs README TODO
-	dh_installinit
-	dh_installman
-	dh_link
-	dh_strip
-	dh_compress
-	dh_fixperms
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
 
-.PHONY: binary binary-arch binary-indep build build-arch build-indep clean
-.PHONY: install
+override_dh_builddeb:
+	dh_builddeb -- -Zxz

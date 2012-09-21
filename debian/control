@@ -3,18 +3,18 @@ Section: net
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Guido Guenther <agx@sigxcpu.org>
-Build-Depends: debhelper (>= 4.0.0)
+Build-Depends: debhelper (>= 9), dh-autoreconf
 Standards-Version: 3.8.0
 
 Package: lbcd
 Architecture: any
-Depends: ${shlibs:Depends}, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Description: Return system load via UDP for remote load balancers
  lbcd is a daemon that answers UDP queries for system load information and
  returns such information as uptime, load, number of logged-in users,
  percentage free of /tmp and /var/tmp, and whether there is a user on the
  console.  It is intended for use with a load balancing system, and is
- particularly useful for such things as Unix clusters for remote login
+ particularly useful for such things as UNIX clusters for remote login
  where a traditional hardware load balancing solution doesn't work as well.
  .
  No load balancing system is included in this package, only the client
