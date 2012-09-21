@@ -18,12 +18,13 @@ BLURB
 
 DESCRIPTION
 
-  The lbcd daemon runs on a Unix system and answers UDP queries (by
+  The lbcd daemon runs on a UNIX system and answers UDP queries (by
   default on port 4330) with information about system load, number of
-  logged on users, uptime, and free /tmp space.  The intention is for this
-  information to be used by a load balancer service to choose the best
-  system to direct incoming connections to.  It was designed for use with
-  the lbnamed DNS load balancer, available at:
+  logged on users, uptime, and free /tmp space.  This information can be
+  used to accumulate system status across a cluster with light-weight
+  queries or can be used as input to a load-balancing system to choose
+  the best system to which to direct new incoming connections.  It was
+  designed for use with the lbnamed DNS load balancer, available at:
 
       <http://www.stanford.edu/~riepel/lbnamed/>
 
@@ -44,11 +45,12 @@ DESCRIPTION
 
 REQUIREMENTS
 
-  lbcd requires knowledge of how to get the system load and boot time,
-  which varies by different UNIX platforms.  It has been ported, at one
-  point or another, to AIX, various BSD systems, Linux, Mac OS X, HP-UX,
-  IRIX, Tru64, and Solaris.  Currently, it is primarily tested on Linux;
-  other platforms may require some minor work.
+  lbcd is written in C, so you'll need a C compiler.  It also uses kernel
+  calls to obtain load and uptime information, and at present has only
+  been ported to Linux, Solaris, AIX, various BSD systems, Mac OS X,
+  HP-UX, IRIX, and Tru64.  It is currently primarily tested on Linux.
+  Platforms not listed may require some porting effort, as may old or
+  unusual platforms that aren't regularly tested.
 
   The lbcdclient program requires Perl (any version should do).
 
