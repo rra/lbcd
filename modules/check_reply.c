@@ -33,12 +33,13 @@
 int
 lbcd_check_reply(socket_type sd, int timeout, const char *token)
 {
-    struct timeval tv = { timeout, 0 };
+    struct timeval tv = { 0, 0 };
     fd_set rset;
     int retval = 0;
     char *buf;
     int len;
 
+    tv.tv_sec = timeout;
     if (token == NULL)
         return -1;
     len = strlen(token);
