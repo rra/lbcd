@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # Written by Larry Schwimmer
-# Copyright 2000, 2004, 2006, 2012
+# Copyright 2000, 2004, 2006, 2012, 2013
 #     The Board of Trustees of the Leland Stanford Junior University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -180,7 +180,6 @@ sub print_results($) {
 	$reply = substr($reply,36);
 	for (my $i = 0; $i <= $services; $i++) {
 	    my($weight,$incr) = unpack("NN",$reply);
-	    $weight = -1 if $weight == 2**32-1;
 	    print "service $i: weight $weight increment $incr\n";
 	    $reply = substr($reply,8);
 	}
