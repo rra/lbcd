@@ -13,6 +13,8 @@ B<lbcd> [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
 
 B<lbcd> B<-s> [B<-P> I<file>]
 
+B<lbcd> B<-t> [v2] [I<service> ...]
+
 =head1 DESCRIPTION
 
 B<lbcd> runs as a daemon and reports various system utilization
@@ -166,6 +168,19 @@ F</var/run/lbcd.pid> or the file given with the B<-P> option.
 
 Use a timeout of I<seconds> when doing service probes (including running a
 command with B<-c>).  The default is five seconds.
+
+=item B<-t>
+
+Test mode.  When run with the B<-t> flag, B<lbcd> will do all the checks
+that it would do when receiving a query packet, print out the results in a
+human-readable format to standard output, and then exit.
+
+When run with this option, the remaining command-line arguments are taken
+as services to probe.  The valid service names are the same as the valid
+service arguments to the B<-w> option, with one exception.  If the first
+service is the string C<v2>, B<lbcd> will behave as if it received a
+protocol version two query packet and will manipulate its reply
+information accordingly before printing it out.
 
 =item B<-w> I<weight>
 

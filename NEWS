@@ -7,6 +7,9 @@ lbcd 3.4.1 (unreleased)
     the normal weight calculation returned.  This allows a host to be
     effectively dropped out of a load-balanced pool by touching this file.
 
+    Document the lbcd -t test mode and fix the output to treat the results
+    as unsigned numbers instead of signed numbers.
+
 lbcd 3.4.0 (2012-09-20)
 
     Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and
