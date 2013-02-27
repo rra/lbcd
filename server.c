@@ -4,7 +4,7 @@
  * Obtains and sends polling information.  Also acts as a test driver.
  *
  * Written by Larry Schwimmer
- * Copyright 1996, 1997, 1998, 2004, 2006, 2012
+ * Copyright 1996, 1997, 1998, 2004, 2006, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -31,8 +31,14 @@ lbcd_set_load(struct lbcd_reply *lb, struct lbcd_request *ph)
     lb->pad = 0;
     lb->services = numserv = ph->h.status;
 
-    /* Set default weight and convert to network byte order */
+    /* Set default weight. */
     lbcd_setweight(lb, 0, "default");
+
+    /* If the sentinel file exists, override the weight and set it to max. */
+    if (access(LBCD_SENTINEL_FILE, F_OK) == 0)
+        lb->weights[0].host_weight = (uint32_t) -1;
+
+    /* Convert to network byte order. */
     lb->weights[0].host_weight = htonl(lb->weights[0].host_weight);
     lb->weights[0].host_incr = htonl(lb->weights[0].host_incr);
 

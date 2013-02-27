@@ -8,10 +8,10 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-lbcd [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
-[B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
+B<lbcd> [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
+    [B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
 
-lbcd B<-s> [B<-P> I<file>]
+B<lbcd> B<-s> [B<-P> I<file>]
 
 =head1 DESCRIPTION
 
@@ -40,8 +40,10 @@ one.  The intent is for the load balancer to query the system
 periodically, using the returned weight as the system load, and to
 estimate the system load between queries of B<lbcd> as the last returned
 weight plus the last returned increment times the number of connections
-directed to that system.  By default, only one service is returned.  That
-service weight is calculated as follows:
+directed to that system.
+
+By default, only one service is returned.  That default service weight is
+calculated as follows:
 
     (<uniq-users> * 100 + 300 * <one-minute-load>
         + (<total-users> - <unique-users>) * 20) * <tmp-penalty>
@@ -50,10 +52,19 @@ where <tmp-penalty> is a multiplier applied for the most full of F</tmp>
 and F</var/tmp>.  <tmp-penalty> will be 1 if both are less than 90% full
 and will range between 2 for 90-93% full up to 32 for 100% full.  If
 F</tmp> or F</var/tmp> are completely full, the maximum possible weight
-will be returned.
+will be returned.  Different algorithms for determining the weight can be
+used instead; see the B<-w> option.
 
 If you want to use a simple load average instead, pass the B<-S> option to
-B<lbcd> and then the load service will use only the one-minute load.
+B<lbcd> and then the load service will use only the one-minute load.  If
+you want every system running B<lbcd> to return the same load, use the
+B<-R> option.
+
+If the file F<@sysconfdir@/nolbcd> exists, B<lbcd> will force the weight
+of the default service to the maximum value regardless of the normal
+service calculation.  This allows one to effectively remove a host from a
+load-balanced pool by touching a file without having to stop the B<lbcd>
+daemon.
 
 Since B<lbnamed> calculates the weight from the one minute load and the
 number of logged-in users and currently only supports version two, B<lbcd>
@@ -177,6 +188,13 @@ followed by a colon and a port number.
 
 =over 4
 
+=item F<@sysconfdir@/nolbcd>
+
+If this file exists, B<lbcd> will force the weight of the default service
+to the maximum possible value regardless of the normal weight calculation.
+This allows one to effectively remove a host from a load-balanced pool by
+touching a file without having to stop the B<lbcd> daemon.
+
 =item F</var/run/lbcd.pid>
 
 The default location of the PID file.  B<lbcd> puts its PID in this file
@@ -200,7 +218,8 @@ maintained by Russ Allbery <rra@stanford.edu>.
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006,
-2009, 2012 The Board of Trustees of the Leland Stanford Junior University
+2009, 2012, 2013 The Board of Trustees of the Leland Stanford Junior
+University
 
 Copying and distribution of this file, with or without modification, are
 permitted in any medium without royalty provided the copyright notice and

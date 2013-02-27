@@ -9,6 +9,7 @@
 /config.status
 /configure
 /lbcd
+/lbcd.8.in
 /stamp-h1
 /tests/portable/asprintf-t
 /tests/portable/daemon-t
