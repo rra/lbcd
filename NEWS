@@ -13,6 +13,8 @@ lbcd 3.4.1 (unreleased)
     Stop rewriting maximum weights in the lbcdclient output to -1 and
     report the actual number that will be used by clients.
 
+    Document lbcd handling of /etc/nologin.
+
 lbcd 3.4.0 (2012-09-20)
 
     Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and

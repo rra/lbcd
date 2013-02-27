@@ -210,6 +210,13 @@ to the maximum possible value regardless of the normal weight calculation.
 This allows one to effectively remove a host from a load-balanced pool by
 touching a file without having to stop the B<lbcd> daemon.
 
+=item F</etc/nologin>
+
+If this file exists, B<lbcd> will force the weight returned by the default
+load algorithm to the maximum possible value.  This will only apply if the
+default load algorithm is used; if a different algorithm is used, due to
+B<-R> or B<-w>, no change to the returned weight will be made.
+
 =item F</var/run/lbcd.pid>
 
 The default location of the PID file.  B<lbcd> puts its PID in this file
