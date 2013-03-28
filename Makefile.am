@@ -10,8 +10,10 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	\
 	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	\
 	arch/solaris.c autogen lbcd.pod tests/README tests/TESTS	\
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/tap/libtap.sh	\
-	tests/util/xmalloc-t
+	tests/data/perl.conf tests/docs/pod-spelling-t tests/docs/pod-t	\
+	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			\
+	tests/tap/perl/Test/RRA/Automake.pm				\
+	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
@@ -136,4 +138,4 @@ tests_util_xwrite_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 
 check-local: $(check_PROGRAMS)
-	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
+	cd tests && ./runtests -l $(abs_top_srcdir)/tests/TESTS
