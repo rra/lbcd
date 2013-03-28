@@ -1,17 +1,19 @@
 # Automake makefile for lbcd.
 #
 # Written by Russ Allbery <rra@stanford.edu>
-# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012
+# Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012, 2013
 #     The Board of Trustees of the Leland Stanford Junior University
 #
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	\
-	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	\
-	arch/solaris.c autogen lbcd.pod tests/README tests/TESTS	\
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/tap/libtap.sh	\
-	tests/util/xmalloc-t
+EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	   \
+	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	   \
+	arch/solaris.c autogen lbcd.8.in lbcd.pod tests/README tests/TESTS \
+	tests/data/perl.conf tests/docs/pod-spelling-t tests/docs/pod-t	   \
+	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			   \
+	tests/tap/perl/Test/RRA/Automake.pm				   \
+	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
@@ -29,13 +31,22 @@ util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
 	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h	\
 	util/xwrite.c util/xwrite.h
 
+# The maximum weight will be used if this file exists.
+AM_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"'
+
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
 	server.c tmp_full.c weight.c
 lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
 dist_bin_SCRIPTS = lbcdclient
-dist_man_MANS = lbcd.8 lbcdclient.1
+dist_man_MANS = lbcdclient.1
+man_MANS = lbcd.8
 
+lbcd.8: $(srcdir)/lbcd.8.in
+	sed 's%\(\\f(CI\)*\@sysconfdir\(\\fI\)*\@%$(sysconfdir)%' \
+	    < $(srcdir)/lbcd.8.in > $@
+
+CLEANFILES = lbcd.8
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
 	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
 	build-aux/install-sh build-aux/missing config.h.in config.h.in~ \
@@ -127,4 +138,4 @@ tests_util_xwrite_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 
 check-local: $(check_PROGRAMS)
-	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
+	cd tests && ./runtests -l $(abs_top_srcdir)/tests/TESTS

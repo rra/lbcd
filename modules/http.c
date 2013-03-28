@@ -53,11 +53,12 @@ probe_http(const char *host, int timeout, const char *portarg)
     if (sd == INVALID_SOCKET)
         return -1;
     else {
-        struct timeval tv = { timeout, 0 };
+        struct timeval tv = { 0, 0 };
         fd_set rset;
         char buf[17];
         char *p;
 
+        tv.tv_sec = timeout;
         if (socket_write(sd, QUERY, sizeof(QUERY)) < (ssize_t) sizeof(QUERY)) {
             socket_close(sd);
             return -1;

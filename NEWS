@@ -1,5 +1,33 @@
                         User-Visible lbcd Changes
 
+lbcd 3.4.1 (2013-03-28)
+
+    If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force
+    the weight of the default service to the maximum regardless of what
+    the normal weight calculation returned.  This allows a host to be
+    effectively dropped out of a load-balanced pool by touching this file.
+
+    Document the lbcd -t test mode and fix the output to treat the results
+    as unsigned numbers instead of signed numbers.
+
+    Stop rewriting maximum weights in the lbcdclient output to -1 and
+    report the actual number that will be used by clients.
+
+    Document lbcd handling of /etc/nologin.
+
+    Update to rra-c-util 4.8:
+
+    * Improve POD tests.
+    * Cleanly passes clang --analyze.
+
+    Update to C TAP Harness 2.1:
+
+    * runtests now treats the command line as a list of tests by default.
+    * The full test executable path can now be passed to runtests -o.
+    * Improved harness output for tests with lazy plans.
+    * Improved harness output to a terminal for some abort cases.
+    * Flush harness output after each test even when not on a terminal.
+
 lbcd 3.4.0 (2012-09-20)
 
     Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and

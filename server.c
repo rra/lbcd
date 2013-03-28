@@ -4,7 +4,7 @@
  * Obtains and sends polling information.  Also acts as a test driver.
  *
  * Written by Larry Schwimmer
- * Copyright 1996, 1997, 1998, 2004, 2006, 2012
+ * Copyright 1996, 1997, 1998, 2004, 2006, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -31,8 +31,14 @@ lbcd_set_load(struct lbcd_reply *lb, struct lbcd_request *ph)
     lb->pad = 0;
     lb->services = numserv = ph->h.status;
 
-    /* Set default weight and convert to network byte order */
+    /* Set default weight. */
     lbcd_setweight(lb, 0, "default");
+
+    /* If the sentinel file exists, override the weight and set it to max. */
+    if (access(LBCD_SENTINEL_FILE, F_OK) == 0)
+        lb->weights[0].host_weight = (uint32_t) -1;
+
+    /* Convert to network byte order. */
     lb->weights[0].host_weight = htonl(lb->weights[0].host_weight);
     lb->weights[0].host_incr = htonl(lb->weights[0].host_incr);
 
@@ -169,26 +175,26 @@ lbcd_test(int argc, char *argv[])
     lbcd_pack_info(&lb, &ph, 0);
 
     /* Print results. */
-    printf("PROTOCOL %d\n", lb.h.version);
+    printf("PROTOCOL %u\n", (unsigned int) lb.h.version);
     printf("\n");
     printf("MACHINE STATUS:\n");
-    printf("l1           = %d\n", (int) ntohs(lb.l1));
-    printf("l5           = %d\n", (int) ntohs(lb.l5));
-    printf("l15          = %d\n", (int) ntohs(lb.l15));
-    printf("current_time = %d\n", (int) ntohl(lb.current_time));
-    printf("boot_time    = %d\n", (int) ntohl(lb.boot_time));
-    printf("user_mtime   = %d\n", (int) ntohl(lb.user_mtime));
-    printf("tot_users    = %d\n", (int) ntohs(lb.tot_users));
-    printf("uniq_users   = %d\n", (int) ntohs(lb.uniq_users));
-    printf("on_console   = %d\n", (int) lb.on_console);
-    printf("tmp_full     = %d\n", (int) lb.tmp_full);
-    printf("tmpdir_full  = %d\n", (int) lb.tmpdir_full);
+    printf("l1           = %u\n",  (unsigned int) ntohs(lb.l1));
+    printf("l5           = %u\n",  (unsigned int) ntohs(lb.l5));
+    printf("l15          = %u\n",  (unsigned int) ntohs(lb.l15));
+    printf("current_time = %lu\n", (unsigned long) ntohl(lb.current_time));
+    printf("boot_time    = %lu\n", (unsigned long) ntohl(lb.boot_time));
+    printf("user_mtime   = %lu\n", (unsigned long) ntohl(lb.user_mtime));
+    printf("tot_users    = %u\n",  (unsigned int) ntohs(lb.tot_users));
+    printf("uniq_users   = %u\n",  (unsigned int) ntohs(lb.uniq_users));
+    printf("on_console   = %u\n",  (unsigned int) lb.on_console);
+    printf("tmp_full     = %u\n",  (unsigned int) lb.tmp_full);
+    printf("tmpdir_full  = %u\n",  (unsigned int) lb.tmpdir_full);
     printf("\n");
-    printf("SERVICES: %d\n", (int) lb.services);
+    printf("SERVICES: %u\n", (unsigned int) lb.services);
     for (i = 0; i <= lb.services; i++)
-        printf("%d: weight %8d increment %8d name %s\n", i,
-               (int) ntohl(lb.weights[i].host_weight),
-               (int) ntohl(lb.weights[i].host_incr),
+        printf("%d: weight %10lu increment %10lu name %s\n", i,
+               (unsigned long) ntohl(lb.weights[i].host_weight),
+               (unsigned long) ntohl(lb.weights[i].host_incr),
                i ? ph.names[i - 1] : "default");
     exit(0);
 }
