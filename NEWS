@@ -1,6 +1,6 @@
                         User-Visible lbcd Changes
 
-lbcd 3.4.1 (unreleased)
+lbcd 3.4.1 (2013-03-28)
 
     If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force
     the weight of the default service to the maximum regardless of what
