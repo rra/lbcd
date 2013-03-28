@@ -1,3 +1,14 @@
+lbcd (3.4.1-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - If /etc/nolbcd exists, force the weight of the default service to
+      the maximum without regard to the normal calculation.
+    - Document lbcd -t and fix the output for sign issues.
+    - Stop rewriting maximum weights in lbcdclient to -1.
+    - Document lbcd handling of /etc/nologin.
+
+ -- Russ Allbery <rra@debian.org>  Thu, 28 Mar 2013 14:56:34 -0700
+
 lbcd (3.4.0-2) experimental; urgency=low
 
   * Pass $DAEMON_OPTS to lbcd when starting.
