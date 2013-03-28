@@ -1,4 +1,4 @@
-lbcd (3.4.1-1) UNRELEASED; urgency=low
+lbcd (3.4.1-1) experimental; urgency=low
 
   * New upstream release.
     - If /etc/nolbcd exists, force the weight of the default service to
@@ -7,7 +7,7 @@ lbcd (3.4.1-1) UNRELEASED; urgency=low
     - Stop rewriting maximum weights in lbcdclient to -1.
     - Document lbcd handling of /etc/nologin.
 
- -- Russ Allbery <rra@debian.org>  Thu, 28 Mar 2013 14:56:34 -0700
+ -- Russ Allbery <rra@debian.org>  Thu, 28 Mar 2013 14:59:43 -0700
 
 lbcd (3.4.0-2) experimental; urgency=low
 
