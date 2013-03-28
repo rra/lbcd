@@ -65,7 +65,7 @@ static int
 getresponse(int sd, int implcode, int reqcode, int *ritems, int timeout)
 {
     struct resp_pkt rpkt;
-    struct timeval tv = { timeout, 0 };
+    struct timeval tv = { 0, 0 };
     int seq;
     fd_set fds;
     int n;
@@ -73,6 +73,7 @@ getresponse(int sd, int implcode, int reqcode, int *ritems, int timeout)
     int lastseq = 999;
     int numrecv = 0;
 
+    tv.tv_sec = timeout;
     *ritems = 0;
     memset(seenpacket, 0, sizeof(seenpacket));
 
@@ -80,7 +81,7 @@ getresponse(int sd, int implcode, int reqcode, int *ritems, int timeout)
     while (1) {
         FD_ZERO(&fds);
         FD_SET(sd, &fds);
-        n = select(sd+1, &fds, NULL, NULL, &tv);
+        n = select(sd + 1, &fds, NULL, NULL, &tv);
         if (n < 1)
             return -1;
         n = recv(sd, (char *)&rpkt, sizeof(rpkt), 0);
