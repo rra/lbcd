@@ -1,3 +1,9 @@
+lbcd (3.4.1-2) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 11 May 2013 17:02:56 -0700
+
 lbcd (3.4.1-1) experimental; urgency=low
 
   * New upstream release.
