@@ -1,3 +1,12 @@
+lbcd (3.4.1-3) UNRELEASED; urgency=low
+
+  * Apply upstream patch to add AM_PROG_AR to configure.ac, now apparently
+    required by Automake for the binutils in unstable.  (Closes: #713291)
+  * Apply upstream patch to build with largefile support.  This is
+    probably pointless for this module, but consistency is good.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:57:12 -0700
+
 lbcd (3.4.1-2) unstable; urgency=low
 
   * Upload to unstable.
