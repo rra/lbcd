@@ -4,6 +4,8 @@ lbcd (3.4.1-3) UNRELEASED; urgency=low
     required by Automake for the binutils in unstable.  (Closes: #713291)
   * Apply upstream patch to build with largefile support.  This is
     probably pointless for this module, but consistency is good.
+  * Apply upstream patch to fix the buffer size for network timeout tests,
+    fixing test failures with newer Linux kernels.
 
  -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:57:12 -0700
 
