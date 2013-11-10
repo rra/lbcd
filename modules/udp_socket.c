@@ -2,7 +2,7 @@
  * Generic UDP connection code.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 2008, 2012
+ * Copyright 1997, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -62,7 +62,7 @@ udp_connect(const char *host, const char *protocol, int port)
 
     /* Set up socket connection. */
     serv_addr.sin_family = AF_INET;
-    memcpy(&serv_addr.sin_addr, he->h_addr, sizeof(he->h_addr));
+    memcpy(&serv_addr.sin_addr, he->h_addr, sizeof(serv_addr.sin_addr));
     sd = socket(PF_INET, SOCK_DGRAM, 0);
     if (sd < 0)
         return -1;
