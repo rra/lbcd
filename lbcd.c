@@ -5,7 +5,7 @@
  * packets, and handling each incoming request.
  *
  * Written by Larry Schwimmer
- * Copyright 1996, 1997, 1998, 2005, 2006, 2008, 2012
+ * Copyright 1996, 1997, 1998, 2005, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -143,7 +143,8 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
         strlcpy(client, "UNKNOWN", sizeof(client));
     }
     if ((size_t) n < sizeof(struct lbcd_header)) {
-        warn("client %s: short packet received (length %d)", client, n);
+        warn("client %s: short packet received (length %lu)", client,
+             (unsigned long) n);
         return 0;
     }
 
