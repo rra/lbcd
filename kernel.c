@@ -29,6 +29,6 @@
 #elif defined(sgi)
 # include "arch/irix.c"
 /* Currently, on FreeBSD, we rely on /proc being mounted. */
-#elif defined(__linux__) || defined(__FreeBSD_kernel__)
+#elif defined(__linux__) || defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
 # include "arch/linux.c"
 #endif
