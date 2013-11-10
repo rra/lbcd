@@ -50,7 +50,7 @@ AC_TYPE_UINT32_T
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
-AC_CHECK_FUNCS([getutent hsearch setrlimit setsid statvfs])
+AC_CHECK_FUNCS([getutent getutxent hsearch setrlimit setsid statvfs])
 AC_REPLACE_FUNCS([asprintf daemon strlcat strlcpy strndup])
 
 dnl Additional probes for networking portability and IPv6.
