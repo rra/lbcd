@@ -6,6 +6,8 @@ lbcd 3.4.2 (unreleased)
     on the latter only if getutxent isn't available.  Hopefully fixes
     compilation problems on Mac OS X.
 
+    Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
+
 lbcd 3.4.1 (2013-03-28)
 
     If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force

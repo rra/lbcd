@@ -2,7 +2,7 @@
  * Include the appropriate kernel code for the local operating system.
  *
  * Written by Larry Schwimmer
- * Copyright 1996, 1997, 1998, 2000, 2008, 2009, 2012
+ * Copyright 1996, 1997, 1998, 2000, 2008, 2009, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -28,6 +28,7 @@
 # include "arch/darwin.c"
 #elif defined(sgi)
 # include "arch/irix.c"
-#elif defined(__linux__)
+/* Currently, on FreeBSD, we rely on /proc being mounted. */
+#elif defined(__linux__) || defined(__FreeBSD_kernel__)
 # include "arch/linux.c"
 #endif
