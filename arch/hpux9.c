@@ -1,7 +1,7 @@
 /*
  * lbcd kernel code for HP-UX 9.x.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *

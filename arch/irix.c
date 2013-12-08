@@ -4,7 +4,7 @@
  * Use utmpx to get the system boot time as the method used to get kernel
  * addresses doesn't seem to work for the time of the last reboot.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *

@@ -2,7 +2,7 @@
  * Get statistics about logged-in users.
  *
  * Written by Larry Schwimmer
- * Updates by Russ Allbery <rra@stanford.edu>
+ * Updates by Russ Allbery <eagle@eyrie.org>
  * Copyright 1996, 1997, 1998, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *

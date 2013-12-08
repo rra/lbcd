@@ -235,7 +235,7 @@ L<http://www.eyrie.org/~eagle/software/lbcd/>.
 =head1 AUTHORS
 
 Originally written by Roland Schemers and Larry Schwimmer.  Currently
-maintained by Russ Allbery <rra@stanford.edu>.
+maintained by Russ Allbery <eagle@eyrie.org>.
 
 =head1 COPYRIGHT AND LICENSE
 

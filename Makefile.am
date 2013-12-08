@@ -1,6 +1,6 @@
 # Automake makefile for lbcd.
 #
-# Written by Russ Allbery <rra@stanford.edu>
+# Written by Russ Allbery <eagle@eyrie.org>
 # Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012, 2013
 #     The Board of Trustees of the Leland Stanford Junior University
 #
