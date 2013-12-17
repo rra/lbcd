@@ -8,23 +8,23 @@ License: Expat
 Files: *
 Copyright: 1993-1994, 1996-2013
     The Board of Trustees of the Leland Stanford Junior University
-  2000-2002, 2004-2012 Russ Allbery <rra@stanford.edu>
+  2000-2002, 2004-2013 Russ Allbery <eagle@eyrie.org>
   2007 Clif Redding
-  2013 The Board of Trustees of the Leland Stanford Junior University.
 License: Expat
 
 Files: Makefile.in
-Copyright: 1994-2011 Free Software Foundation, Inc.
+Copyright: 1994-2013 Free Software Foundation, Inc.
   1996-1998, 2003-2006, 2008-2009, 2012-2013
     The Board of Trustees of the Leland Stanford Junior University
 License: FSF-unlimited and Expat
 
 Files: aclocal.m4
-Copyright: 1996-2012 Free Software Foundation, Inc.
+Copyright: 1996-2013 Free Software Foundation, Inc.
 License: FSF-unlimited
 
-Files: build-aux/compile build-aux/depcomp build-aux/missing
-Copyright: 1996-1997, 1999-2000, 2002-2012 Free Software Foundation, Inc.
+Files: build-aux/ar-lib build-aux/compile build-aux/depcomp
+ build-aux/missing
+Copyright: 1996-2013 Free Software Foundation, Inc.
 License: GPL-2+ with Autoconf exception or Expat
 
 Files: build-aux/install-sh
@@ -63,7 +63,7 @@ License: FSF-configure
 Files: lbcd.8.in lbcd.pod tests/README
 Copyright: 1993-1994, 1996-1998, 2000, 2003-2006, 2009, 2012-2013
     The Board of Trustees of the Leland Stanford Junior University
-  2010 Russ Allbery <rra@stanford.edu>
+  2010 Russ Allbery <eagle@eyrie.org>
 License: all-permissive
  Copying and distribution of this file, with or without modification, are
  permitted in any medium without royalty provided the copyright notice and
@@ -71,7 +71,7 @@ License: all-permissive
  warranty.
 
 Files: m4/inet-ntoa.m4 m4/snprintf.m4 m4/vamacros.m4
-Copyright: 1999-2001, 2003 Russ Allbery <rra@stanford.edu>
+Copyright: 1999-2001, 2003 Russ Allbery <eagle@eyrie.org>
   2006, 2008-2009
     The Board of Trustees of the Leland Stanford Junior University
 License: unlimited
@@ -137,7 +137,7 @@ License: rra-public-domain
 
 Files: portable/snprintf.c tests/portable/snprintf-t.c
 Copyright: 1995 Patrick Powell
-  2000-2006 Russ Allbery <rra@stanford.edu>
+  2000-2006 Russ Allbery <eagle@eyrie.org>
   2001 Hrvoje Niksic
   2009-2010 The Board of Trustees of the Leland Stanford Junior University
 License: Powell-snprintf
