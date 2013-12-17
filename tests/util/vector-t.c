@@ -4,7 +4,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 
 #include <tests/tap/basic.h>
+#include <tests/tap/string.h>
 #include <util/vector.h>
 #include <util/xmalloc.h>
 
@@ -30,15 +31,14 @@ main(void)
 {
     struct vector *vector;
     struct cvector *cvector;
-    const char cstring[] = "This is a\ttest.  ";
-    const char tabs[] = "test\t\ting\t";
-    static const char nulls1[] = "This\0is\0a\0test.";
-    static const char nulls2[] = "This is a\t\0es\0.  ";
-    char empty[] = "";
-    char buffer[256];
-    char *string;
+    char *command, *string;
     char *p;
     pid_t child;
+    char empty[] = "";
+    static const char cstring[] = "This is a\ttest.  ";
+    static const char nulls1[] = "This\0is\0a\0test.";
+    static const char nulls2[] = "This is a\t\0es\0.  ";
+    static const char tabs[] = "test\t\ting\t";
 
     plan(119);
 
@@ -282,8 +282,8 @@ main(void)
     vector = vector_new();
     vector_add(vector, "/bin/sh");
     vector_add(vector, "-c");
-    snprintf(buffer, sizeof(buffer), "echo ok %lu - vector_exec", testnum++);
-    vector_add(vector, buffer);
+    basprintf(&command, "echo ok %lu - vector_exec", testnum++);
+    vector_add(vector, command);
     child = fork();
     if (child < 0)
         sysbail("unable to fork");
@@ -292,12 +292,13 @@ main(void)
             sysdiag("unable to exec /bin/sh");
     waitpid(child, NULL, 0);
     vector_free(vector);
+    free(command);
 
     cvector = cvector_new();
     cvector_add(cvector, "/bin/sh");
     cvector_add(cvector, "-c");
-    snprintf(buffer, sizeof(buffer), "echo ok %lu - cvector_exec", testnum++);
-    cvector_add(cvector, buffer);
+    basprintf(&command, "echo ok %lu - cvector_exec", testnum++);
+    cvector_add(cvector, command);
     child = fork();
     if (child < 0)
         sysbail("unable to fork");
@@ -306,6 +307,7 @@ main(void)
             sysdiag("unable to exec /bin/sh");
     waitpid(child, NULL, 0);
     cvector_free(cvector);
+    free(command);
 
     return 0;
 }

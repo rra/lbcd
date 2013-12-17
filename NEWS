@@ -1,5 +1,25 @@
                         User-Visible lbcd Changes
 
+lbcd 3.4.2 (2013-12-17)
+
+    Support getutxent and use it in preference to getutent, falling back
+    on the latter only if getutxent isn't available.  Hopefully fixes
+    compilation problems on Mac OS X.
+
+    Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
+
+    Update to rra-c-util 4.12:
+
+    * network_connect now resumes after being interrupted by a signal.
+    * Correctly check the return status of snprintf.
+    * Correctly handle formatting errors in asprintf functions.
+
+    Update to C TAP Harness 2.3:
+
+    * bail and sysbail now exit with status 255 to match Test::More.
+    * Suppress lazy plans and test summaries if the test failed with bail.
+    * Add warn_unused_result gcc attributes to relevant functions.
+
 lbcd 3.4.1 (2013-03-28)
 
     If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force
