@@ -56,7 +56,7 @@ BEGIN {
     # This version should match the corresponding rra-c-util release, but with
     # two digits for the minor version, including a leading zero if necessary,
     # so that it will sort properly.
-    $VERSION = '4.11';
+    $VERSION = '4.12';
 }
 
 # Skip this test unless maintainer tests are requested.  Takes a short
@@ -149,7 +149,7 @@ Test::RRA - Support functions for Perl tests
     skip_unless_maintainer('Coding style tests');
 
     # Load modules, skipping the test if they're not available.
-    use_prereq('File::Slurp');
+    use_prereq('Perl6::Slurp', 'slurp');
     use_prereq('Test::Script::Run', '0.04');
 
 =head1 DESCRIPTION

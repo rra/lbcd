@@ -8,6 +8,18 @@ lbcd 3.4.2 (unreleased)
 
     Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
 
+    Update to rra-c-util 4.12:
+
+    * network_connect now resumes after being interrupted by a signal.
+    * Correctly check the return status of snprintf.
+    * Correctly handle formatting errors in asprintf functions.
+
+    Update to C TAP Harness 2.3:
+
+    * bail and sysbail now exit with status 255 to match Test::More.
+    * Suppress lazy plans and test summaries if the test failed with bail.
+    * Add warn_unused_result gcc attributes to relevant functions.
+
 lbcd 3.4.1 (2013-03-28)
 
     If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force
