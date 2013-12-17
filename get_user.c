@@ -2,8 +2,8 @@
  * Get statistics about logged-in users.
  *
  * Written by Larry Schwimmer
- * Updates by Russ Allbery <rra@stanford.edu>
- * Copyright 1996, 1997, 1998, 2006, 2008, 2012
+ * Updates by Russ Allbery <eagle@eyrie.org>
+ * Copyright 1996, 1997, 1998, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -17,15 +17,26 @@
 # include <search.h>
 #endif
 #include <sys/stat.h>
-#include <utmp.h>
-#ifdef HAVE_UTMPX_H
+#if defined(HAVE_UTMPX_H)
 # include <utmpx.h>
+#elif defined(HAVE_UTMP_H)
+# include <utmp.h>
 #endif
 
 #include <internal.h>
 #include <util/messages.h>
 #include <util/vector.h>
 #include <util/xmalloc.h>
+
+/*
+ * The utmpx and utmp function sets have the same API, so we can use a set of
+ * defines to fall back to the pre-utmpx versions if needed.
+ */
+#if !defined(HAVE_GETUTXENT) && defined(HAVE_GETUTENT)
+# define utmpx       utmp
+# define getutxent() getutent()
+# define setutxent() setutent()
+#endif
 
 /* The logged-in user database.  We want to stat it for modification time. */
 #if defined(HAVE_UTMPX_H)
@@ -175,11 +186,12 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
      * ourselves.
      */
     uniq_start();
-#ifdef HAVE_GETUTENT
+#if defined(HAVE_GETUTXENT) || defined(HAVE_GETUTENT)
     {
-        struct utmp *ut;
+        struct utmpx *ut;
 
-        while ((ut = getutent()) != NULL) {
+        setutxent();
+        while ((ut = getutxent()) != NULL) {
             if (ut->ut_type != USER_PROCESS)
                 continue;
             (*total)++;
@@ -189,7 +201,7 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
             uniq_add(name);
             free(name);
         }
-        endutent();
+        endutxent();
     }
 #else
     {

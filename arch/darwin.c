@@ -7,7 +7,7 @@
  *
  * Written on 2007-11-15 by Clif Redding, Computer Science Dept.,
  *     University of West Florida
- * Updates by Russ Allbery <rra@stanford.edu>
+ * Updates by Russ Allbery <eagle@eyrie.org>
  * Copyright 2007 Clif Redding
  * Copyright 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University

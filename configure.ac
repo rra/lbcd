@@ -1,6 +1,6 @@
 dnl Autoconf configuration for lbcd.
 dnl
-dnl Written by Russ Allbery <rra@stanford.edu>
+dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Based on work by Larry Schwimmer
 dnl Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
@@ -8,7 +8,7 @@ dnl
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.64])
-AC_INIT([lbcd], [3.4.1], [rra@stanford.edu])
+AC_INIT([lbcd], [3.4.2], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
@@ -18,7 +18,9 @@ AM_MAINTAINER_MODE
 
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
 AM_PROG_CC_C_O
+AM_PROG_AR
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
@@ -48,7 +50,7 @@ AC_TYPE_UINT32_T
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
-AC_CHECK_FUNCS([getutent hsearch setrlimit setsid statvfs])
+AC_CHECK_FUNCS([getutent getutxent hsearch setrlimit setsid statvfs])
 AC_REPLACE_FUNCS([asprintf daemon strlcat strlcpy strndup])
 
 dnl Additional probes for networking portability and IPv6.
