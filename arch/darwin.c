@@ -9,7 +9,7 @@
  *     University of West Florida
  * Updates by Russ Allbery <eagle@eyrie.org>
  * Copyright 2007 Clif Redding
- * Copyright 2009, 2012
+ * Copyright 2009, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -70,7 +70,7 @@ kernel_getboottime(time_t *boottime)
     mib[1] = KERN_BOOTTIME;
     size = sizeof(boot);
     if (sysctl(mib, 2, &boot, &size, NULL, 0) < 0) {
-        syswarm("error reding kernel boot time");
+        syswarn("error reding kernel boot time");
         return -1;
     }
     *boottime = boot.tv_sec;

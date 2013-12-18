@@ -1,5 +1,11 @@
                         User-Visible lbcd Changes
 
+lbcd 3.4.3 (unreleased)
+
+    Fix source typo that prevented compilation on Mac OS X.  (It is
+    probably obvious that the developer doesn't have access to Mac OS X
+    systems to test compilation....)
+
 lbcd 3.4.2 (2013-12-17)
 
     Support getutxent and use it in preference to getutent, falling back
