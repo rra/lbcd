@@ -11,6 +11,3 @@ override_dh_installchangelogs:
 
 override_dh_installinit:
 	dh_installinit -- start 20 2 3 4 5 .
-
-override_dh_builddeb:
-	dh_builddeb -- -Zxz

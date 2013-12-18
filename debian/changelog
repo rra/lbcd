@@ -5,6 +5,7 @@ lbcd (3.4.2-1) unstable; urgency=medium
     - Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
   * Add necessary keyring and watch configuration for uscan to verify
     PGP signatures on new upstream releases.
+  * Remove now-unnecessary override of dh_builddeb to use xz compression.
   * Update standards version to 3.9.5 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Tue, 17 Dec 2013 16:37:40 -0800
