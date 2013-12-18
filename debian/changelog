@@ -3,6 +3,8 @@ lbcd (3.4.2-1) UNRELEASED; urgency=medium
   * New upstream release.
     - Use getutxent in preference to get getutent.
     - Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
+  * Add necessary keyring and watch configuration for uscan to verify
+    PGP signatures on new upstream releases.
   * Update standards version to 3.9.5 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Tue, 17 Dec 2013 13:42:20 -0800

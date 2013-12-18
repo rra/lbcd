@@ -1,2 +1,3 @@
 version=3
-http://archives.eyrie.org/software/system/lbcd-(.*)\.tar\.gz
+opts=pgpsigurlmangle=s/$/.asc/ \
+    http://archives.eyrie.org/software/system/lbcd-(.*)\.tar\.gz
