@@ -1,6 +1,7 @@
 =for stopwords
-lbcd -dhlRrt UDP DNS-based balancer lbnamed lbnamed's iptables IP
-Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT
+lbcd -dfhlRtZ UDP DNS-based balancer lbnamed lbnamed's iptables IP
+Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT SIGCONT
+SIGSTOP daemontools runit systemd
 
 =head1 NAME
 

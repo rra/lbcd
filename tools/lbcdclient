@@ -166,7 +166,8 @@ sub print_results($) {
 __END__
 
 =for stopwords
-lbcdclient lbcd btime tmp Schwimmer Allbery
+lbcdclient lbcd btime tmp Schwimmer Allbery MERCHANTABILITY NONINFRINGEMENT
+sublicense
 
 =head1 NAME
 
