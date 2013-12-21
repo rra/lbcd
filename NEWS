@@ -1,6 +1,10 @@
                         User-Visible lbcd Changes
 
-lbcd 3.4.3 (unreleased)
+lbcd 3.5.0 (unreleased)
+
+    Drop support for lbcd -s, to stop a running daemon, and lbcd -r, to
+    restart a running daemon.  This sort of daemon management is best done
+    via a system framework, whether init scripts, upstart, or systemd.
 
     Fix source typo that prevented compilation on Mac OS X.  (It is
     probably obvious that the developer doesn't have access to Mac OS X

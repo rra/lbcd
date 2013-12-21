@@ -8,10 +8,8 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-B<lbcd> [B<-dhlRrt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
+B<lbcd> [B<-dhlRt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
     [B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
-
-B<lbcd> B<-s> [B<-P> I<file>]
 
 B<lbcd> B<-t> [v2] [I<service> ...]
 
@@ -129,9 +127,8 @@ received requests, but this has not yet been implemented.
 
 =item B<-P> I<file>
 
-Use I<file> to store the PID of the running B<lbcd> process and as the
-file to read for the B<-r> and B<-s> options, rather than the default of
-F</var/run/lbcd.pid>.
+Use I<file> to store the PID of the running B<lbcd> process, rather than
+the default of F</var/run/lbcd.pid>.
 
 =item B<-p> I<port>
 
@@ -144,12 +141,6 @@ and an increment of one.  It is equivalent to C<-w rr>.  For version two
 responses, it will always return a one-minute load of one regardless of
 the actual load average of the system (unless B<-S> is used).
 
-=item B<-r>
-
-Restart a running B<lbcd> process.  This stops the existing B<lbcd>
-process by killing the PID named in F</var/run/lbcd.pid> or the file given
-with the B<-P> option and then starts as the new B<lbcd> process.
-
 =item B<-S>
 
 When answering version two queries, do not attempt to adjust for
@@ -158,11 +149,6 @@ report the load averages and number of logged in users accurately.  This
 means that version two responses will not contain any information derived
 from custom services or weight settings and the B<-c>, B<-w>, and B<-R>
 options will be ignored for version two responses.
-
-=item B<-s>
-
-Stop an existing B<lbcd> process by killing the PID named in
-F</var/run/lbcd.pid> or the file given with the B<-P> option.
 
 =item B<-T> I<seconds>
 
@@ -220,8 +206,7 @@ B<-R> or B<-w>, no change to the returned weight will be made.
 =item F</var/run/lbcd.pid>
 
 The default location of the PID file.  B<lbcd> puts its PID in this file
-when it starts, and refers to this file for the B<-r> and B<-s> commands.
-The file location can be changed with B<-P>.
+when it starts.  The file location can be changed with B<-P>.
 
 =back
 

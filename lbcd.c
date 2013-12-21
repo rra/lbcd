@@ -69,33 +69,6 @@ version(void)
 
 
 /*
- * Given the file to which the PID was written, stop a running instance of
- * lbcd.  This is basically the same as kill -TERM `cat /path/to/file`.
- */
-static int
-stop_lbcd(const char *pid_file)
-{
-    pid_t pid;
-    FILE *file;
-
-    file = fopen(pid_file,"r");
-    if (file == NULL)
-        return 0;
-    if (fscanf(file, "%d", (int *) &pid) < 1) {
-        fclose(file);
-        return 0;
-    }
-    fclose(file);
-    if (pid != 0 && kill(pid, 0) == 0)
-        if (kill(pid, SIGTERM) < 0) {
-            syswarn("cannot kill PID %lu", (unsigned long) pid);
-            return -1;
-        }
-    return 0;
-}
-
-
-/*
  * Send a status reply back to the client.
  */
 static int
@@ -357,7 +330,7 @@ main(int argc, char **argv)
     /* Parse the regular command-line options. */
     opterr = 1;
     bind_address.s_addr = htonl(INADDR_ANY);
-    while ((c = getopt(argc, argv, "P:Rb:c:dhlp:rSstT:w:")) != EOF) {
+    while ((c = getopt(argc, argv, "P:Rb:c:dhlp:StT:w:")) != EOF) {
         switch (c) {
         case 'h': /* usage */
             usage(0);
@@ -386,14 +359,8 @@ main(int argc, char **argv)
         case 'p': /* port number */
             port = atoi(optarg);
             break;
-        case 'r': /* restart */
-            restart = 1;
-            break;
         case 'S': /* simple, no version two adjustments */
             simple = 1;
-            break;
-        case 's': /* stop */
-            exit(stop_lbcd(pid_file));
             break;
         case 't': /* test mode */
             testmode = 1;
@@ -412,10 +379,6 @@ main(int argc, char **argv)
             break;
         }
     }
-
-    /* Handle restart, if requested. */
-    if (!testmode && restart && stop_lbcd(pid_file) != 0)
-        exit(1);
 
     /* Initialize default load handler. */
     if (lbcd_weight_init(lbcd_helper, service_weight, service_timeout) != 0)
