@@ -43,6 +43,14 @@ Usage: lbcd [options] [-d] [-p <port>]\n\
    -T <seconds> timeout (1-300 seconds, default 5)\n\
    --version    print protocol version and exit\n";
 
+/* Stores configuration information for lbcd. */
+struct lbcd_config {
+    struct in_addr bind_address; /* Address to listen on. */
+    unsigned short port;         /* Port to listen on. */
+    const char *pid_file;        /* Write the daemon PID to this path. */
+    bool simple;                 /* Do not adjust results for version 2. */
+};
+
 
 /*
  * Print out the usage message and then exit with the status given as the
@@ -173,8 +181,8 @@ lbcd_recv_udp(int s, struct sockaddr *cli_addr, socklen_t *cli_len,
  * Handle an incoming request.
  */
 static void
-handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr *cli_addr,
-                  socklen_t cli_len, int simple)
+handle_lb_request(struct lbcd_config *config, int s, struct lbcd_request *ph,
+                  struct sockaddr *cli_addr, socklen_t cli_len)
 {
     struct lbcd_reply lbr;
     int pkt_size;
@@ -188,7 +196,7 @@ handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr *cli_addr,
     lbr.h.status  = htons(LBCD_STATUS_OK);
 
     /* Fill in reply. */
-    lbcd_pack_info(&lbr, ph, simple);
+    lbcd_pack_info(&lbr, ph, config->simple);
 
     /* Compute reply size (maximum packet minus unused service slots). */
     pkt_size = sizeof(lbr) -
@@ -240,8 +248,7 @@ bind_socket(int port, struct in_addr *bind_address)
  * Set up our network connection and handle incoming requests.
  */
 static void
-handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
-                int simple)
+handle_requests(struct lbcd_config *config)
 {
     int s;
     struct sockaddr_storage cli_addr;
@@ -253,13 +260,13 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     FILE *pid;
 
     /* Open UDP socket. */
-    s = bind_socket(port, bind_address);
+    s = bind_socket(config->port, &config->bind_address);
 
     /* Indicate to the world that we're ready to answer requests. */
-    if (pid_file != NULL) {
-        pid = fopen(pid_file, "w");
+    if (config->pid_file != NULL) {
+        pid = fopen(config->pid_file, "w");
         if (pid == NULL)
-            warn("cannot create PID file %s", pid_file);
+            warn("cannot create PID file %s", config->pid_file);
         else {
             fprintf(pid, "%d\n", (int) getpid());
             fclose(pid);
@@ -281,8 +288,8 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
             case LBCD_OP_LBINFO:
-                handle_lb_request(s, ph, (struct sockaddr *) &cli_addr,
-                                  cli_len, simple);
+                handle_lb_request(config, s, ph,
+                                  (struct sockaddr *) &cli_addr, cli_len);
                 break;
             default:
                 warn("client %s: unknown op %d requested", client, ph->h.op);
@@ -301,15 +308,12 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
 int
 main(int argc, char **argv)
 {
+    struct lbcd_config config;
     int debugging = 0;
-    int port = LBCD_PORTNUM;
     int testmode = 0;
-    int simple = 0;
     int foreground = 0;
-    const char *pid_file = NULL;
     char *lbcd_helper = NULL;
     const char *service_weight = NULL;
-    struct in_addr bind_address;
     int service_timeout = LBCD_TIMEOUT;
     int c;
 
@@ -329,22 +333,17 @@ main(int argc, char **argv)
             }
         }
 
+    /* Set configuration defaults. */
+    memset(&config, 0, sizeof(config));
+    config.bind_address.s_addr = htonl(INADDR_ANY);
+    config.port = LBCD_PORTNUM;
+
     /* Parse the regular command-line options. */
     opterr = 1;
-    bind_address.s_addr = htonl(INADDR_ANY);
     while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:")) != EOF) {
         switch (c) {
-        case 'h': /* usage */
-            usage(0);
-            break;
-        case 'P': /* pid file */
-            pid_file = optarg;
-            break;
-        case 'R': /* round-robin */
-            service_weight = "rr";
-            break;
         case 'b': /* bind address */
-            if (inet_aton(optarg, &bind_address) == 0)
+            if (inet_aton(optarg, &config.bind_address) == 0)
                 die("invalid bind address %s", optarg);
             break;
         case 'c': /* helper command -- must be full path to command */
@@ -359,14 +358,23 @@ main(int argc, char **argv)
         case 'f': /* run in foreground */
             foreground = 1;
             break;
+        case 'h': /* usage */
+            usage(0);
+            break;
         case 'l': /* log requests */
             /* FIXME: implement */
             break;
+        case 'P': /* pid file */
+            config.pid_file = optarg;
+            break;
         case 'p': /* port number */
-            port = atoi(optarg);
+            config.port = atoi(optarg);
+            break;
+        case 'R': /* round-robin */
+            service_weight = "rr";
             break;
         case 'S': /* simple, no version two adjustments */
-            simple = 1;
+            config.simple = true;
             break;
         case 't': /* test mode */
             testmode = 1;
@@ -412,6 +420,6 @@ main(int argc, char **argv)
     }
 
     /* Become a daemon.  handle_requests never returns. */
-    handle_requests(port, pid_file, &bind_address, simple);
+    handle_requests(&config);
     return 0;
 }
