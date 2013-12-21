@@ -130,8 +130,9 @@ Print out usage information and exit.
 
 =item B<-l>
 
-Currently does nothing.  Eventually this will tell lbcd to log all
-received requests, but this has not yet been implemented.
+Log every received request to syslog (or to standard output if B<-d> was
+given).  The requests will be logged with the LOG_DAEMON facility and the
+LOG_INFO priority.
 
 =item B<-P> I<file>
 

@@ -15,6 +15,9 @@ lbcd 3.5.0 (unreleased)
     the existing -d option which also moves logging to standard output and
     standard error.
 
+    Implement lbcd -l, which now logs to syslog each incoming client
+    request and its protocol version.
+
     Add support for systemd.  If built on a system with systemd installed,
     lbcd will install (but not enable) systemd units to start lbcd via
     socket activation.  lbcd will also notify systemd when its

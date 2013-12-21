@@ -49,6 +49,7 @@ struct lbcd_config {
     unsigned short port;         /* Port to listen on. */
     const char *pid_file;        /* Write the daemon PID to this path. */
     bool simple;                 /* Do not adjust results for version 2. */
+    bool log;                    /* Log each request. */
 };
 
 
@@ -189,6 +190,13 @@ handle_lb_request(struct lbcd_config *config, int s, struct lbcd_request *ph,
     char client[INET6_ADDRSTRLEN];
     ssize_t result;
 
+    /* Log the request. */
+    if (config->log) {
+        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
+            strlcpy(client, "UNKNOWN", sizeof(client));
+        notice("request from %s (version %d)", client, ph->h.version);
+    }
+
     /* Fill in reply header. */
     lbr.h.version = htons(ph->h.version);
     lbr.h.id      = htons(ph->h.id);
@@ -284,7 +292,8 @@ handle_requests(struct lbcd_config *config)
                           sizeof(mesg));
         if (n > 0) {
             ph = (struct lbcd_request *) mesg;
-            if (inet_ntop(AF_INET, &cli_addr, client, sizeof(client)) == NULL)
+            if (!network_sockaddr_sprint(client, sizeof(client),
+                                         (struct sockaddr *) &cli_addr))
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
             case LBCD_OP_LBINFO:
@@ -362,7 +371,7 @@ main(int argc, char **argv)
             usage(0);
             break;
         case 'l': /* log requests */
-            /* FIXME: implement */
+            config.log = true;
             break;
         case 'P': /* pid file */
             config.pid_file = optarg;
