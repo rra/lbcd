@@ -27,6 +27,11 @@ lbcd 3.5.0 (unreleased)
     and group created for that purpose, although this is not done in the
     default unit files due to the difficulty with creating users portably.
 
+    Add support for upstart's expect stop daemon synchronization method.
+    When starting lbcd with upstart, pass the new -Z option to lbcd, and
+    it will raise SIGSTOP when ready to accept connections, signaling to
+    upstart that the daemon has fully started.
+
     Fix source typo that prevented compilation on Mac OS X.  (It is
     probably obvious that the developer doesn't have access to Mac OS X
     systems to test compilation....)

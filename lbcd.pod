@@ -8,7 +8,7 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-B<lbcd> [B<-dfhlRt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
+B<lbcd> [B<-dfhlRtZ>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
     [B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
 
 B<lbcd> B<-t> [v2] [I<service> ...]
@@ -190,6 +190,14 @@ The currently supported services are C<load> (the default), C<ftp>,
 C<http>, C<imap>, C<nntp>, C<ntp>, C<pop>, C<smtp>, C<tcp>, and C<rr>
 (round-robin, the same as B<-R>).  The C<http> and C<tcp> services must be
 followed by a colon and a port number.
+
+=item B<-Z>
+
+When B<lbcd> has set up its network socket and is ready to answer
+requests, raise SIGSTOP.  This signals to upstart, when using C<expect
+stop>, that the daemon is ready to accept connections, and upstart will
+raise SIGCONT to allow B<lbcd> to continue.  This option is probably only
+useful when using upstart as the init system.
 
 =back
 

@@ -50,6 +50,7 @@ struct lbcd_config {
     const char *pid_file;        /* Write the daemon PID to this path. */
     bool simple;                 /* Do not adjust results for version 2. */
     bool log;                    /* Log each request. */
+    bool upstart;                /* Raise SIGSTOP when ready for upstart. */
 };
 
 
@@ -286,6 +287,11 @@ handle_requests(struct lbcd_config *config)
     if (status < 0)
         warn("cannot notify systemd of startup: %s", strerror(-status));
 
+    /* Indicate to upstart that we're ready to answer requests. */
+    if (config->upstart)
+        if (raise(SIGSTOP) < 0)
+            syswarn("cannot notify upstart of startup");
+
     /* Main loop.  Continue until we're signaled. */
     while (1) {
         cli_len = sizeof(cli_addr);
@@ -350,7 +356,7 @@ main(int argc, char **argv)
 
     /* Parse the regular command-line options. */
     opterr = 1;
-    while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:")) != EOF) {
+    while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:Z")) != EOF) {
         switch (c) {
         case 'b': /* bind address */
             if (inet_aton(optarg, &config.bind_address) == 0)
@@ -397,6 +403,9 @@ main(int argc, char **argv)
             break;
         case 'w': /* weight or service */
             service_weight = optarg;
+            break;
+        case 'Z': /* raise(SIGSTOP) when ready for connections */
+            config.upstart = true;
             break;
         default:
             usage(1);
