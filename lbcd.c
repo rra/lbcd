@@ -283,7 +283,7 @@ handle_requests(struct lbcd_config *config)
     notice("ready to accept requests");
 
     /* Indicate to systemd that we're ready to answer requests. */
-    sd_notify(0, "READY=1");
+    sd_notify(true, "READY=1");
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {
