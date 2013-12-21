@@ -5,6 +5,7 @@
  * packets, and handling each incoming request.
  *
  * Written by Larry Schwimmer
+ * Extensively modified by Russ Allbery <eagle@eyrie.org>
  * Copyright 1996, 1997, 1998, 2005, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -12,6 +13,7 @@
  */
 
 #include <config.h>
+#include <portable/sd-daemon.h>
 #include <portable/socket.h>
 #include <portable/system.h>
 
@@ -225,6 +227,38 @@ handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr_in *cli_addr,
 
 
 /*
+ * Bind the listening socket on which we accept UDP requests.  Handle the
+ * socket activation case where the socket has already been set up for us by
+ * systemd and, in that case, just return the already-configured socket.
+ */
+static int
+bind_socket(int port, struct in_addr *bind_address)
+{
+    int s, socket_count;
+    struct sockaddr_in addr;
+
+    /* Check whether systemd has already bound the socket. */
+    socket_count = sd_listen_fds(true);
+    if (socket_count < 0)
+        die("using systemd-bound sockets failed: %s", strerror(-socket_count));
+    if (socket_count > 0)
+        return SD_LISTEN_FDS_START;
+
+    /* We have to do the work ourselves. */
+    s = socket(AF_INET, SOCK_DGRAM, 0);
+    if (s < 0)
+        sysdie("cannot create UDP socket");
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr = *bind_address;
+    addr.sin_port = htons(port);
+    if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0)
+        sysdie("cannot bind UDP socket");
+    return s;
+}
+
+
+/*
  * Set up our network connection and handle incoming requests.
  */
 static void
@@ -232,7 +266,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
                 int simple)
 {
     int s;
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in cli_addr;
     int cli_len;
     int n;
     char mesg[LBCD_MAXMESG];
@@ -241,15 +275,7 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     FILE *pid;
 
     /* Open UDP socket. */
-    s = socket(AF_INET, SOCK_DGRAM, 0);
-    if (s < 0)
-        sysdie("cannot create UDP socket");
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr = *bind_address;
-    serv_addr.sin_port = htons(port);
-    if (bind(s, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-        sysdie("cannot bind UDP socket");
+    s = bind_socket(port, bind_address);
 
     /* Indicate to the world that we're ready to answer requests. */
     pid = fopen(pid_file, "w");
@@ -260,6 +286,9 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
         fclose(pid);
     }
     notice("ready to accept requests");
+
+    /* Indicate to systemd that we're ready to answer requests. */
+    sd_notify(0, "READY=1");
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {

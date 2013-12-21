@@ -1,0 +1,10 @@
+[Unit]
+Description=lbcd listening socket
+Documentation=man:lbcd(8)
+Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+
+[Socket]
+ListenDatagram=0.0.0.0:4330
+
+[Install]
+WantedBy=sockets.target

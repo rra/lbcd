@@ -15,6 +15,11 @@ EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	   \
 	tests/tap/perl/Test/RRA/Automake.pm				   \
 	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
+# Override systemdsystemunitdir when running distcheck so that we don't try
+# to install files in the system directory.
+DISTCHECK_CONFIGURE_FLAGS = \
+	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
         portable/getnameinfo.h portable/macros.h portable/socket.h	 \
@@ -31,22 +36,34 @@ util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
 	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h	\
 	util/xwrite.c util/xwrite.h
 
-# The maximum weight will be used if this file exists.
-AM_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"'
-
 sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
 	server.c tmp_full.c weight.c
-lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
+lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
+	$(SYSTEMD_DAEMON_CPPFLAGS)
+lbcd_LDFLAGS = $(SYSTEMD_DAEMON_LDFLAGS)
+lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a \
+	$(SYSTEMD_DAEMON_LIBS)
 dist_bin_SCRIPTS = lbcdclient
 dist_man_MANS = lbcdclient.1
 man_MANS = lbcd.8
 
+# Substitute the installation paths into the systemd unit file.
+systemd/lbcd.service: $(srcdir)/systemd/lbcd.service.in
+	sed -e 's![@]sbindir[@]!$(sbindir)!g' \
+	    $(srcdir)/systemd/lbcd.service.in > $@
+
+# Install the systemd unit file if systemd support was detected.
+if HAVE_SYSTEMD
+systemdsystemunit_DATA = systemd/lbcd.service systemd/lbcd.socket
+endif
+
+# Substitute the system configuration path into the manual page.
 lbcd.8: $(srcdir)/lbcd.8.in
 	sed 's%\(\\f(CI\)*\@sysconfdir\(\\fI\)*\@%$(sysconfdir)%' \
 	    < $(srcdir)/lbcd.8.in > $@
 
-CLEANFILES = lbcd.8
+CLEANFILES = lbcd.8 systemd/lbcd.service
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
 	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
 	build-aux/install-sh build-aux/missing config.h.in config.h.in~ \

@@ -6,6 +6,15 @@ lbcd 3.4.3 (unreleased)
     probably obvious that the developer doesn't have access to Mac OS X
     systems to test compilation....)
 
+    Add support for systemd.  If built on a system with systemd installed,
+    lbcd will install (but not enable) systemd units to start lbcd via
+    socket activation.  lbcd will also notify systemd when its
+    initialization is complete if started by systemd with service
+    notification enabled.  Distributors are encouraged to modify the
+    provided lbcd.service file to set User and Group to a separate user
+    and group created for that purpose, although this is not done in the
+    default unit files due to the difficulty with creating users portably.
+
 lbcd 3.4.2 (2013-12-17)
 
     Support getutxent and use it in preference to getutent, falling back

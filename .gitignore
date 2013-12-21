@@ -11,6 +11,7 @@
 /lbcd
 /lbcd.8.in
 /stamp-h1
+/systemd/lbcd.service
 /tests/portable/asprintf-t
 /tests/portable/daemon-t
 /tests/portable/getaddrinfo-t

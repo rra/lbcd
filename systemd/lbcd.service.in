@@ -1,0 +1,13 @@
+[Unit]
+Description=responder for load balancing
+Documentation=man:lbcd(8)
+Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+
+[Service]
+Type=notify
+NotifyAccess=main
+Restart=always
+ExecStart=@sbindir@/lbcd -d
+
+[Install]
+WantedBy=mutli-user.target

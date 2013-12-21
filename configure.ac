@@ -24,6 +24,9 @@ AM_PROG_AR
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl Support installation of systemd unit files.
+RRA_WITH_SYSTEMD_UNITDIR
+
 dnl Probes for networking libraries.
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket], ,
@@ -35,6 +38,9 @@ AC_SEARCH_LIBS([kvm_open], [kvm])
 AC_SEARCH_LIBS([kstat_open], [kstat])
 AC_CHECK_LIB([mld], [main], [LIBS="$LIBS -lmld"])
 AC_SEARCH_LIBS([nlist], [elf])
+
+dnl Probes for general support libraries.
+RRA_LIB_SYSTEMD_DAEMON_OPTIONAL
 
 dnl General C library probes.
 AC_HEADER_STDBOOL
