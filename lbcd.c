@@ -23,6 +23,7 @@
 
 #include <internal.h>
 #include <util/messages.h>
+#include <util/network.h>
 
 /* The usage message. */
 const char usage_message[] = "\
@@ -98,20 +99,23 @@ stop_lbcd(const char *pid_file)
  * Send a status reply back to the client.
  */
 static int
-lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
+lbcd_send_status(int s, struct sockaddr *cli_addr, socklen_t cli_len,
                  struct lbcd_header *request_header, enum lbcd_status pstat)
 {
     struct lbcd_header header;
     char client[INET6_ADDRSTRLEN];
+    ssize_t result;
 
+    /* Build the response packet. */
     header.version = htons(LBCD_VERSION);
     header.id      = htons(request_header->id);
     header.op      = htons(request_header->op);
     header.status  = htons(pstat);
 
-    if (sendto(s, &header, sizeof(header), 0, (struct sockaddr *) cli_addr,
-               cli_len) != sizeof(header)) {
-        if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL)
+    /* Send the packet to the client. */
+    result = sendto(s, &header, sizeof(header), 0, cli_addr, cli_len);
+    if (result != sizeof(header)) {
+        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
             strlcpy(client, "UNKNOWN", sizeof(client));
         syswarn("client %s: cannot send reply", client);
         return -1;
@@ -128,19 +132,19 @@ lbcd_send_status(int s, struct sockaddr_in *cli_addr, int cli_len,
  * Returns the number of bytes read.
  */
 static int
-lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
+lbcd_recv_udp(int s, struct sockaddr *cli_addr, socklen_t *cli_len,
               void *mesg, int max_mesg)
 {
     ssize_t n;
     struct lbcd_request *ph;
     char client[INET6_ADDRSTRLEN];
 
-    n = recvfrom(s, mesg, max_mesg, 0, (struct sockaddr *) cli_addr, &cli_len);
+    n = recvfrom(s, mesg, max_mesg, 0, cli_addr, cli_len);
     if (n < 0) {
         syswarn("cannot receive packet");
         return 0;
     }
-    if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL) {
+    if (!network_sockaddr_sprint(client, sizeof(client), cli_addr)) {
         syswarn("cannot convert client address to string");
         strlcpy(client, "UNKNOWN", sizeof(client));
     }
@@ -185,7 +189,7 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
     default:
         warn("client %s: protocol version %d unsupported", client,
              ph->h.version);
-        lbcd_send_status(s, cli_addr, cli_len, &ph->h, LBCD_STATUS_VERSION);
+        lbcd_send_status(s, cli_addr, *cli_len, &ph->h, LBCD_STATUS_VERSION);
         return 0;
     }
     return n;
@@ -196,12 +200,13 @@ lbcd_recv_udp(int s, struct sockaddr_in *cli_addr, socklen_t cli_len,
  * Handle an incoming request.
  */
 static void
-handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr_in *cli_addr,
-                  int cli_len, int simple)
+handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr *cli_addr,
+                  socklen_t cli_len, int simple)
 {
     struct lbcd_reply lbr;
     int pkt_size;
     char client[INET6_ADDRSTRLEN];
+    ssize_t result;
 
     /* Fill in reply header. */
     lbr.h.version = htons(ph->h.version);
@@ -217,9 +222,9 @@ handle_lb_request(int s, struct lbcd_request *ph, struct sockaddr_in *cli_addr,
         (LBCD_MAX_SERVICES - lbr.services) * sizeof(struct lbcd_service);
 
     /* Send reply */
-    if (sendto(s, &lbr, pkt_size, 0, (const struct sockaddr *) cli_addr,
-               cli_len) != pkt_size) {
-        if (inet_ntop(AF_INET, cli_addr, client, sizeof(client)) == NULL)
+    result = sendto(s, &lbr, pkt_size, 0, cli_addr, cli_len);
+    if (result != pkt_size) {
+        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
             strlcpy(client, "UNKNOWN", sizeof(client));
         syswarn("client %s: cannot send reply", client);
     }
@@ -266,8 +271,8 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
                 int simple)
 {
     int s;
-    struct sockaddr_in cli_addr;
-    int cli_len;
+    struct sockaddr_storage cli_addr;
+    socklen_t cli_len;
     int n;
     char mesg[LBCD_MAXMESG];
     char client[INET6_ADDRSTRLEN];
@@ -293,19 +298,21 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     /* Main loop.  Continue until we're signaled. */
     while (1) {
         cli_len = sizeof(cli_addr);
-        n = lbcd_recv_udp(s, &cli_addr, cli_len, mesg, sizeof(mesg));
+        n = lbcd_recv_udp(s, (struct sockaddr *) &cli_addr, &cli_len, mesg,
+                          sizeof(mesg));
         if (n > 0) {
             ph = (struct lbcd_request *) mesg;
             if (inet_ntop(AF_INET, &cli_addr, client, sizeof(client)) == NULL)
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
             case LBCD_OP_LBINFO:
-                handle_lb_request(s, ph, &cli_addr, cli_len, simple);
+                handle_lb_request(s, ph, (struct sockaddr *) &cli_addr,
+                                  cli_len, simple);
                 break;
             default:
                 warn("client %s: unknown op %d requested", client, ph->h.op);
-                lbcd_send_status(s, &cli_addr, cli_len, &ph->h,
-                                 LBCD_STATUS_UNKNOWN_OP);
+                lbcd_send_status(s, (struct sockaddr *) &cli_addr, cli_len,
+                                 &ph->h, LBCD_STATUS_UNKNOWN_OP);
             }
         }
     }
