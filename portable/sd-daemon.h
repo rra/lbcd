@@ -24,7 +24,7 @@
 #ifndef PORTABLE_SD_DAEMON_H
 #define PORTABLE_SD_DAEMON_H 1
 
-#if defined(HAVE_SD_NOTIFY) && defined(HAVE_SYSTEMD_SD_DAEMON_H)
+#ifdef HAVE_SD_NOTIFY
 # include <systemd/sd-daemon.h>
 #else
 # define SD_LISTEN_FDS_START 3

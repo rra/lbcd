@@ -40,8 +40,7 @@ sbin_PROGRAMS = lbcd
 lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
 	server.c tmp_full.c weight.c
 lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
-	$(SYSTEMD_DAEMON_CPPFLAGS)
-lbcd_LDFLAGS = $(SYSTEMD_DAEMON_LDFLAGS)
+	$(SYSTEMD_DAEMON_CFLAGS)
 lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a \
 	$(SYSTEMD_DAEMON_LIBS)
 dist_bin_SCRIPTS = lbcdclient
