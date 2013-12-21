@@ -304,7 +304,6 @@ main(int argc, char **argv)
     int debugging = 0;
     int port = LBCD_PORTNUM;
     int testmode = 0;
-    int restart = 0;
     int simple = 0;
     const char *pid_file = NULL;
     char *lbcd_helper = NULL;
