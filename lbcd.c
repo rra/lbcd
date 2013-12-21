@@ -258,10 +258,9 @@ bind_socket(int port, struct in_addr *bind_address)
 static void
 handle_requests(struct lbcd_config *config)
 {
-    int s;
+    int s, status, n;
     struct sockaddr_storage cli_addr;
     socklen_t cli_len;
-    int n;
     char mesg[LBCD_MAXMESG];
     char client[INET6_ADDRSTRLEN];
     struct lbcd_request *ph;
@@ -283,7 +282,9 @@ handle_requests(struct lbcd_config *config)
     notice("ready to accept requests");
 
     /* Indicate to systemd that we're ready to answer requests. */
-    sd_notify(true, "READY=1");
+    status = sd_notify(true, "READY=1");
+    if (status < 0)
+        warn("cannot notify systemd of startup: %s", strerror(-status));
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {
