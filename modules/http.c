@@ -18,7 +18,7 @@
 #endif
 #include <sys/time.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 #include <modules/modules.h>
 #include <util/macros.h>
 

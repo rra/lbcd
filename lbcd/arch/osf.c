@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <sys/table.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 
 
 /*

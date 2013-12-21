@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <time.h>               /* time_t */
 
-#include <protocol.h>
+#include <lbcd/protocol.h>
 
 /*
  * A weight function takes a pointer to the weight and increment, a timeout, a

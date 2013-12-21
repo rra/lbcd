@@ -8,8 +8,8 @@
 /config.log
 /config.status
 /configure
-/lbcd
-/lbcd.8.in
+/lbcd/lbcd
+/lbcd/lbcd.8.in
 /stamp-h1
 /systemd/lbcd.service
 /tests/portable/asprintf-t

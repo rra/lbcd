@@ -16,7 +16,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 #include <util/macros.h>
 
 /* Supported services list and a mapping from service to weight function. */

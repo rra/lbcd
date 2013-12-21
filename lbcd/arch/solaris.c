@@ -1,11 +1,11 @@
 /*
- * lbcd kernel code for HP-UX 10.x.
+ * lbcd kernel code for Solaris
  *
- * This will only work for HP-UX 10.x and later.  For earlier releases of
- * HP-UX, see arch/hpux9.c.
+ * Uses kstat code in the Solaris FAQ written by Casper Dik in the
+ * comp.unix.solaris post <3qh88s$6ho@engnews2.Eng.Sun.COM>.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 2009, 2012
+ * Copyright 1997, 1998, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -15,13 +15,46 @@
 #include <portable/system.h>
 
 #include <fcntl.h>
+#include <kstat.h>
+#include <limits.h>
 #include <sys/param.h>
-#include <sys/pstat.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/times.h>
 #include <utmp.h>
 #include <utmpx.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
+#include <util/messages.h>
+
+static int kernel_init = 0;
+static kstat_ctl_t *kernel = NULL;
+
+
+/*
+ * Sets up for later queries.  Open the kernel.  Exits on error.
+ */
+static int
+kernel_open(void)
+{
+    kernel = kstat_open();
+    if (kernel == NULL)
+        sysdie("kstat_open failed");
+    kernel_init = 1;
+    return 0;
+}
+
+
+/*
+ * Close and free any resources for querying the kernel.
+ */
+static int
+kernel_close(void)
+{
+    if (!kernel_init)
+        return 0;
+    return kstat_close(kernel);
+}
 
 
 /*
@@ -32,13 +65,24 @@
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-    struct pst_dynamic dyn_info;
+    kstat_t *ksp;
+    kstat_named_t *kn1, *kn5, *kn15;
 
-    if (pstat_getdynamic(&dyn_info, sizeof(dyn_info), 0, 0) < 0)
+    if (!kernel_init)
+        kernel_open();
+    ksp = kstat_lookup(kernel, "unix", 0, "system_misc");
+    if (ksp == NULL)
         return -1;
-    *l1  = dyn_info.psd_avg_1_min;
-    *l5  = dyn_info.psd_avg_5_min;
-    *l15 = dyn_info.psd_avg_15_min;
+    if (kstat_read(kernel, ksp, 0) < 0)
+        return -1;
+    kn1  = kstat_data_lookup(ksp, "avenrun_1min");
+    kn5  = kstat_data_lookup(ksp, "avenrun_5min");
+    kn15 = kstat_data_lookup(ksp, "avenrun_15min");
+    if (kn1 == NULL || kn5 == NULL || kn15 == NULL)
+        return -1;
+    *l1  = (double) kn1->value.ul  / FSCALE;
+    *l5  = (double) kn5->value.ul  / FSCALE;
+    *l15 = (double) kn15->value.ul / FSCALE;
     return 0;
 }
 
@@ -52,7 +96,6 @@ kernel_getboottime(time_t *boottime)
 {
     int fd;
 
-    *boottime = 0;
     fd = open(UTMPX_FILE, O_RDONLY | O_NONBLOCK);
     if (fd >= 0) {
         ssize_t nread;

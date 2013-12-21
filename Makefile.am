@@ -7,12 +7,13 @@
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	   \
-	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	   \
-	arch/solaris.c autogen lbcd.8.in lbcd.pod tests/README tests/TESTS \
-	tests/data/perl.conf tests/docs/pod-spelling-t tests/docs/pod-t	   \
-	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			   \
-	tests/tap/perl/Test/RRA/Automake.pm				   \
+EXTRA_DIST = .gitignore LICENSE lbcd/arch/aix.c lbcd/arch/bsd.c		\
+	lbcd/arch/darwin.c lbcd/arch/hpux10.c lbcd/arch/hpux9.c		\
+	lbcd/arch/irix.c lbcd/arch/linux.c lbcd/arch/osf.c		\
+	lbcd/arch/solaris.c autogen lbcd/lbcd.8.in lbcd/lbcd.pod	\
+	tests/README tests/TESTS tests/data/perl.conf			\
+	tests/docs/pod-spelling-t tests/docs/pod-t tests/tap/libtap.sh	\
+	tests/tap/perl/Test/RRA.pm tests/tap/perl/Test/RRA/Automake.pm	\
 	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
 # Override systemdsystemunitdir when running distcheck so that we don't try
@@ -20,6 +21,7 @@ EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	   \
 DISTCHECK_CONFIGURE_FLAGS = \
 	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
 
+# Supporting convenience libraries used by other targets.
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
         portable/getnameinfo.h portable/macros.h portable/socket.h	 \
@@ -36,16 +38,20 @@ util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
 	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h	\
 	util/xwrite.c util/xwrite.h
 
-sbin_PROGRAMS = lbcd
-lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
-	server.c tmp_full.c weight.c
-lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
+# The lbcd listener daemon.
+sbin_PROGRAMS = lbcd/lbcd
+lbcd_lbcd_SOURCES = lbcd/get_user.c lbcd/kernel.c lbcd/internal.h	\
+	lbcd/lbcd.c lbcd/load.c lbcd/protocol.h lbcd/server.c		\
+	lbcd/tmp_full.c lbcd/weight.c
+lbcd_lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
 	$(SYSTEMD_DAEMON_CFLAGS)
-lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a \
-	$(SYSTEMD_DAEMON_LIBS)
-dist_bin_SCRIPTS = lbcdclient
-dist_man_MANS = lbcdclient.1
-man_MANS = lbcd.8
+lbcd_lbcd_LDADD = modules/libmodules.a util/libutil.a \
+	portable/libportable.a $(SYSTEMD_DAEMON_LIBS)
+man_MANS = lbcd/lbcd.8
+
+# The lbcdclient command-line query tool.
+dist_bin_SCRIPTS = tools/lbcdclient
+dist_man_MANS = tools/lbcdclient.1
 
 # Substitute the installation paths into the systemd unit file.
 systemd/lbcd.service: $(srcdir)/systemd/lbcd.service.in
@@ -58,15 +64,17 @@ systemdsystemunit_DATA = systemd/lbcd.service systemd/lbcd.socket
 endif
 
 # Substitute the system configuration path into the manual page.
-lbcd.8: $(srcdir)/lbcd.8.in
+lbcd/lbcd.8: $(srcdir)/lbcd/lbcd.8.in
 	sed 's%\(\\f(CI\)*\@sysconfdir\(\\fI\)*\@%$(sysconfdir)%' \
-	    < $(srcdir)/lbcd.8.in > $@
+	    < $(srcdir)/lbcd/lbcd.8.in > $@
 
+# Clean rules.  Work around a misfeature of Automake and remove all the
+# results of running autogen.
 CLEANFILES = lbcd.8 systemd/lbcd.service
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
-	build-aux/install-sh build-aux/missing config.h.in config.h.in~ \
-	configure lbcd.8 lbcdclient.1
+MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		\
+	build-aux/config.guess build-aux/config.sub build-aux/depcomp	\
+	build-aux/install-sh build-aux/missing config.h.in config.h.in~	\
+	configure lbcd/lbcd.8.in tools/lbcdclient.1
 
 # A set of flags for warnings.  Add -O because gcc won't find some warnings
 # without optimization turned on.  Desirable warnings that can't be turned

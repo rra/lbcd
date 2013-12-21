@@ -1,5 +1,5 @@
 /*
- * lbcd kernel code for HP-UX 9.x.
+ * lbcd kernel code for BSD.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2000, 2009, 2012
@@ -12,22 +12,28 @@
 #include <portable/system.h>
 
 #include <fcntl.h>
+#include <kvm.h>
 #include <nlist.h>
 #include <sys/param.h>
 #include <sys/time.h>
+#include <sys/times.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 #include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"
-#define C_VMUNIX "/hp-ux"
+#define C_VMUNIX "/bsd"
+
+#ifndef PROGNAME
+# define PROGNAME "lbcd"
+#endif
 
 static struct nlist nl[] = {
-    { "avenrun"  },
-    { "boottime" },
-    { NULL       }
+    { "_avenrun"  },
+    { "_boottime" },
+    { NULL        }
 };
-static int kernel_fd   = -1;
+static kvm_t *kernel = NULL;
 static int kernel_init = 0;
 
 
@@ -38,11 +44,11 @@ static int kernel_init = 0;
 static int
 kernel_open(void)
 {
-    kernel_fd = open(C_KMEM, O_RDONLY);
-    if (kernel_fd < 0)
-        sysdie("cannot open %s", C_KMEM);
-    if (nlist(C_VMUNIX, nl) < 0)
-        sysdie("no namelist for %s", C_VMUNIX);
+    kernel = kvm_open(NULL, NULL, NULL, O_RDONLY, PROGNAME);
+    if (kernel == NULL)
+        sysdie("kvm_open failed");
+    if (kvm_nlist(kernel, nl) != 0)
+        sysdie("kvm_nlist failed");
     kernel_init = 1;
     return 0;
 }
@@ -56,7 +62,7 @@ kernel_close(void)
 {
     if (!kernel_init)
         return 0;
-    return close(kernel_fd);
+    return kvm_close(kd);
 }
 
 
@@ -67,13 +73,11 @@ kernel_close(void)
 static void
 kernel_read(off_t where, void *dest, int dest_len)
 {
-    ssize_t status;
+    int status;
 
-    if (lseek(kernel_fd, where, SEEK_SET) < 0)
-        sysdie("cannot lseek in %s", C_KMEM);
-    status = read(kernel_fd, dest, dest_len);
-    if (status < 0)
-        sysdie("kernel read of %s failed", C_KMEM);
+    status = kvm_read(kernel, where, dest, dest_len);
+    if (status != 0)
+        sysdie("kvm_read failed");
 }
 
 
@@ -85,16 +89,16 @@ kernel_read(off_t where, void *dest, int dest_len)
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-    double load[3];
+    long load[3];
 
     if (!kernel_init)
         kernel_open();
     if (nl[0].n_type == 0)
         return -1;
     kernel_read(nl[0].n_value, (void *) load, sizeof(load));
-    *l1  = kern_avenrun[0];
-    *l5  = kern_avenrun[1];
-    *l15 = kern_avenrun[2];
+    *l1  = (double) load[0] / FSCALE;
+    *l5  = (double) load[1] / FSCALE;
+    *l15 = (double) load[2] / FSCALE;
     return 0;
 }
 
@@ -112,7 +116,26 @@ kernel_getboottime(time_t *boottime)
         kernel_open();
     if (nl[1].n_type == 0)
         return -1;
-    kernel_read(nl[1].n_value, (void *) &boot, sizeof(boot));
+    kernel_read(nl[0].n_value, (void *) &boot, sizeof(boot));
     *boottime = boot.tv_sec;
     return 0;
 }
+
+
+/*
+ * Test routine.
+ */
+#ifdef MAIN
+int
+main(void)
+{
+    double l1, l5, l15;
+    time_t boottime;
+
+    if (kernel_getload(&l1, &l5, &l15) == 0)
+        printf("load %.02f %.02f %.02f\n", l1, l5, l15);
+    if (kernel_getboottime(&boottime) == 0)
+        printf("booted at %s", ctime(&boottime));
+    return 0;
+}
+#endif

@@ -21,7 +21,7 @@
 #include <signal.h>
 #include <syslog.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 #include <util/messages.h>
 #include <util/network.h>
 

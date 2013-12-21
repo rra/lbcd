@@ -17,7 +17,7 @@
 #include <portable/statvfs.h>
 #include <portable/system.h>
 
-#include <internal.h>
+#include <lbcd/internal.h>
 
 
 /*
