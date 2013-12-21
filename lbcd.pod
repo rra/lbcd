@@ -127,8 +127,7 @@ received requests, but this has not yet been implemented.
 
 =item B<-P> I<file>
 
-Use I<file> to store the PID of the running B<lbcd> process, rather than
-the default of F</var/run/lbcd.pid>.
+Store the PID of the running daemon in I<file>.
 
 =item B<-p> I<port>
 
@@ -202,11 +201,6 @@ If this file exists, B<lbcd> will force the weight returned by the default
 load algorithm to the maximum possible value.  This will only apply if the
 default load algorithm is used; if a different algorithm is used, due to
 B<-R> or B<-w>, no change to the returned weight will be made.
-
-=item F</var/run/lbcd.pid>
-
-The default location of the PID file.  B<lbcd> puts its PID in this file
-when it starts.  The file location can be changed with B<-P>.
 
 =back
 

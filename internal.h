@@ -2,7 +2,7 @@
  * Prototypes for internal lbcd functions.
  *
  * Written by Larry Schwimmer
- * Copyright 1996, 1997, 1998, 2004, 2006, 2008, 2012
+ * Copyright 1996, 1997, 1998, 2004, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -27,10 +27,6 @@
 #include <time.h>               /* time_t */
 
 #include <protocol.h>
-
-#ifndef PID_FILE
-# define PID_FILE "/var/run/lbcd.pid"
-#endif
 
 /*
  * A weight function takes a pointer to the weight and increment, a timeout, a

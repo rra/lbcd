@@ -6,6 +6,10 @@ lbcd 3.5.0 (unreleased)
     restart a running daemon.  This sort of daemon management is best done
     via a system framework, whether init scripts, upstart, or systemd.
 
+    lbcd no longer writes its PID file to /var/run/lbcd.pid by default.
+    The -P option, specifying where to write a PID file, is still
+    supported, but unless it is given, lbcd does not write out a PID file.
+
     Fix source typo that prevented compilation on Mac OS X.  (It is
     probably obvious that the developer doesn't have access to Mac OS X
     systems to test compilation....)

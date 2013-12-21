@@ -256,12 +256,14 @@ handle_requests(int port, const char *pid_file, struct in_addr *bind_address,
     s = bind_socket(port, bind_address);
 
     /* Indicate to the world that we're ready to answer requests. */
-    pid = fopen(pid_file, "w");
-    if (pid == NULL)
-        warn("cannot create PID file %s", pid_file);
-    else {
-        fprintf(pid, "%d\n", (int) getpid());
-        fclose(pid);
+    if (pid_file != NULL) {
+        pid = fopen(pid_file, "w");
+        if (pid == NULL)
+            warn("cannot create PID file %s", pid_file);
+        else {
+            fprintf(pid, "%d\n", (int) getpid());
+            fclose(pid);
+        }
     }
     notice("ready to accept requests");
 
@@ -304,7 +306,7 @@ main(int argc, char **argv)
     int testmode = 0;
     int restart = 0;
     int simple = 0;
-    const char *pid_file = PID_FILE;
+    const char *pid_file = NULL;
     char *lbcd_helper = NULL;
     const char *service_weight = NULL;
     struct in_addr bind_address;
