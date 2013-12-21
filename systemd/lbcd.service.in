@@ -7,7 +7,7 @@ Documentation=http://www.eyrie.org/~eagle/software/lbcd/
 Type=notify
 NotifyAccess=main
 Restart=always
-ExecStart=@sbindir@/lbcd -d
+ExecStart=@sbindir@/lbcd -f
 
 [Install]
 WantedBy=mutli-user.target

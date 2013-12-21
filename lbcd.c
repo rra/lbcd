@@ -305,6 +305,7 @@ main(int argc, char **argv)
     int port = LBCD_PORTNUM;
     int testmode = 0;
     int simple = 0;
+    int foreground = 0;
     const char *pid_file = NULL;
     char *lbcd_helper = NULL;
     const char *service_weight = NULL;
@@ -331,7 +332,7 @@ main(int argc, char **argv)
     /* Parse the regular command-line options. */
     opterr = 1;
     bind_address.s_addr = htonl(INADDR_ANY);
-    while ((c = getopt(argc, argv, "P:Rb:c:dhlp:StT:w:")) != EOF) {
+    while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:")) != EOF) {
         switch (c) {
         case 'h': /* usage */
             usage(0);
@@ -353,6 +354,10 @@ main(int argc, char **argv)
             break;
         case 'd': /* debugging mode */
             debugging = 1;
+            foreground = 1;
+            break;
+        case 'f': /* run in foreground */
+            foreground = 1;
             break;
         case 'l': /* log requests */
             /* FIXME: implement */
@@ -390,13 +395,16 @@ main(int argc, char **argv)
         lbcd_test(argc - optind, argv + optind);
 
     /*
-     * Background ourself and switch to syslog logging unless debugging.  Do
-     * not chdir in case we're running external probe programs that care about
-     * the current working directory (although that's inadvisable).
+     * Background ourself unless running in the foreground.  Do not chdir in
+     * case we're running external probe programs that care about the current
+     * working directory (although that's inadvisable).
      */
-    if (!debugging) {
+    if (!foreground)
         if (daemon(1, 0) < 0)
             sysdie("cannot daemonize");
+
+    /* Switch to syslog logging unless debugging. */
+    if (!debugging) {
         openlog("lbcd", LOG_PID | LOG_NDELAY, LOG_DAEMON);
         message_handlers_notice(1, message_log_syslog_info);
         message_handlers_warn(1, message_log_syslog_warning);

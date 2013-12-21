@@ -8,7 +8,7 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-B<lbcd> [B<-dhlRt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
+B<lbcd> [B<-dfhlRt>] [B<-b> I<address>] [B<-c> I<command>] [B<-P> I<file>]
     [B<-p> I<port>] S<[B<-T> I<seconds>]> [B<-w> I<weight>]
 
 B<lbcd> B<-t> [v2] [I<service> ...]
@@ -113,8 +113,16 @@ weight is returned as the one-minute load average.)
 
 =item B<-d>
 
-Don't run as a daemon (meaning don't fork and detach from a tty) to make
-it easier to run B<lbcd> inside a debugger.
+Run in the foreground (the same as with B<-f>), send informational
+messages to standard output instead of syslog, and send errors to standard
+error instead of syslog.  This is intended for debugging.
+
+=item B<-f>
+
+Run in the foreground, meaning don't fork and don't detach from the
+controlling terminal.  This allows B<lbcd> to be run more simply via
+modern init systems such as upstart or systemd and work properly with
+process supervisors such as daemontools or runit.
 
 =item B<-h>
 

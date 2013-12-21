@@ -10,9 +10,10 @@ lbcd 3.5.0 (unreleased)
     The -P option, specifying where to write a PID file, is still
     supported, but unless it is given, lbcd does not write out a PID file.
 
-    Fix source typo that prevented compilation on Mac OS X.  (It is
-    probably obvious that the developer doesn't have access to Mac OS X
-    systems to test compilation....)
+    lbcd supports a new -f option, which runs the daemon in the foreground
+    (as preferred by modern init systems) but still logs to syslog, unlike
+    the existing -d option which also moves logging to standard output and
+    standard error.
 
     Add support for systemd.  If built on a system with systemd installed,
     lbcd will install (but not enable) systemd units to start lbcd via
@@ -22,6 +23,10 @@ lbcd 3.5.0 (unreleased)
     provided lbcd.service file to set User and Group to a separate user
     and group created for that purpose, although this is not done in the
     default unit files due to the difficulty with creating users portably.
+
+    Fix source typo that prevented compilation on Mac OS X.  (It is
+    probably obvious that the developer doesn't have access to Mac OS X
+    systems to test compilation....)
 
 lbcd 3.4.2 (2013-12-17)
 
