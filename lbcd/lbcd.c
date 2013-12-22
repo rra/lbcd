@@ -24,6 +24,7 @@
 #include <lbcd/internal.h>
 #include <util/messages.h>
 #include <util/network.h>
+#include <util/xmalloc.h>
 
 /* The usage message. */
 const char usage_message[] = "\
@@ -45,7 +46,7 @@ Usage: lbcd [options] [-d] [-p <port>]\n\
 
 /* Stores configuration information for lbcd. */
 struct lbcd_config {
-    struct in_addr bind_address; /* Address to listen on. */
+    const char *bind_address;   /* Address to listen on. */
     unsigned short port;         /* Port to listen on. */
     const char *pid_file;        /* Write the daemon PID to this path. */
     bool simple;                 /* Do not adjust results for version 2. */
@@ -222,34 +223,72 @@ handle_lb_request(struct lbcd_config *config, int s, struct lbcd_request *ph,
 
 
 /*
- * Bind the listening socket on which we accept UDP requests.  Handle the
- * socket activation case where the socket has already been set up for us by
- * systemd and, in that case, just return the already-configured socket.
+ * Given a bind address, return true if it's an IPv6 address.  Otherwise, it's
+ * assumed to be an IPv4 address.
  */
-static int
-bind_socket(int port, struct in_addr *bind_address)
+#ifdef HAVE_INET6
+static bool
+is_ipv6(const char *string)
 {
-    int s, socket_count;
-    struct sockaddr_in addr;
+    struct in6_addr addr;
+    return inet_pton(AF_INET6, string, &addr) == 1;
+}
+#else
+static bool
+is_ipv6(const char *string UNUSED)
+{
+    return false;
+}
+#endif
+
+
+/*
+ * Bind the listening socket or sockets on which we accept UDP requests and
+ * return a list of sockets in the fds parameter.  Return a count of sockets
+ * in the count parameter.
+ *
+ * Handle the socket activation case where the socket has already been set up
+ * for us by systemd and, in that case, just return the already-configured
+ * socket.
+ */
+static void
+bind_socket(struct lbcd_config *config, socket_type **fds,
+            unsigned int *count)
+{
+    int status, i;
+    const char *addr;
 
     /* Check whether systemd has already bound the socket. */
-    socket_count = sd_listen_fds(true);
-    if (socket_count < 0)
-        die("using systemd-bound sockets failed: %s", strerror(-socket_count));
-    if (socket_count > 0)
-        return SD_LISTEN_FDS_START;
+    status = sd_listen_fds(true);
+    if (status < 0)
+        die("using systemd-bound sockets failed: %s", strerror(-status));
+    if (status > 0) {
+        *fds = xcalloc(status, sizeof(socket_type));
+        for (i = 0; i < status; i++)
+            (*fds)[i] = SD_LISTEN_FDS_START + i;
+        return;
+    }
 
-    /* We have to do the work ourselves. */
-    s = socket(AF_INET, SOCK_DGRAM, 0);
-    if (s < 0)
-        sysdie("cannot create UDP socket");
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr = *bind_address;
-    addr.sin_port = htons(port);
-    if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0)
-        sysdie("cannot bind UDP socket");
-    return s;
+    /*
+     * We have to do the work ourselves.  If there is no bind address, bind
+     * to all local sockets, which will normally result in two file
+     * descriptors on which to listen.  If there is a bind address, bind only
+     * to that address, whether IPv4 or IPv6.
+     */
+    if (config->bind_address == NULL) {
+        if (!network_bind_all(SOCK_DGRAM, config->port, fds, count))
+            sysdie("cannot create UDP socket");
+    } else {
+        *fds = xmalloc(sizeof(socket_type));
+        addr = config->bind_address;
+        if (is_ipv6(config->bind_address))
+            (*fds)[0] = network_bind_ipv6(SOCK_DGRAM, addr, config->port);
+        else
+            (*fds)[0] = network_bind_ipv4(SOCK_DGRAM, addr, config->port);
+        if ((*fds)[0] == INVALID_SOCKET)
+            sysdie("cannot bind to address: %s", addr);
+        *count = 1;
+    }
 }
 
 
@@ -259,7 +298,9 @@ bind_socket(int port, struct in_addr *bind_address)
 static void
 handle_requests(struct lbcd_config *config)
 {
-    int s, status, n;
+    int status, n;
+    socket_type *fds;
+    unsigned int count;
     struct sockaddr_storage cli_addr;
     socklen_t cli_len;
     char mesg[LBCD_MAXMESG];
@@ -268,7 +309,7 @@ handle_requests(struct lbcd_config *config)
     FILE *pid;
 
     /* Open UDP socket. */
-    s = bind_socket(config->port, &config->bind_address);
+    bind_socket(config, &fds, &count);
 
     /* Indicate to the world that we're ready to answer requests. */
     if (config->pid_file != NULL) {
@@ -294,8 +335,35 @@ handle_requests(struct lbcd_config *config)
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {
+        fd_set readfds;
+        socket_type maxfd, fd;
+        unsigned int i;
+
+        /* Check all of our bound sockets for an incoming message. */
+        FD_ZERO(&readfds);
+        maxfd = -1;
+        for (i = 0; i < count; i++) {
+            FD_SET(fds[i], &readfds);
+            if (fds[i] > maxfd)
+                maxfd = fds[i];
+        }
+        status = select(maxfd + 1, &readfds, NULL, NULL, NULL);
+        if (status < 0)
+            sysdie("cannot select on bound sockets");
+
+        /* Find the socket where we got a message. */
+        fd = INVALID_SOCKET;
+        for (i = 0; i < count; i++)
+            if (FD_ISSET(fds[i], &readfds)) {
+                fd = fds[i];
+                break;
+            }
+        if (fd == INVALID_SOCKET)
+            sysdie("select returned with no valid sockets");
+
+        /* Accept and process the message. */
         cli_len = sizeof(cli_addr);
-        n = lbcd_recv_udp(s, (struct sockaddr *) &cli_addr, &cli_len, mesg,
+        n = lbcd_recv_udp(fd, (struct sockaddr *) &cli_addr, &cli_len, mesg,
                           sizeof(mesg));
         if (n > 0) {
             ph = (struct lbcd_request *) mesg;
@@ -304,12 +372,12 @@ handle_requests(struct lbcd_config *config)
                 strlcpy(client, "UNKNOWN", sizeof(client));
             switch (ph->h.op) {
             case LBCD_OP_LBINFO:
-                handle_lb_request(config, s, ph,
+                handle_lb_request(config, fd, ph,
                                   (struct sockaddr *) &cli_addr, cli_len);
                 break;
             default:
                 warn("client %s: unknown op %d requested", client, ph->h.op);
-                lbcd_send_status(s, (struct sockaddr *) &cli_addr, cli_len,
+                lbcd_send_status(fd, (struct sockaddr *) &cli_addr, cli_len,
                                  &ph->h, LBCD_STATUS_UNKNOWN_OP);
             }
         }
@@ -351,7 +419,6 @@ main(int argc, char **argv)
 
     /* Set configuration defaults. */
     memset(&config, 0, sizeof(config));
-    config.bind_address.s_addr = htonl(INADDR_ANY);
     config.port = LBCD_PORTNUM;
 
     /* Parse the regular command-line options. */
@@ -359,8 +426,7 @@ main(int argc, char **argv)
     while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:Z")) != EOF) {
         switch (c) {
         case 'b': /* bind address */
-            if (inet_aton(optarg, &config.bind_address) == 0)
-                die("invalid bind address %s", optarg);
+            config.bind_address = optarg;
             break;
         case 'c': /* helper command -- must be full path to command */
             lbcd_helper = optarg;
