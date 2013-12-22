@@ -425,6 +425,18 @@ Use a timeout of I<timeout> seconds instead of the default of 10 seconds.
 
 =back
 
+=head1 EXAMPLES
+
+Send a version three query to www.example.com and print the results:
+
+    lbcdclient www.example.com
+
+Send a version two query to foo.example.org on port 14330, asking for
+information about the C<smtp> and C<http> services in addition to the
+default service, with a timeout of five seconds.
+
+    lbcdclient -2 -p 14330 -t 5 -s smtp -s http foo.example.org
+
 =head1 AUTHORS
 
 Written by Russ Allbery <eagle@eyrie.org> based on an earlier version
