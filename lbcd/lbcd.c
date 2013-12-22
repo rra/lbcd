@@ -29,20 +29,22 @@
 /* The usage message. */
 const char usage_message[] = "\
 Usage: lbcd [options] [-d] [-p <port>]\n\
+   -b <addr>    bind to <addr> instead of all available addresses\n\
    -c <cmd>     run <cmd> (full path) to obtain load values\n\
-   -d           debug mode, don't fork off\n\
+   -d           debug mode, don't fork or log to syslog\n\
+   -f           run in the foreground\n\
    -h, --help   print usage\n\
    -l           log various requests\n\
    -P <file>    write PID to <file>\n\
    -p <port>    run using different port number\n\
-   -r           restart (kill current lbcd)\n\
    -R           round-robin polling\n\
-   -s           stop running lbcd\n\
+   -S           don't adjust version two responses for custom services\n\
+   -T <seconds> timeout (1-300 seconds, default 5)\n\
+   -t           test mode (print stats and exit)\n\
    -w <option>  specify returned weight; options:\n\
                   either \"load:incr\" or \"service\"\n\
-   -t           test mode (print stats and exit)\n\
-   -T <seconds> timeout (1-300 seconds, default 5)\n\
-   --version    print protocol version and exit\n";
+   --version    print protocol version and exit\n\
+   -Z           raise SIGSTOP once ready to answer queries\n";
 
 /* Stores configuration information for lbcd. */
 struct lbcd_config {
