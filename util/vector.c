@@ -179,6 +179,8 @@ cvector_clear(struct cvector *vector)
 void
 vector_free(struct vector *vector)
 {
+    if (vector == NULL)
+        return;
     vector_clear(vector);
     free(vector->strings);
     free(vector);
@@ -187,6 +189,8 @@ vector_free(struct vector *vector)
 void
 cvector_free(struct cvector *vector)
 {
+    if (vector == NULL)
+        return;
     cvector_clear(vector);
     free(vector->strings);
     free(vector);

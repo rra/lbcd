@@ -82,11 +82,12 @@ void vector_clear(struct vector *)
 void cvector_clear(struct cvector *)
     __attribute__((__nonnull__));
 
-/* Free the vector and all resources allocated for it. */
-void vector_free(struct vector *)
-    __attribute__((__nonnull__));
-void cvector_free(struct cvector *)
-    __attribute__((__nonnull__));
+/*
+ * Free the vector and all resources allocated for it.  NULL may be passed in
+ * safely and will be ignored.
+ */
+void vector_free(struct vector *);
+void cvector_free(struct cvector *);
 
 /*
  * Split functions build a vector from a string.  vector_split splits on a
