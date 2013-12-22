@@ -87,7 +87,7 @@ struct lbcd_reply {
     uint8_t tmp_full;           /* Percent of tmp full */
     uint8_t tmpdir_full;        /* Percent of P_tmpdir full */
     uint8_t pad;                /* Padding */
-    uint8_t services;           /* Nnumber of service requests */
+    uint8_t services;           /* Number of service requests */
     struct lbcd_service weights[LBCD_MAX_SERVICES + 1];
                                 /* Host service weight/increment pairs */
 };
