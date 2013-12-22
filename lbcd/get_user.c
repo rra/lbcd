@@ -197,6 +197,8 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
             (*total)++;
             if (strncmp(ut->ut_line, "console", 7) == 0)
                 *on_console = 1;
+            if (strncmp(ut->ut_host, ":0", 2) == 0)
+                *on_console = 1;
             name = xstrndup(ut->ut_user, sizeof(ut->ut_user));
             uniq_add(name);
             free(name);
@@ -223,6 +225,8 @@ get_user_stats(int *total, int *uniq, int *on_console, time_t *user_mtime)
 # endif
             (*total)++;
             if (strncmp(ut.ut_line, "console", 7) == 0)
+                *on_console = 1;
+            if (strncmp(ut->ut_host, ":0", 2) == 0)
                 *on_console = 1;
             name = xstrndup(ut.ut_name, sizeof(ut.ut_name));
             uniq_add(name);
