@@ -24,6 +24,7 @@
 #include <lbcd/internal.h>
 #include <util/messages.h>
 #include <util/network.h>
+#include <util/vector.h>
 #include <util/xmalloc.h>
 
 /* The usage message. */
@@ -48,12 +49,12 @@ Usage: lbcd [options] [-d] [-p <port>]\n\
 
 /* Stores configuration information for lbcd. */
 struct lbcd_config {
-    const char *bind_address;   /* Address to listen on. */
-    unsigned short port;         /* Port to listen on. */
-    const char *pid_file;        /* Write the daemon PID to this path. */
-    bool simple;                 /* Do not adjust results for version 2. */
-    bool log;                    /* Log each request. */
-    bool upstart;                /* Raise SIGSTOP when ready for upstart. */
+    struct vector *bindaddrs;   /* Address to listen on */
+    unsigned short port;        /* Port to listen on */
+    const char *pid_file;       /* Write the daemon PID to this path */
+    bool simple;                /* Do not adjust results for version 2 */
+    bool log;                   /* Log each request */
+    bool upstart;               /* Raise SIGSTOP when ready for upstart */
 };
 
 
@@ -257,7 +258,8 @@ static void
 bind_socket(struct lbcd_config *config, socket_type **fds,
             unsigned int *count)
 {
-    int status, i;
+    int status;
+    size_t i;
     const char *addr;
 
     /* Check whether systemd has already bound the socket. */
@@ -266,7 +268,7 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
         die("using systemd-bound sockets failed: %s", strerror(-status));
     if (status > 0) {
         *fds = xcalloc(status, sizeof(socket_type));
-        for (i = 0; i < status; i++)
+        for (i = 0; i < (size_t) status; i++)
             (*fds)[i] = SD_LISTEN_FDS_START + i;
         return;
     }
@@ -277,19 +279,21 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
      * descriptors on which to listen.  If there is a bind address, bind only
      * to that address, whether IPv4 or IPv6.
      */
-    if (config->bind_address == NULL) {
+    if (config->bindaddrs->count == 0) {
         if (!network_bind_all(SOCK_DGRAM, config->port, fds, count))
             sysdie("cannot create UDP socket");
     } else {
-        *fds = xmalloc(sizeof(socket_type));
-        addr = config->bind_address;
-        if (is_ipv6(config->bind_address))
-            (*fds)[0] = network_bind_ipv6(SOCK_DGRAM, addr, config->port);
-        else
-            (*fds)[0] = network_bind_ipv4(SOCK_DGRAM, addr, config->port);
-        if ((*fds)[0] == INVALID_SOCKET)
-            sysdie("cannot bind to address: %s", addr);
-        *count = 1;
+        *count = config->bindaddrs->count;
+        *fds = xcalloc(*count, sizeof(socket_type));
+        for (i = 0; i < config->bindaddrs->count; i++) {
+            addr = config->bindaddrs->strings[i];
+            if (is_ipv6(addr))
+                (*fds)[i] = network_bind_ipv6(SOCK_DGRAM, addr, config->port);
+            else
+                (*fds)[i] = network_bind_ipv4(SOCK_DGRAM, addr, config->port);
+            if ((*fds)[i] == INVALID_SOCKET)
+                sysdie("cannot bind to address: %s", addr);
+        }
     }
 }
 
@@ -419,8 +423,9 @@ main(int argc, char **argv)
             }
         }
 
-    /* Set configuration defaults. */
+    /* Initialize options. */
     memset(&config, 0, sizeof(config));
+    config.bindaddrs = vector_new();
     config.port = LBCD_PORTNUM;
 
     /* Parse the regular command-line options. */
@@ -428,7 +433,7 @@ main(int argc, char **argv)
     while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:Z")) != EOF) {
         switch (c) {
         case 'b': /* bind address */
-            config.bind_address = optarg;
+            vector_add(config.bindaddrs, optarg);
             break;
         case 'c': /* helper command -- must be full path to command */
             lbcd_helper = optarg;

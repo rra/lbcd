@@ -28,7 +28,8 @@ lbcd 3.5.0 (unreleased)
 
     lbcd now supports IPv6.  The bind address given with -b may be an IPv6
     address, and by default it listens to both IPv4 and IPv6 addresses on
-    hosts that support IPv6.
+    hosts that support IPv6.  The -b option can now be given multiple
+    times to bind to multiple addresses.
 
     lbcd now considers a user to be on console if any user is logged in
     from an "address" that starts with ":0".  Modern Linux systems with a
