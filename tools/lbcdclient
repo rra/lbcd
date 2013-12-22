@@ -1,173 +1,339 @@
 #!/usr/bin/perl
+#
+# Query an lbcd server and display the results.
+#
+# This is a simple command-line client to query an lbcd server and return
+# whatever information it provides.  It is intended for debugging and does not
+# provide machine-parsable output.
 
-require 5.004;
+##############################################################################
+# Modules and declarations
+##############################################################################
+
+require 5.006;
 use strict;
-use Socket;
+use warnings;
 
-#------------#
-# Prototypes #
-#------------#
+use Carp qw(croak);
+use File::Basename qw(basename);
+use Getopt::Long qw(GetOptions);
+use IO::File;
+use POSIX qw(strftime);
 
-sub send_query($$$$@);		# perform queries
-sub udp_connect($$$$);		# connect to host using udp
-sub print_results($);		# print reply packet
-sub usage();			# program usage
+##############################################################################
+# Network protocol
+##############################################################################
 
-#------#
-# MAIN #
-#------#
-{
-    my ($reply);
-    my ($version) = 3;
-    if ($ARGV[0] =~ /^-.*2/) {
-	shift;
-	$version = 2;
+# Create an IO::Socket object that will be used to query the server and return
+# it.  Prefer IO::Socket::INET6 if it's available, but fall back on
+# IO::Socket::INET.
+#
+# $hostname - The hostname to which the query will be sent
+# $port     - The port on that server to which to send the query
+# $timeout  - Timeout to use for all socket operations
+#
+# Returns: Newly-created IO::Socket object
+#  Throws: Text exception on failure to create the socket
+sub udp_socket {
+    my ($hostname, $port, $timeout) = @_;
+
+    # Check whether we have IO::Socket::INET6 available and choose the class.
+    my $class;
+    if (eval { require IO::Socket::INET6 }) {
+        $class = 'IO::Socket::INET6';
+    } else {
+        require IO::Socket::INET;
+        $class = 'IO::Socket::INET';
     }
-    my (@services);
-    if ($ARGV[0] =~ /^-s(.*)/) {
-	shift;
-	@services = split(',',$1);
-    }
-    my $port = 4330;
-    if ($ARGV[0] =~ /^-p(.*)/) {
-	shift;
-	$port = $1;
-    }
-    foreach my $server (@ARGV) {
-	next unless udp_connect(\*SH,$server,"lbcd",$port);
-	next unless send_query(\*SH,\$reply,$version,10,@services) == 0;
-	&print_results($reply);
-    }
-    exit(0);
+
+    # Create and return the object.
+    my @args = (
+        PeerAddr => $hostname,
+        PeerPort => $port,
+        Proto    => 'udp',
+        Timeout  => $timeout,
+    );
+    return $class->new(@args);
 }
 
-#-------------#
-# Subroutines #
-#-------------#
+# Send the lbcd query to the server.  The request starts with a header:
+#
+#     uint16_t version;           /* Protocol version */
+#     uint16_t id;                /* Requestor's unique request id */
+#     uint16_t op;                /* Operation requested */
+#     uint16_t status;            /* Number of services requested */
+#
+# and then (only for protocol v3 queries) a sequence of 32-character service
+# names, padded with nul bytes.  The number sent is equal to the value of the
+# status field.
+#
+# $socket   - IO::Socket object representing the connected UDP socket
+# $protocol - Protocol version, which must be either 2 or 3
+# @services - List of services to query for protocol v3 queries
+#
+# Returns: undef
+#  Throws: Text exception on any failure to send the query
+#          Text exception on invalid protocols or services
+sub send_query {
+    my ($socket, $protocol, @services) = @_;
 
-sub send_query ($$$$@) {
-    my($SH,$reply,$version,$timeout,@services) = @_;
-    my($num_services);
-
-    # struct lbcd_header
-    # u_short   version;  /* protocol version */
-    # u_short   id;       /* requestor's uniq request id */
-    # u_short   op;       /* operation requested */
-    # u_short   status;   /* set on reply */ (used for extended protocol)
-
-    # Are we using the extended protocol?
-    if ($version > 2) {
-	$num_services = $#services + 1;
+    # Sanity-check the arguments.
+    if ($protocol ne '2' && $protocol ne '3') {
+        croak("protocol must be 2 or 3, not $protocol");
+    }
+    if ($protocol eq '2' && @services) {
+        die "$0: lbcd protocol version 2 cannot query specific services\n";
+    }
+    if (@services > 5) {
+        die "$0: lbcd protocol is limited to five specified services\n";
+    }
+    for my $service (@services) {
+        if (length($service) > 31) {
+            die "$0: lbcd protocol restricts service names to 31 octets\n";
+        }
     }
 
-    # Form register packet ("version operation operation status")
-    my($template) = "nnnn" . " a32" x $num_services;
-    my($packet) = pack($template,$version,0,1,$num_services,@services);
+    # Create the query packet.
+    my $tmpl = 'nnnn' . 'a32' x scalar(@services);
+    my $packet = pack($tmpl, $protocol, 0, 1, scalar(@services), @services);
 
-    # Send registration
-    unless (send($SH,$packet,0)) {
-	warn "send: $!\n";
-	return 0;
-    }
-
-    # Obtain reply (with timeout)
-    my($rin,$nfound) = ('',0);
-    vec($rin,fileno($SH),1) = 1;
-    if (($nfound = select($rin,undef,undef,$timeout)) != 1) {
-	warn "timeout\n";
-	return 1;		# timeout
-    }
-    $$reply = '';
-    unless (recv($SH,$$reply,256,0)) {
-	warn "recv: $!\n";
-	return 1;
-    }
-    0;				# zero signifies no error
+    # Send the query packet.
+    $socket->send($packet, 0) or die "$0: cannot send request packet: $!\n";
+    return;
 }
 
+# Receive a reply packet from the server and parse the returned packet from
+# the server into a key/value data structure.  The reply packet is:
+#
+#     uint16_t version;           /* Protocol version */
+#     uint16_t id;                /* Requestor's unique request id */
+#     uint16_t op;                /* Operation requested */
+#     uint16_t status;            /* Ignored */
+#     uint32_t boot_time;         /* Boot time */
+#     uint32_t current_time;      /* Host time */
+#     uint32_t user_mtime;        /* Time user information last changed */
+#     uint16_t l1;                /* 1 minute load (int) (load*100) */
+#     uint16_t l5;                /* 5 minute load */
+#     uint16_t l15;               /* 15 minute load */
+#     uint16_t tot_users;         /* Total number of users logged in */
+#     uint16_t uniq_users;        /* Total number of uniq users */
+#     uint8_t on_console;         /* True if somone on console */
+#     uint8_t reserved;           /* Future use, padding ... */
+#     uint8_t tmp_full;           /* Percent of tmp full */
+#     uint8_t tmpdir_full;        /* Percent of P_tmpdir full */
+#     uint8_t pad;                /* Padding */
+#     uint8_t services;           /* Number of service requests */
+#
+# followed by some number (given by the services field) of data pairs in the
+# format:
+#
+#     uint32_t host_weight;       /* Computed host lb weight */
+#     uint32_t host_incr;         /* Computed host lb increment */
+#
+# A protocol version 2 reply will have an all-zero services field and no
+# additional data.
+#
+# $socket  - IO::Socket object representing the connected UDP socket
+# $timeout - Timeout for the reply in seconds
+#
+# Returns: A reference to a hash containing the above values, with id, op,
+#          status, reserved, and padding removed and with the value of the
+#          services hash key replaced with a list of pairs of weight and
+#          increment
+#  Throws: Text exception on error reading from the server
+sub read_reply {
+    my ($socket, $timeout) = @_;
 
-#---------------------#
-# Auxilliary Routines #
-#---------------------#
-sub udp_connect ($$$$) {
-    my($SH,$server,$port,$defaultport) = @_;
+    # Receive the reply from the server with timeout in the object.
+    local $SIG{ALRM} = sub {
+        die "$0: timed out waiting for reply from server\n";
+    };
+    alarm($timeout);
+    my $reply;
+    $socket->recv($reply, 256, 0)
+      or die "$0: cannot receive reply from server: $!\n";
+    alarm(0);
 
-    my ($proto,$iaddr,$sin);
+    # Unpack the basic reply, without any extended data.  That will be
+    # extracted later.
+    my @fields = unpack('n xx xx xx N N N n n n n n C x C C x C', $reply);
 
-    $proto = getprotobyname('udp');
-    unless (socket($SH, PF_INET, SOCK_DGRAM, $proto)) {
-	return 0;
+    # Map this into our data hash.
+    my @keys = qw(
+      version boot_time current_time user_mtime l1 l5 l15 tot_users
+      uniq_users on_console tmp_full tmpdir_full services
+    );
+    my %result;
+    for my $i (0 .. $#keys) {
+        $result{ $keys[$i] } = $fields[$i];
     }
-    unless ($iaddr = gethostbyname($server)) {
-	return 0;
+
+    # If version is 3, we may have supplemental service data.  If so, parse it
+    # out and create the services data.  The supplemental data will start at
+    # octet 36 of the reply.
+    if ($result{version} == 3) {
+        $reply = substr($reply, 36);
+        my @weights;
+        for my $i (0 .. $result{services}) {
+            my ($weight, $incr) = unpack('NN', $reply);
+            push(@weights, [$weight, $incr]);
+            $reply = substr($reply, 8);
+        }
+        $result{services} = \@weights;
     }
-    $port = getservbyname($port, 'udp') || $defaultport;
-    unless ($sin = sockaddr_in($port, $iaddr)) {
-	return 0;
-    }
-    unless (connect($SH,$sin)) {
-	close $SH; return undef;
-    }
-    1;
+
+    # Return the resulting hash.
+    return \%result;
 }
 
+##############################################################################
+# Output formatting
+##############################################################################
 
-sub usage() {
-    print STDOUT "lbcdclient hostname [hostname2 ... hostnameN]\n";
-    exit;
+# say with error checking to standard output.  autodie unfortunately can't
+# help us with these because they can't be prototyped and hence can't be
+# overridden.
+#
+# $fh   - Output file handle
+# @args - Remaining arguments to say
+#
+# Returns: undef
+#  Throws: Text exception on output failure
+sub say_stdout {
+    my (@args) = @_;
+    say {*STDOUT} @args or croak('say failed');
+    return;
 }
 
-sub print_results($) {
-    my ($reply) = @_;
+# Likewise for printf.
+sub printf_stdout {
+    my ($format, @args) = @_;
+    printf {*STDOUT} $format, @args or croak('printf failed');
+    return;
+}
 
-    # Response packet
-    #  struct lbcd_header;
-    #  u_int boot_time;
-    #  u_int current_time;
-    #  u_int user_mtime;  /* time user information last changed */
-    #  u_short l1; /* (int) (load*100) */
-    #  u_short l5;
-    #  u_short l15;
-    #  u_short tot_users;  /* total number of users logged in */
-    #  u_short uniq_users; /* total number of uniq users */
-    #  u_char  on_console; /* true if somone on console */
-    #  u_char  reserved;   /* future use, padding ... */
-    #  u_char  tmp_full;   /* percernt of tmp full */
-    #  u_char  tmpdir_full;  /* percernt of P_tmpdir full */
-    #  u_char pad;         /* padding */
-    #  u_char services;    /* number of service requests */
-    #  LBCD_SERVICE weights[LBCD_MAX_SERVICES+1];
-    my ($version,$op,$id,$status,
-	$btime,$ctime,$utime,
-	$l1,$l5,$l15,$tot_user,$uniq_user,
-	$on_console,$reserved,$tmp_full,
-	$tmpdir_full,$pad,$services) =
-	    unpack("nnnnNNNnnnnnCCCCCC",$reply);
+# Given a hash of the results from the lbcd server, print out those results in
+# a human-readable format to standard output.  This uses the same format as
+# lbcd -t.
+#
+# $result_ref - Hash of results from the query
+# @services   - List of services in our query, for the name information
+#
+# Returns: undef
+#  Throws: Text exception on output failure
+sub print_reply {
+    my ($result_ref, @services) = @_;
 
-    print "btime $btime ctime $ctime utime $utime\n";
-    print "load l1 $l1 l5 $l5 l15 $l15\n";
-    print "total $tot_user unique $uniq_user console $on_console\n";
-    print "tmp full $tmp_full P_tmpdir full $tmpdir_full\n";
+    # Protocol version.
+    say_stdout("PROTOCOL $result_ref->{version}\n");
 
-    # Extended package:
-    # struct LBCD_SERVICE;
-    # u_int host_weight;		/* computed host lb weight */
-    # u_int host_incr;		/* computed host lb increment */
-    if ($version > 2) {
-	print "services $services pads $reserved $pad\n";
-	$reply = substr($reply,36);
-	for (my $i = 0; $i <= $services; $i++) {
-	    my($weight,$incr) = unpack("NN",$reply);
-	    print "service $i: weight $weight increment $incr\n";
-	    $reply = substr($reply,8);
-	}
+    # Base system data.
+    say_stdout('MACHINE STATUS:');
+    for my $type (qw(l1 l5 l15)) {
+        my $load = $result_ref->{$type};
+        my $real = $load / 100.0;
+        printf_stdout("%-12s = %-12d (%.2f)\n", $type, $load, $real);
     }
+    for my $type (qw(current_time boot_time user_mtime)) {
+        my $time = $result_ref->{$type};
+        my $date = strftime('%Y-%m-%d %T', localtime($time));
+        printf_stdout("%-12s = %-12d (%s)\n", $type, $time, $date);
+    }
+    printf_stdout("%-12s = %d\n", 'tot_users',  $result_ref->{tot_users});
+    printf_stdout("%-12s = %d\n", 'uniq_users', $result_ref->{uniq_users});
+    printf_stdout("%-12s = %s\n", 'on_console',
+        $result_ref->{on_console} ? 'true' : 'false');
+    printf_stdout("%-12s = %d%%\n", 'tmp_full',    $result_ref->{tmp_full});
+    printf_stdout("%-12s = %d%%\n", 'tmpdir_full', $result_ref->{tmpdir_full});
+
+    # For protocol version two, print out the service information.
+    if ($result_ref->{services}) {
+        my @weights = @{ $result_ref->{services} };
+
+        # Be a little fancy here: walk through the services, determine the
+        # maximum length of the name, weight, and increment, and choose widths
+        # accordingly.
+        my ($service_width, $weight_width, $incr_width) = (0, 0, 0);
+        for my $service (@services) {
+            if (length($service) > $service_width) {
+                $service_width = length($service);
+            }
+        }
+        for my $data (@weights) {
+            my ($weight, $incr) = @{$data};
+            if (length($weight) > $weight_width) {
+                $weight_width = length($weight);
+            }
+            if (length($incr) > $incr_width) {
+                $incr_width = length($incr);
+            }
+        }
+        my $format = "%-${service_width}s (%d):";
+        $format .= " weight %${weight_width}d";
+        $format .= ", increment %${incr_width}d\n";
+
+        # Print out all of the weight data now that we know the format.
+        say_stdout("\nSERVICES (" . scalar(@weights) . '):');
+        for my $i (0 .. $#weights) {
+            my ($weight, $incr) = @{ $weights[$i] };
+            printf_stdout($format, $services[$i], $i, $weight, $incr);
+        }
+    }
+    return;
 }
+
+##############################################################################
+# Main routine
+##############################################################################
+
+# Always flush output.
+STDOUT->autoflush;
+
+# Clean up the script name for error reporting.
+my $fullpath = $0;
+local $0 = basename($0);
+
+# Parse the argument list.
+my ($manual, @services, $v2);
+my $port    = 4330;
+my $timeout = 10;
+Getopt::Long::config('bundling', 'no_ignore_case');
+GetOptions(
+    'manual|man|m' => \$manual,
+    'port|p=i'     => \$port,
+    'services|s=s' => \@services,
+    'timeout|t=i'  => \$timeout,
+    'v2|2'         => \$v2,
+);
+if ($manual) {
+    say_stdout('Feeding myself to perldoc, please wait...');
+    exec('perldoc', '-t', $fullpath);
+}
+if (@ARGV != 1) {
+    die "Usage: lbcdclient [-2] [-p <port>] [-s <service>] <host>\n";
+}
+my $protocol = $v2 ? 2 : 3;
+my ($host) = @ARGV;
+
+# Allow for comma-separated services as well as multiple -s options.
+@services = map { split(m{,}xms, $_) } @services;
+
+# Send the query and print the results.
+my $socket = udp_socket($host, $port, $timeout);
+send_query($socket, $protocol, @services);
+my $reply_ref = read_reply($socket, $timeout);
+print_reply($reply_ref, 'default', @services);
+exit(0);
+
 __END__
 
+##############################################################################
+# Documentation
+##############################################################################
+
 =for stopwords
-lbcdclient lbcd btime tmp Schwimmer Allbery MERCHANTABILITY NONINFRINGEMENT
-sublicense
+lbcdclient lbcd Schwimmer Allbery MERCHANTABILITY NONINFRINGEMENT sublicense
+uptime
 
 =head1 NAME
 
@@ -175,66 +341,94 @@ lbcdclient - Query a remote lbcd daemon for system load
 
 =head1 SYNOPSIS
 
-lbcdclient [B<-2>] [B<-s> I<service>[,I<service> ...]] I<host> ...
+lbcdclient [B<-2>] [B<-p> I<port>] [B<-s> I<service>[,I<service> ...]]
+    [B<-t> I<timeout>] I<host>
 
 =head1 DESCRIPTION
 
 B<lbcdclient> sends a query packet to a remote B<lbcd> server and prints the
 results.  The result output will look something like this:
 
-    btime 1092858021 ctime 1092960298 utime 1092955199
-    load l1 96 l5 69 l15 57
-    total 0 unique 0 console 0
-    tmp full 0 P_tmpdir full 2
-    services 0 pads 0 0
-    service 0: weight 1 increment 1
+    PROTOCOL 3
 
-btime is the time of the last system boot in seconds since epoch.  ctime is
-the current system time in seconds since epoch.  utime is the last
-modification time of the information about logged in users in seconds since
-epoch.
+    MACHINE STATUS:
+    l1           = 16           (0.16)
+    l5           = 5            (0.05)
+    l15          = 6            (0.06)
+    current_time = 1387677198   (2013-12-21 17:53:18)
+    boot_time    = 1386357534   (2013-12-06 11:18:54)
+    user_mtime   = 1387250916   (2013-12-16 19:28:36)
+    tot_users    = 12
+    uniq_users   = 1
+    on_console   = false
+    tmp_full     = 8%
+    tmpdir_full  = 8%
 
-The load line gives the one-minute (l1), five-minute (l5), and
-fifteen-minute (l15) load averages, multiplied by 100.
+    SERVICES (1):
+    default (0): weight 368, increment 200
 
-The next line gives the count of logged-in users.  total gives the count of
-all logged-in users, unique lists the total number of unique users, and
-console is 1 if a user is logged in to the console of the system.
+C<l1>, C<l5>, and C<l15> are the one-minute, five-minute, and
+fifteen-minute load averages, times 100, as integers.  The conventional
+load averages, as seen with B<uptime>, are shown on the right.
 
-tmp full is the percentage used in the system F</tmp> directory and P_tmpdir
-full is the percentage full in the system F</var/tmp> directory.
+C<current_time> is the current system time in seconds since epoch.
+C<boot_time> is the time of the last system boot.  C<user_mtime> is the
+time information about logged-in users was last modified.  A translation
+into a date and time is given on the right.
 
-Finally, the last lines give information for each service, using the
-extended service response for the version three packet format.  The first
-line gives the count of number of configured services minus one.  (The pads
-numbers are reserved space in the packet and will generally always be zero.)
-Then, each subsequent line lists the weights and increments for each service
-B<lbcd> is monitoring on the system.
+C<tot_users> is the total number of logged-in users, and C<uniq_users> is
+the number of unique logged-in users.  C<on_console> will be C<true> if a
+user is logged into the console and C<false> otherwise.
+
+C<tmp_full> is the percentage of space used in the system F</tmp>
+directory and C<tmpdir_full> full is the percentage used in the system
+F</var/tmp> directory.
+
+Finally, for protocol version three queries (the default), the last lines
+give information for each service queried, using the extended service
+response for the version three packet format.  For each service, its name,
+sequence number in the reply, current weight, and current increment are
+given.
 
 If the B<-2> option is used, B<lbcdclient> will send a version two packet
-instead, and the returned results will not include the services line and
-everything after that.
+instead, and the returned results will not include the extended services
+output.
 
 =head1 OPTIONS
 
 =over 4
 
-=item B<-2>
+=item B<--v2>, B<-2>
 
 Send a version two protocol packet instead of a version three packet.
 Version two doesn't support the separate service weights.
 
-=item B<-s> I<service>,[I<service> ...]
+=item B<-m>, B<--man>, B<--manual>
 
-Request information for the specified service names.  It's not entirely
-clear whether this works correctly.
+Print out this documentation (which is done simply by feeding the script
+to C<perldoc -t>).
+
+=item B<--port>=I<port>, B<-p> I<port>
+
+Send the query to I<port> instead of the default of 4330.
+
+=item B<--service>=I<service>, B<-s> I<service>,[I<service> ...]
+
+Request information for the specified service names.  This option can be
+given multiple times to request information about multiple services.  The
+services can also be specified as a comma-separated list, or a combination
+of multiple options and comma-separated lists.
+
+=item B<--timeout>=I<timeout>, B<-t> I<timeout>
+
+Use a timeout of I<timeout> seconds instead of the default of 10 seconds.
 
 =back
 
 =head1 AUTHORS
 
-Written by Larry Schwimmer.  Currently maintained by Russ Allbery
-<eagle@eyrie.org>.
+Written by Russ Allbery <eagle@eyrie.org> based on an earlier version
+by Larry Schwimmer.
 
 =head1 COPYRIGHT AND LICENSE
 

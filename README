@@ -53,7 +53,9 @@ REQUIREMENTS
   Platforms not listed may require some porting effort, as may old or
   unusual platforms that aren't regularly tested.
 
-  The lbcdclient program requires Perl (any version should do).
+  The lbcdclient program requires Perl 5.006 or later.  For IPv6 support,
+  it requires the IO::Socket::INET6 module.  It will fall back on only
+  using IPv4 if that module is not available.
 
   To bootstrap from a Git checkout, or if you change the Automake files
   and need to regenerate Makefile.in, you will need Automake 1.11 or

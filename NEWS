@@ -18,6 +18,14 @@ lbcd 3.5.0 (unreleased)
     Implement lbcd -l, which now logs to syslog each incoming client
     request and its protocol version.
 
+    lbcdclient has been rewritten.  The output format is now completely
+    different and more human-readable.  The timeout and port are
+    configurable on the command line, and the option parsing now supports
+    long options.  The command no longer takes a list of multiple servers
+    to query, and exits with an error message if it cannot reach a server
+    within the timeout.  lbcdclient supports IPv6 if the IO::Socket::INET6
+    Perl module is installed.
+
     lbcd now supports IPv6.  The bind address given with -b may be an IPv6
     address, and by default it listens to both IPv4 and IPv6 addresses on
     hosts that support IPv6.
