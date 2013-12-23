@@ -115,7 +115,7 @@ vector_add(struct vector *vector, const char *string)
     size_t next = vector->count;
 
     assert(vector != NULL);
-    if (vector->allocated == 0 || vector->count == vector->allocated)
+    if (vector->count == vector->allocated)
         vector_resize(vector, vector->allocated + 1);
     vector->strings[next] = xstrdup(string);
     vector->count++;
@@ -127,7 +127,7 @@ cvector_add(struct cvector *vector, const char *string)
     size_t next = vector->count;
 
     assert(vector != NULL);
-    if (vector->allocated == 0 || vector->count == vector->allocated)
+    if (vector->count == vector->allocated)
         cvector_resize(vector, vector->allocated + 1);
     vector->strings[next] = string;
     vector->count++;
