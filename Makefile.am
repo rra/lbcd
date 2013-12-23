@@ -12,8 +12,11 @@ EXTRA_DIST = .gitignore LICENSE lbcd/arch/aix.c lbcd/arch/bsd.c		\
 	lbcd/arch/irix.c lbcd/arch/linux.c lbcd/arch/osf.c		\
 	lbcd/arch/solaris.c autogen lbcd/lbcd.8.in lbcd/lbcd.pod	\
 	tests/README tests/TESTS tests/data/perl.conf			\
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/tap/libtap.sh	\
-	tests/tap/perl/Test/RRA.pm tests/tap/perl/Test/RRA/Automake.pm	\
+	tests/data/perlcriticrc tests/data/perltidyrc			\
+	tests/docs/pod-spelling-t tests/docs/pod-t tests/perl/critic-t	\
+	tests/perl/minimum-version-t tests/perl/strict-t		\
+	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			\
+	tests/tap/perl/Test/RRA/Automake.pm				\
 	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
 # Override systemdsystemunitdir when running distcheck so that we don't try
