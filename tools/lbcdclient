@@ -20,6 +20,16 @@ use Getopt::Long qw(GetOptions);
 use IO::File;
 use POSIX qw(strftime);
 
+# lbcd protocol status codes mapped to error messages.
+my %STATUS_MESSAGE = (
+    0 => 'request packet',
+    1 => 'okay',
+    2 => 'generic error',
+    3 => 'protocol version error',
+    4 => 'generic protocol error',
+    5 => 'unknown operation requested',
+);
+
 ##############################################################################
 # Network protocol
 ##############################################################################
@@ -141,6 +151,7 @@ sub send_query {
 #          services hash key replaced with a list of pairs of weight and
 #          increment
 #  Throws: Text exception on error reading from the server
+#          Text exception on error reply from the server
 sub read_reply {
     my ($socket, $timeout) = @_;
 
@@ -154,16 +165,31 @@ sub read_reply {
       or die "$0: cannot receive reply from server: $!\n";
     alarm(0);
 
+    # Unpack the header and check that the id, operation, and status are
+    # correct.
+    my ($version, $id, $op, $status) = unpack('n n n n', $reply);
+    if ($id != 0) {
+        die "$0: server reply for wrong query ID ($id)\n";
+    }
+    if ($op != 1) {
+        die "$0: server reply for unknown operation ($op)\n";
+    }
+    if ($status != 1) {
+        my $error = $STATUS_MESSAGE{$status} || "unknown status $status";
+        die "$0: error from server: $error\n";
+    }
+
     # Unpack the basic reply, without any extended data.  That will be
     # extracted later.
-    my @fields = unpack('n xx xx xx N N N n n n n n C x C C x C', $reply);
+    $reply = substr($reply, 8);
+    my @fields = unpack('N N N n n n n n C x C C x C', $reply);
 
     # Map this into our data hash.
     my @keys = qw(
-      version boot_time current_time user_mtime l1 l5 l15 tot_users
-      uniq_users on_console tmp_full tmpdir_full services
+      boot_time current_time user_mtime l1 l5 l15 tot_users uniq_users
+      on_console tmp_full tmpdir_full services
     );
-    my %result;
+    my %result = (version => $version);
     for my $i (0 .. $#keys) {
         $result{ $keys[$i] } = $fields[$i];
     }
@@ -172,7 +198,7 @@ sub read_reply {
     # out and create the services data.  The supplemental data will start at
     # octet 36 of the reply.
     if ($result{version} == 3) {
-        $reply = substr($reply, 36);
+        $reply = substr($reply, 28);
         my @weights;
         for my $i (0 .. $result{services}) {
             my ($weight, $incr) = unpack('NN', $reply);
