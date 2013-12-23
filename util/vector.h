@@ -49,9 +49,9 @@ BEGIN_DECLS
 
 /* Create a new, empty vector. */
 struct vector *vector_new(void)
-    __attribute__((__malloc__));
+    __attribute__((__warn_unused_result__, __malloc__));
 struct cvector *cvector_new(void)
-    __attribute__((__malloc__));
+    __attribute__((__warn_unused_result__, __malloc__));
 
 /* Add a string to a vector.  Resizes the vector if necessary. */
 void vector_add(struct vector *, const char *string)
@@ -126,9 +126,9 @@ struct cvector *cvector_split_space(char *string, struct cvector *)
  * responsible for freeing.
  */
 char *vector_join(const struct vector *, const char *seperator)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
 char *cvector_join(const struct cvector *, const char *separator)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
 
 /*
  * Exec the given program with the vector as its arguments.  Return behavior
