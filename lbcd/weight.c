@@ -2,7 +2,7 @@
  * Default weight functions and the interface to internal modules.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 1998, 2006, 2008, 2012
+ * Copyright 1997, 1998, 2006, 2008, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -18,6 +18,7 @@
 
 #include <lbcd/internal.h>
 #include <util/macros.h>
+#include <util/messages.h>
 
 /* Supported services list and a mapping from service to weight function. */
 struct service_mapping {
@@ -129,9 +130,7 @@ service_to_func(const char *service)
     for (stp = service_table; stp->service[0] != '\0'; stp++)
         if (strcmp("unknown", stp->service) == 0)
             return stp;
-
-    /* FIXME: fatal condition: should terminate program */
-    return NULL;
+    die("internal error: cannot locate unknown service");
 }
 
 
