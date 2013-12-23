@@ -2,6 +2,12 @@
 
 lbcd 3.5.0 (unreleased)
 
+    lbcd no longer allows the client to request probes of arbitrary
+    supported services.  Instead, specify the services lbcd should allow
+    to be queried with the -a option, which can be given multiple times.
+    Querying any service not listed with an -a option will result in an
+    error reply.
+
     Drop support for lbcd -s, to stop a running daemon, and lbcd -r, to
     restart a running daemon.  This sort of daemon management is best done
     via a system framework, whether init scripts, upstart, or systemd.

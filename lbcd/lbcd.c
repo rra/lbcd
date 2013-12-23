@@ -50,10 +50,11 @@ Usage: lbcd [options] [-d] [-p <port>]\n\
 /* Stores configuration information for lbcd. */
 struct lbcd_config {
     struct vector *bindaddrs;   /* Address to listen on */
+    bool log;                   /* Log each request */
     unsigned short port;        /* Port to listen on */
     const char *pid_file;       /* Write the daemon PID to this path */
+    struct vector *services;    /* Allowed services */
     bool simple;                /* Do not adjust results for version 2 */
-    bool log;                   /* Log each request */
     bool upstart;               /* Raise SIGSTOP when ready for upstart */
 };
 
@@ -137,6 +138,32 @@ send_status(struct request *request, socket_type fd, enum lbcd_status status)
 
 
 /*
+ * Given a service name, check whether it's in the allowed list or is one of
+ * the special allowed services.  Returns true if it's allowed and false
+ * otherwise.
+ */
+static bool
+service_allowed(struct lbcd_config *config, const char *service)
+{
+    size_t i;
+
+    /* The default service is always allowed. */
+    if (strcmp(service, "default") == 0)
+        return true;
+
+    /* The cmd service is never allowed, even if configured. */
+    if (strcmp(service, "cmd") == 0 || strncmp(service, "cmd:", 4) == 0)
+        return false;
+
+    /* Otherwise, check if it's in the allowed list. */
+    for (i = 0; i < config->services->count; i++)
+        if (strcmp(config->services->strings[i], service) == 0)
+            return true;
+    return false;
+}
+
+
+/*
  * Receive request packet and verify the integrity and format of the reply.
  * This routine is REQUIRED to sanitize the request packet.  All other program
  * routines can expect that the packet is safe to read once it is passed on.
@@ -145,7 +172,7 @@ send_status(struct request *request, socket_type fd, enum lbcd_status status)
  * failure.
  */
 static struct request *
-request_recv(socket_type fd)
+request_recv(struct lbcd_config *config, socket_type fd)
 {
     struct sockaddr_storage addr;
     struct sockaddr *sockaddr;
@@ -228,6 +255,11 @@ request_recv(socket_type fd)
     if (request->protocol == 3)
         for (i = 0; i < nservices; i++) {
             service = xstrndup(packet->names[i], sizeof(lbcd_name_type));
+            if (!service_allowed(config, service)) {
+                warn("client %s: service %s not allowed", source, service);
+                send_status(request, fd, LBCD_STATUS_ERROR);
+                goto fail;
+            }
             vector_add(request->services, service);
             free(service);
         }
@@ -416,7 +448,7 @@ handle_requests(struct lbcd_config *config)
             sysdie("select returned with no valid sockets");
 
         /* Accept and process the message. */
-        request = request_recv(fd);
+        request = request_recv(config, fd);
         if (request == NULL)
             continue;
         switch (request->operation) {
@@ -470,11 +502,15 @@ main(int argc, char **argv)
     memset(&config, 0, sizeof(config));
     config.bindaddrs = vector_new();
     config.port = LBCD_PORTNUM;
+    config.services = vector_new();
 
     /* Parse the regular command-line options. */
     opterr = 1;
-    while ((c = getopt(argc, argv, "b:c:dfhlP:p:RStT:w:Z")) != EOF) {
+    while ((c = getopt(argc, argv, "a:b:c:dfhlP:p:RStT:w:Z")) != EOF) {
         switch (c) {
+        case 'a': /* allowed service */
+            vector_add(config.services, optarg);
+            break;
         case 'b': /* bind address */
             vector_add(config.bindaddrs, optarg);
             break;
@@ -519,6 +555,7 @@ main(int argc, char **argv)
             break;
         case 'w': /* weight or service */
             service_weight = optarg;
+            vector_add(config.services, optarg);
             break;
         case 'Z': /* raise(SIGSTOP) when ready for connections */
             config.upstart = true;

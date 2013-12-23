@@ -1,7 +1,7 @@
 =for stopwords
 lbcd -dfhlRtZ UDP DNS-based balancer lbnamed lbnamed's iptables IP
 Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT SIGCONT
-SIGSTOP daemontools runit systemd
+SIGSTOP daemontools runit systemd queryable
 
 =head1 NAME
 
@@ -9,9 +9,10 @@ lbcd - Report system load for remote load balancing
 
 =head1 SYNOPSIS
 
-B<lbcd> [B<-dfhlRtZ>] [B<-b> I<bind-address> [B<-b> I<bind-address>]]
-    [B<-c> I<command>] [B<-P> I<file>] [B<-p> I<port>] S<[B<-T> I<seconds>]>
-    [B<-w> I<weight>]
+B<lbcd> [B<-dfhlRtZ>] S<[B<-a> I<allowed-service> [B<-a> I<allowed-service>]]>
+    S<[B<-b> I<bind-address> [B<-b> I<bind-address>]]> S<[B<-c> I<command>]>
+    S<[B<-P> I<file>]> S<[B<-p> I<port>]> S<[B<-T> I<seconds>]>
+    S<[B<-w> I<weight>]>
 
 B<lbcd> B<-t> [v2] [I<service> ...]
 
@@ -97,6 +98,23 @@ queried, run multiple instances of B<lbcd>, one for each interface.
 =head1 OPTIONS
 
 =over 4
+
+=item B<-a> I<allowed-service>
+
+The version 3 lbcd protocol allows the client to request weight
+information for a specific protocol.  To prevent clients from getting
+information about (and causing B<lbcd> to probe) services that shouldn't
+be exposed over protocol, only services specified with the B<-a> option
+are allowed.  This option may be given multiple times to allow multiple
+services to be queried.  The service specified with B<-w>, if any, is
+always allowed, as is the C<default> service.
+
+For a list of the supported services, and therefore the allowed values
+for I<allowed-service>, see the B<-w> option.
+
+Client queries are compared exactly against the I<allowed-service> values,
+including any port information after a colon, so all service values that
+should be queryable must be listed using this option.
 
 =item B<-b> I<bind-address>
 
@@ -202,6 +220,11 @@ The currently supported services are C<load> (the default), C<ftp>,
 C<http>, C<imap>, C<nntp>, C<ntp>, C<pop>, C<smtp>, C<tcp>, and C<rr>
 (round-robin, the same as B<-R>).  The C<http> and C<tcp> services must be
 followed by a colon and a port number.
+
+This option only affects the default service.  A version 3 protocol client
+can query any of the supported services provided that the service is
+listed as allowed, using the B<-a> flag.  This allows the client to get
+weight and increment information for several different services.
 
 =item B<-Z>
 
