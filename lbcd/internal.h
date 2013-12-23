@@ -28,6 +28,9 @@
 
 #include <lbcd/protocol.h>
 
+/* Forward declarations to avoid includes. */
+struct vector;
+
 /*
  * A weight function takes a pointer to the weight and increment, a timeout, a
  * port argument, and the response argument.
@@ -49,8 +52,8 @@ extern int get_user_stats(int *total, int *unique, int *onconsole,
 extern int tmp_full(const char *path);
 
 /* server.c */
-extern void lbcd_pack_info(struct lbcd_reply *lb, struct lbcd_request *ph,
-                           int simple);
+extern void lbcd_pack_info(struct lbcd_reply *lb, unsigned int protocol,
+                           struct vector *services, int simple);
 extern void lbcd_test(int argc, char *argv[]);
 
 /* weight.c */

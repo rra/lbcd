@@ -17,19 +17,20 @@
 #include <time.h>
 
 #include <lbcd/internal.h>
+#include <util/vector.h>
 
 
 /*
  * Set the waits and increments in the response.
  */
 static void
-lbcd_set_load(struct lbcd_reply *lb, struct lbcd_request *ph)
+lbcd_set_load(struct lbcd_reply *lb, struct vector *services)
 {
     int i, numserv;
 
     /* Clear pad and set number of requested services */
     lb->pad = 0;
-    lb->services = numserv = ph->h.status;
+    lb->services = numserv = services->count;
 
     /* Set default weight. */
     lbcd_setweight(lb, 0, "default");
@@ -44,7 +45,7 @@ lbcd_set_load(struct lbcd_reply *lb, struct lbcd_request *ph)
 
     /* Set requested services, if any */
     for (i = 1; i <= numserv; i++) {
-        lbcd_setweight(lb, i, ph->names[i - 1]);
+        lbcd_setweight(lb, i, services->strings[i - 1]);
         lb->weights[i].host_weight = htonl(lb->weights[i].host_weight);
         lb->weights[i].host_incr = htonl(lb->weights[i].host_incr);
     }
@@ -90,7 +91,8 @@ lbcd_proto2_convert(struct lbcd_reply *lb)
  * Obtain all of our response information and store it in the response struct.
  */
 void
-lbcd_pack_info(struct lbcd_reply *lb, struct lbcd_request *ph, int simple)
+lbcd_pack_info(struct lbcd_reply *lb, unsigned int protocol,
+               struct vector *services, int simple)
 {
     double l1, l5, l15;
     time_t bt, ct;
@@ -126,10 +128,10 @@ lbcd_pack_info(struct lbcd_reply *lb, struct lbcd_request *ph, int simple)
 #endif
 
     /* Weights and increments. */
-    lbcd_set_load(lb, ph);
+    lbcd_set_load(lb, services);
 
     /* Backward compatibility. */
-    if (!simple && ph->h.version < 3)
+    if (!simple && protocol < 3)
         lbcd_proto2_convert(lb);
 }
 
@@ -146,6 +148,7 @@ lbcd_test(int argc, char *argv[])
 {
     struct lbcd_reply lb;
     struct lbcd_request ph;
+    struct vector *services;
     int i;
 
     /* Create query packet. */
@@ -162,17 +165,20 @@ lbcd_test(int argc, char *argv[])
     }
 
     /* Fill in service requests. */
+    services = vector_new();
     if (argc > 0 && lb.h.version == 3) {
         ph.h.status = argc > LBCD_MAX_SERVICES ? LBCD_MAX_SERVICES : argc;
         for (i = 0; i < argc; i++) {
             if (i >= LBCD_MAX_SERVICES)
                 break;
-            strlcpy(ph.names[i], argv[i], sizeof(ph.names[i]));
+            if (argv[i] == NULL)
+                break;
+            vector_add(services, argv[i]);
         }
     }
 
     /* Fill reply. */
-    lbcd_pack_info(&lb, &ph, 0);
+    lbcd_pack_info(&lb, lb.h.version, services, 0);
 
     /* Print results. */
     printf("PROTOCOL %u\n", (unsigned int) lb.h.version);
@@ -196,5 +202,6 @@ lbcd_test(int argc, char *argv[])
                (unsigned long) ntohl(lb.weights[i].host_weight),
                (unsigned long) ntohl(lb.weights[i].host_incr),
                i ? ph.names[i - 1] : "default");
+    vector_free(services);
     exit(0);
 }

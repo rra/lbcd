@@ -57,6 +57,20 @@ struct lbcd_config {
     bool upstart;               /* Raise SIGSTOP when ready for upstart */
 };
 
+/*
+ * Stores relevant information about a client request.  Do not confuse with an
+ * lbcd_request, which is the wire representation of a protocol request.
+ */
+struct request {
+    struct sockaddr *addr;      /* Address of client */
+    socklen_t addrlen;          /* Length of client address */
+    char *source;               /* String representation of client address */
+    unsigned int protocol;      /* Protocol version of request */
+    unsigned int id;            /* Client-provided request ID */
+    unsigned int operation;     /* Requested lbcd operation */
+    struct vector *services;    /* Requested services */
+};
+
 
 /*
  * Print out the usage message and then exit with the status given as the
@@ -83,31 +97,42 @@ version(void)
 
 
 /*
- * Send a status reply back to the client.
+ * Free the request information.
  */
-static int
-lbcd_send_status(int s, struct sockaddr *cli_addr, socklen_t cli_len,
-                 struct lbcd_header *request_header, enum lbcd_status pstat)
+static void
+request_free(struct request *request)
+{
+    if (request == NULL)
+        return;
+    free(request->addr);
+    free(request->source);
+    vector_free(request->services);
+    free(request);
+}
+
+
+/*
+ * Send a status reply back to the client.  Takes the client information,
+ * socket to use to send messages, and client status.
+ */
+static void
+send_status(struct request *request, socket_type fd, enum lbcd_status status)
 {
     struct lbcd_header header;
-    char client[INET6_ADDRSTRLEN];
+    size_t size;
     ssize_t result;
 
     /* Build the response packet. */
     header.version = htons(LBCD_VERSION);
-    header.id      = htons(request_header->id);
-    header.op      = htons(request_header->op);
-    header.status  = htons(pstat);
+    header.id      = htons(request->id);
+    header.op      = htons(request->operation);
+    header.status  = htons(status);
 
     /* Send the packet to the client. */
-    result = sendto(s, &header, sizeof(header), 0, cli_addr, cli_len);
-    if (result != sizeof(header)) {
-        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
-            strlcpy(client, "UNKNOWN", sizeof(client));
-        syswarn("client %s: cannot send reply", client);
-        return -1;
-    }
-    return 0;
+    size = sizeof(header);
+    result = sendto(fd, &header, size, 0, request->addr, request->addrlen);
+    if (result != (ssize_t) size)
+        syswarn("client %s: cannot send reply", request->source);
 }
 
 
@@ -116,112 +141,139 @@ lbcd_send_status(int s, struct sockaddr *cli_addr, socklen_t cli_len,
  * This routine is REQUIRED to sanitize the request packet.  All other program
  * routines can expect that the packet is safe to read once it is passed on.
  *
- * Returns the number of bytes read.
+ * Returns a newly-allocated lbcd_request struct on success and NULL on
+ * failure.
  */
-static int
-lbcd_recv_udp(int s, struct sockaddr *cli_addr, socklen_t *cli_len,
-              void *mesg, int max_mesg)
+static struct request *
+request_recv(socket_type fd)
 {
-    ssize_t n;
-    struct lbcd_request *ph;
-    char client[INET6_ADDRSTRLEN];
+    struct sockaddr_storage addr;
+    struct sockaddr *sockaddr;
+    socklen_t addrlen;
+    ssize_t result;
+    char raw[LBCD_MAXMESG];
+    char source[INET6_ADDRSTRLEN] = "UNKNOWN";
+    struct lbcd_request *packet;
+    unsigned int protocol, id, operation, nservices, i;
+    size_t expected;
+    struct request *request;
+    char *service;
 
-    n = recvfrom(s, mesg, max_mesg, 0, cli_addr, cli_len);
-    if (n < 0) {
+    /* Receive the UDP packet from the wire. */
+    addrlen = sizeof(addr);
+    sockaddr = (struct sockaddr *) &addr;
+    result = recvfrom(fd, raw, sizeof(raw), 0, sockaddr, &addrlen);
+    if (result <= 0) {
         syswarn("cannot receive packet");
-        return 0;
-    }
-    if (!network_sockaddr_sprint(client, sizeof(client), cli_addr)) {
-        syswarn("cannot convert client address to string");
-        strlcpy(client, "UNKNOWN", sizeof(client));
-    }
-    if ((size_t) n < sizeof(struct lbcd_header)) {
-        warn("client %s: short packet received (length %lu)", client,
-             (unsigned long) n);
-        return 0;
+        return NULL;
     }
 
-    /* Convert request to host format. */
-    ph = mesg;
-    ph->h.version = ntohs(ph->h.version);
-    ph->h.id      = ntohs(ph->h.id);
-    ph->h.op      = ntohs(ph->h.op);
-    ph->h.status  = ntohs(ph->h.status);
+    /* Format the client address for logging. */
+    if (!network_sockaddr_sprint(source, sizeof(source), sockaddr))
+        syswarn("cannot convert client address to string");
+
+    /* Ensure the packet is large enough to contain the header. */
+    if ((size_t) result < sizeof(struct lbcd_header)) {
+        warn("client %s: short packet received (length %lu)", source,
+             (unsigned long) result);
+        return NULL;
+    }
+
+    /* Extract the header fields. */
+    packet = (struct lbcd_request *) raw;
+    protocol  = ntohs(packet->h.version);
+    id        = ntohs(packet->h.id);
+    operation = ntohs(packet->h.op);
+    nservices = ntohs(packet->h.status);
+
+    /* Now, ensure the request packet is exactly the correct size. */
+    expected = sizeof(struct lbcd_header);
+    if (protocol == 3) {
+        if (nservices > LBCD_MAX_SERVICES) {
+            warn("client %s: too many services in request (%u)", source,
+                 nservices);
+            return NULL;
+        }
+        expected += nservices * sizeof(lbcd_name_type);
+    }
+    if ((size_t) result != expected) {
+        warn("client %s: incorrect packet size (%lu != %lu)", source,
+             (unsigned long) result, (unsigned long) expected);
+        return NULL;
+    }
+
+    /* The packet appears valid.  Create the request struct. */
+    request = xcalloc(1, sizeof(struct request));
+    request->source    = xstrdup(source);
+    request->addrlen   = addrlen;
+    request->addr      = xmalloc(addrlen);
+    memcpy(request->addr, &addr, addrlen);
+    request->protocol  = protocol;
+    request->id        = id;
+    request->operation = operation;
+    request->services  = vector_new();
+
+    /* Check protocol number. */
+    if (protocol != 2 && protocol != 3) {
+        warn("client %s: protocol version %u unsupported", source, protocol);
+        send_status(request, fd, LBCD_STATUS_VERSION);
+        goto fail;
+    }
 
     /*
-     * Check protocol number and packet integrity.
-     *
-     * Protocol version 3 takes a client-supplied load protocol.  Protocol
-     * version 2 is the original protocol.  Everything else isn't supported.
+     * Protocol version 3 takes a client-supplied list of services, with the
+     * number of client-provided services given in the otherwise-unused status
+     * field of the request header.
      */
-    switch(ph->h.version) {
-    case 3: {
-        int i;
+    if (request->protocol == 3)
+        for (i = 0; i < nservices; i++) {
+            service = xstrndup(packet->names[i], sizeof(lbcd_name_type));
+            vector_add(request->services, service);
+            free(service);
+        }
+    return request;
 
-        /*
-         * Extended services request: status > 0.  Trim the query to the
-         * maximum allowed services and ensure nul-termination of service
-         * name.
-         */
-        if (ph->h.status > LBCD_MAX_SERVICES)
-            ph->h.status = LBCD_MAX_SERVICES;
-        for (i = 0; i < ph->h.status; i++)
-            ph->names[i][sizeof(ph->names[i]) - 1] = '\0';
-        break;
-    }
-
-    case 2:
-        break;
-
-    default:
-        warn("client %s: protocol version %d unsupported", client,
-             ph->h.version);
-        lbcd_send_status(s, cli_addr, *cli_len, &ph->h, LBCD_STATUS_VERSION);
-        return 0;
-    }
-    return n;
+fail:
+    request_free(request);
+    return NULL;
 }
 
 
 /*
- * Handle an incoming request.
+ * Handle an incoming request.  Most of the work is done by lbcd_pack_info,
+ * but this handles creating the header and sending the reply packet.
  */
 static void
-handle_lb_request(struct lbcd_config *config, int s, struct lbcd_request *ph,
-                  struct sockaddr *cli_addr, socklen_t cli_len)
+handle_lb_request(struct lbcd_config *config, struct request *request,
+                  socket_type fd)
 {
-    struct lbcd_reply lbr;
-    int pkt_size;
-    char client[INET6_ADDRSTRLEN];
+    struct lbcd_reply reply;
+    size_t size, unused;
     ssize_t result;
 
     /* Log the request. */
-    if (config->log) {
-        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
-            strlcpy(client, "UNKNOWN", sizeof(client));
-        notice("request from %s (version %d)", client, ph->h.version);
-    }
+    if (config->log)
+        notice("request from %s (version %d)", request->source,
+               request->protocol);
 
     /* Fill in reply header. */
-    lbr.h.version = htons(ph->h.version);
-    lbr.h.id      = htons(ph->h.id);
-    lbr.h.op      = htons(ph->h.op);
-    lbr.h.status  = htons(LBCD_STATUS_OK);
+    reply.h.version = htons(request->protocol);
+    reply.h.id      = htons(request->id);
+    reply.h.op      = htons(request->operation);
+    reply.h.status  = htons(LBCD_STATUS_OK);
 
     /* Fill in reply. */
-    lbcd_pack_info(&lbr, ph, config->simple);
+    lbcd_pack_info(&reply, request->protocol, request->services,
+                   config->simple);
 
     /* Compute reply size (maximum packet minus unused service slots). */
-    pkt_size = sizeof(lbr) -
-        (LBCD_MAX_SERVICES - lbr.services) * sizeof(struct lbcd_service);
+    unused = LBCD_MAX_SERVICES - request->services->count;
+    size = sizeof(reply) - unused * sizeof(struct lbcd_service);
 
     /* Send reply */
-    result = sendto(s, &lbr, pkt_size, 0, cli_addr, cli_len);
-    if (result != pkt_size) {
-        if (!network_sockaddr_sprint(client, sizeof(client), cli_addr))
-            strlcpy(client, "UNKNOWN", sizeof(client));
-        syswarn("client %s: cannot send reply", client);
-    }
+    result = sendto(fd, &reply, size, 0, request->addr, request->addrlen);
+    if (result < 0 || (size_t) result != size)
+        syswarn("client %s: cannot send reply", request->source);
 }
 
 
@@ -304,14 +356,10 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
 static void
 handle_requests(struct lbcd_config *config)
 {
-    int status, n;
+    int status;
     socket_type *fds;
     unsigned int count;
-    struct sockaddr_storage cli_addr;
-    socklen_t cli_len;
-    char mesg[LBCD_MAXMESG];
-    char client[INET6_ADDRSTRLEN];
-    struct lbcd_request *ph;
+    struct request *request;
     FILE *pid;
 
     /* Open UDP socket. */
@@ -368,25 +416,20 @@ handle_requests(struct lbcd_config *config)
             sysdie("select returned with no valid sockets");
 
         /* Accept and process the message. */
-        cli_len = sizeof(cli_addr);
-        n = lbcd_recv_udp(fd, (struct sockaddr *) &cli_addr, &cli_len, mesg,
-                          sizeof(mesg));
-        if (n > 0) {
-            ph = (struct lbcd_request *) mesg;
-            if (!network_sockaddr_sprint(client, sizeof(client),
-                                         (struct sockaddr *) &cli_addr))
-                strlcpy(client, "UNKNOWN", sizeof(client));
-            switch (ph->h.op) {
-            case LBCD_OP_LBINFO:
-                handle_lb_request(config, fd, ph,
-                                  (struct sockaddr *) &cli_addr, cli_len);
-                break;
-            default:
-                warn("client %s: unknown op %d requested", client, ph->h.op);
-                lbcd_send_status(fd, (struct sockaddr *) &cli_addr, cli_len,
-                                 &ph->h, LBCD_STATUS_UNKNOWN_OP);
-            }
+        request = request_recv(fd);
+        if (request == NULL)
+            continue;
+        switch (request->operation) {
+        case LBCD_OP_LBINFO:
+            handle_lb_request(config, request, fd);
+            break;
+        default:
+            warn("client %s: unknown op %d requested", request->source,
+                 request->operation);
+            send_status(request, fd, LBCD_STATUS_UNKNOWN_OP);
+            break;
         }
+        request_free(request);
     }
 }
 
