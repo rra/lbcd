@@ -376,7 +376,8 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
             else
                 (*fds)[i] = network_bind_ipv4(SOCK_DGRAM, addr, config->port);
             if ((*fds)[i] == INVALID_SOCKET)
-                sysdie("cannot bind to address: %s", addr);
+                sysdie("cannot bind to address %s, port %hu", addr,
+                       config->port);
         }
     }
 }
