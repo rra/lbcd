@@ -23,7 +23,7 @@
 #include <sys/sysctl.h>
 #include <sys/times.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/messages.h>
 
 

@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <time.h>               /* time_t */
 
-#include <lbcd/protocol.h>
+#include <server/protocol.h>
 
 /* Forward declarations to avoid includes. */
 struct vector;

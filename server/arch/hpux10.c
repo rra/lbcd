@@ -1,8 +1,11 @@
 /*
- * lbcd kernel code for Tru64 (Digital UNIX, OSF/1).
+ * lbcd kernel code for HP-UX 10.x.
+ *
+ * This will only work for HP-UX 10.x and later.  For earlier releases of
+ * HP-UX, see arch/hpux9.c.
  *
  * Written by Larry Schwimmer
- * Copyright 1997, 1998, 2009, 2012
+ * Copyright 1997, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -12,9 +15,13 @@
 #include <portable/system.h>
 
 #include <fcntl.h>
-#include <sys/table.h>
+#include <sys/param.h>
+#include <sys/pstat.h>
+#include <sys/time.h>
+#include <utmp.h>
+#include <utmpx.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 
 
 /*
@@ -25,20 +32,13 @@
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-    struct tbl_loadavg load;
+    struct pst_dynamic dyn_info;
 
-    if (table(TBL_LOADAVG, 0, &load, 1, sizeof(load)) < 0)
+    if (pstat_getdynamic(&dyn_info, sizeof(dyn_info), 0, 0) < 0)
         return -1;
-
-    if (load.tl_lscale != 0) {
-        *l1  = load.tl_avenrun.l[0] / (float) load.tl_lscale;
-        *l5  = load.tl_avenrun.l[1] / (float) load.tl_lscale;
-        *l15 = load.tl_avenrun.l[2] / (float) load.tl_lscale;
-    } else {
-        *l1  = load.tl_avenrun.d[0];
-        *l5  = load.tl_avenrun.d[1];
-        *l15 = load.tl_avenrun.d[2];
-    }
+    *l1  = dyn_info.psd_avg_1_min;
+    *l5  = dyn_info.psd_avg_5_min;
+    *l15 = dyn_info.psd_avg_15_min;
     return 0;
 }
 
@@ -50,12 +50,23 @@ kernel_getload(double *l1, double *l5, double *l15)
 int
 kernel_getboottime(time_t *boottime)
 {
-    struct tbl_sysinfo sys;
+    int fd;
 
-    if (table(TBL_SYSINFO, 0, &sys, 1, sizeof(sys)) < 0)
-        return -1;
-    *boottime = sys.si_boottime;
-    return 0;
+    *boottime = 0;
+    fd = open(UTMPX_FILE, O_RDONLY | O_NONBLOCK);
+    if (fd >= 0) {
+        ssize_t nread;
+        struct utmpx ut;
+
+        while ((nread = read(fd, &ut, sizeof(ut))) > 0) {
+            if (strcmp(BOOT_MSG, ut.ut_line) == 0) {
+                *boottime = ut.ut_tv.tv_sec;
+                break;
+            }
+        }
+        close(fd);
+    }
+    return (*boottime == 0) ? -1 : 0;
 }
 
 

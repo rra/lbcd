@@ -1,8 +1,8 @@
 /*
- * lbcd kernel code for BSD.
+ * lbcd kernel code for AIX.
  *
- * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2000, 2009, 2012
+ * Written by Larry Schiwmmer
+ * Copyright 1997, 1998, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -12,28 +12,23 @@
 #include <portable/system.h>
 
 #include <fcntl.h>
-#include <kvm.h>
 #include <nlist.h>
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/times.h>
+#include <time.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"
-#define C_VMUNIX "/bsd"
-
-#ifndef PROGNAME
-# define PROGNAME "lbcd"
-#endif
+#define C_VMUNIX "/unix"
+#define FSCALE   65536.0
 
 static struct nlist nl[] = {
-    { "_avenrun"  },
-    { "_boottime" },
-    { NULL        }
+    { "avenrun", 0, 0, 0, 0, 0 },
+    { NULL,      0, 0, 0, 0, 0 },
 };
-static kvm_t *kernel = NULL;
+static int kernel_fd   = -1;
 static int kernel_init = 0;
 
 
@@ -44,11 +39,11 @@ static int kernel_init = 0;
 static int
 kernel_open(void)
 {
-    kernel = kvm_open(NULL, NULL, NULL, O_RDONLY, PROGNAME);
-    if (kernel == NULL)
-        sysdie("kvm_open failed");
-    if (kvm_nlist(kernel, nl) != 0)
-        sysdie("kvm_nlist failed");
+    kernel_fd = open(C_KMEM, O_RDONLY);
+    if (kernel_fd < 0)
+        sysdie("cannot open %s", C_KMEM);
+    if (knlist(nl, 1, sizeof(struct nlist)) < 0)
+        sysdie("no namelist for %s", C_VMUNIX);
     kernel_init = 1;
     return 0;
 }
@@ -62,7 +57,7 @@ kernel_close(void)
 {
     if (!kernel_init)
         return 0;
-    return kvm_close(kd);
+    return close(kernel_fd);
 }
 
 
@@ -73,11 +68,13 @@ kernel_close(void)
 static void
 kernel_read(off_t where, void *dest, int dest_len)
 {
-    int status;
+    ssize_t status;
 
-    status = kvm_read(kernel, where, dest, dest_len);
-    if (status != 0)
-        sysdie("kvm_read failed");
+    if (lseek(kernel_fd, where, SEEK_SET) < 0)
+        sysdie("cannot lseek in %s", C_KMEM);
+    status = read(kernel_fd, dest, dest_len);
+    if (status < 0)
+        sysdie("kernel read of %s failed", C_KMEM);
 }
 
 
@@ -89,16 +86,14 @@ kernel_read(off_t where, void *dest, int dest_len)
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-    long load[3];
+    int load[3];
 
     if (!kernel_init)
         kernel_open();
-    if (nl[0].n_type == 0)
-        return -1;
     kernel_read(nl[0].n_value, (void *) load, sizeof(load));
-    *l1  = (double) load[0] / FSCALE;
-    *l5  = (double) load[1] / FSCALE;
-    *l15 = (double) load[2] / FSCALE;
+    *l1  = load[0] / FSCALE;
+    *l5  = load[1] / FSCALE;
+    *l15 = load[2] / FSCALE;
     return 0;
 }
 
@@ -110,14 +105,12 @@ kernel_getload(double *l1, double *l5, double *l15)
 int
 kernel_getboottime(time_t *boottime)
 {
-    struct timeval boot;
+    time_t uptime, now;
+    struct tms tbuf;
 
-    if (!kernel_init)
-        kernel_open();
-    if (nl[1].n_type == 0)
-        return -1;
-    kernel_read(nl[0].n_value, (void *) &boot, sizeof(boot));
-    *boottime = boot.tv_sec;
+    uptime = times(&tbuf) / HZ;
+    curr = time(NULL);
+    *boottime = curr - uptime;
     return 0;
 }
 

@@ -23,7 +23,7 @@
 # include <utmp.h>
 #endif
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/messages.h>
 #include <util/vector.h>
 #include <util/xmalloc.h>

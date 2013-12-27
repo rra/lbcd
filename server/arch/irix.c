@@ -21,7 +21,7 @@
 #include <time.h>
 #include <utmpx.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/messages.h>
 
 /* Whether we've opened the kernel already. */

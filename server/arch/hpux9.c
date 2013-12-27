@@ -1,8 +1,8 @@
 /*
- * lbcd kernel code for AIX.
+ * lbcd kernel code for HP-UX 9.x.
  *
- * Written by Larry Schiwmmer
- * Copyright 1997, 1998, 2009, 2012
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000, 2009, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -14,19 +14,18 @@
 #include <fcntl.h>
 #include <nlist.h>
 #include <sys/param.h>
-#include <sys/times.h>
-#include <time.h>
+#include <sys/time.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/messages.h>
 
 #define C_KMEM   "/dev/kmem"
-#define C_VMUNIX "/unix"
-#define FSCALE   65536.0
+#define C_VMUNIX "/hp-ux"
 
 static struct nlist nl[] = {
-    { "avenrun", 0, 0, 0, 0, 0 },
-    { NULL,      0, 0, 0, 0, 0 },
+    { "avenrun"  },
+    { "boottime" },
+    { NULL       }
 };
 static int kernel_fd   = -1;
 static int kernel_init = 0;
@@ -42,7 +41,7 @@ kernel_open(void)
     kernel_fd = open(C_KMEM, O_RDONLY);
     if (kernel_fd < 0)
         sysdie("cannot open %s", C_KMEM);
-    if (knlist(nl, 1, sizeof(struct nlist)) < 0)
+    if (nlist(C_VMUNIX, nl) < 0)
         sysdie("no namelist for %s", C_VMUNIX);
     kernel_init = 1;
     return 0;
@@ -86,14 +85,16 @@ kernel_read(off_t where, void *dest, int dest_len)
 int
 kernel_getload(double *l1, double *l5, double *l15)
 {
-    int load[3];
+    double load[3];
 
     if (!kernel_init)
         kernel_open();
+    if (nl[0].n_type == 0)
+        return -1;
     kernel_read(nl[0].n_value, (void *) load, sizeof(load));
-    *l1  = load[0] / FSCALE;
-    *l5  = load[1] / FSCALE;
-    *l15 = load[2] / FSCALE;
+    *l1  = kern_avenrun[0];
+    *l5  = kern_avenrun[1];
+    *l15 = kern_avenrun[2];
     return 0;
 }
 
@@ -105,30 +106,13 @@ kernel_getload(double *l1, double *l5, double *l15)
 int
 kernel_getboottime(time_t *boottime)
 {
-    time_t uptime, now;
-    struct tms tbuf;
+    struct timeval boot;
 
-    uptime = times(&tbuf) / HZ;
-    curr = time(NULL);
-    *boottime = curr - uptime;
+    if (!kernel_init)
+        kernel_open();
+    if (nl[1].n_type == 0)
+        return -1;
+    kernel_read(nl[1].n_value, (void *) &boot, sizeof(boot));
+    *boottime = boot.tv_sec;
     return 0;
 }
-
-
-/*
- * Test routine.
- */
-#ifdef MAIN
-int
-main(void)
-{
-    double l1, l5, l15;
-    time_t boottime;
-
-    if (kernel_getload(&l1, &l5, &l15) == 0)
-        printf("load %.02f %.02f %.02f\n", l1, l5, l15);
-    if (kernel_getboottime(&boottime) == 0)
-        printf("booted at %s", ctime(&boottime));
-    return 0;
-}
-#endif

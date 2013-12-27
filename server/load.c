@@ -16,7 +16,7 @@
 #include <portable/socket.h>
 #include <portable/system.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/macros.h>
 
 #ifndef MAX

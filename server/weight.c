@@ -16,7 +16,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include <lbcd/internal.h>
+#include <server/internal.h>
 #include <util/macros.h>
 #include <util/messages.h>
 
