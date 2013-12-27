@@ -392,7 +392,6 @@ handle_requests(struct lbcd_config *config)
     int status;
     socket_type *fds;
     unsigned int count;
-    struct request *request;
     FILE *pid;
 
     /* Open UDP socket. */
@@ -422,31 +421,13 @@ handle_requests(struct lbcd_config *config)
 
     /* Main loop.  Continue until we're signaled. */
     while (1) {
-        fd_set readfds;
-        socket_type maxfd, fd;
-        unsigned int i;
+        socket_type fd;
+        struct request *request;
 
-        /* Check all of our bound sockets for an incoming message. */
-        FD_ZERO(&readfds);
-        maxfd = -1;
-        for (i = 0; i < count; i++) {
-            FD_SET(fds[i], &readfds);
-            if (fds[i] > maxfd)
-                maxfd = fds[i];
-        }
-        status = select(maxfd + 1, &readfds, NULL, NULL, NULL);
-        if (status < 0)
-            sysdie("cannot select on bound sockets");
-
-        /* Find the socket where we got a message. */
-        fd = INVALID_SOCKET;
-        for (i = 0; i < count; i++)
-            if (FD_ISSET(fds[i], &readfds)) {
-                fd = fds[i];
-                break;
-            }
+        /* Wait for an incoming message to one of our bound sockets. */
+        fd = network_wait_any(fds, count);
         if (fd == INVALID_SOCKET)
-            sysdie("select returned with no valid sockets");
+            sysdie("cannot wait for incoming connections");
 
         /* Accept and process the message. */
         request = request_recv(config, fd);
