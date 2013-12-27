@@ -127,6 +127,9 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #if !HAVE_DAEMON
 extern int daemon(int, int);
 #endif
+#if !HAVE_MKSTEMP
+extern int mkstemp(char *);
+#endif
 #if !HAVE_STRLCAT
 extern size_t strlcat(char *, const char *, size_t);
 #endif

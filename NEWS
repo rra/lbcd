@@ -60,6 +60,19 @@ lbcd 3.5.0 (unreleased)
     probably obvious that the developer doesn't have access to Mac OS X
     systems to test compilation....)
 
+    Update to rra-c-util 5.0:
+
+    * The network_bind_* functions now take a socket type.
+    * Improved error handling from network_bind_* functions.
+    * New network_wait_any function to wait on a set of file descriptors.
+    * vector_free and cvector_free now can take NULL pointers.
+    * New TAP add-on to spawn background processes.
+    * Update warning flags to gcc 4.7.2.
+
+    Update to C TAP Harness 2.4:
+
+    * Add new diag_file_add and _remove API to the C TAP library.
+
 lbcd 3.4.2 (2013-12-17)
 
     Support getutxent and use it in preference to getutent, falling back

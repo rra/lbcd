@@ -85,15 +85,16 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		\
 #
 #     -Wconversion      http://bugs.debian.org/488884 (htons warnings)
 #
-# Last checked against gcc 4.6.1 (2011-05-04).  -D_FORTIFY_SOURCE=2 enables
+# Last checked against gcc 4.7.2 (2013-04-22).  -D_FORTIFY_SOURCE=2 enables
 # warn_unused_result attribute markings on glibc functions on Linux, which
 # catches a few more issues.
-WARNINGS = -g -O -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wendif-labels	    \
-	-Wformat=2 -Winit-self -Wswitch-enum -Wdeclaration-after-statement  \
-	-Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align	    \
-	-Wwrite-strings -Wjump-misses-init -Wlogical-op			    \
-	-Wstrict-prototypes -Wmissing-prototypes -Wredundant-decls	    \
-	-Wnested-externs -Werror
+WARNINGS = -g -O -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wendif-labels	   \
+	-Wformat=2 -Winit-self -Wswitch-enum -Wuninitialized -Wfloat-equal \
+	-Wdeclaration-after-statement -Wshadow -Wpointer-arith		   \
+	-Wbad-function-cast -Wcast-align -Wwrite-strings		   \
+	-Wjump-misses-init -Wlogical-op -Wstrict-prototypes		   \
+	-Wold-style-definition -Wmissing-prototypes -Wnormalized=nfc	   \
+	-Wpacked -Wredundant-decls -Wnested-externs -Winline -Wvla -Werror
 
 warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)'
@@ -106,7 +107,9 @@ check_PROGRAMS = tests/runtests tests/portable/asprintf-t		\
 	tests/portable/inet_ntoa-t tests/portable/inet_ntop-t		\
 	tests/portable/snprintf-t tests/portable/strlcat-t		\
 	tests/portable/strlcpy-t tests/portable/strndup-t		\
-	tests/util/fdflag-t tests/util/messages-t tests/util/network-t	\
+	tests/util/fdflag-t tests/util/messages-t			\
+	tests/util/network/addr-ipv4-t tests/util/network/addr-ipv6-t	\
+	tests/util/network/client-t tests/util/network/server-t		\
 	tests/util/vector-t tests/util/xmalloc tests/util/xwrite-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
         -DBUILD='"$(abs_top_builddir)/tests"'
@@ -154,8 +157,14 @@ tests_util_fdflag_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 tests_util_messages_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
-tests_util_network_t_LDADD = tests/tap/libtap.a util/libutil.a \
-	portable/libportable.a
+tests_util_network_addr_ipv4_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+tests_util_network_addr_ipv6_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+tests_util_network_client_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+tests_util_network_server_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
 tests_util_vector_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 tests_util_xmalloc_LDADD = util/libutil.a portable/libportable.a
