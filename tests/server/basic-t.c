@@ -44,8 +44,10 @@ is_sane_reply(struct lbcd_request *request, struct lbcd_reply *reply,
     is_int(expected, size, "Reply to %s is correct size", name);
 
     /* Check the reply header. */
-    is_int(request->h.version, reply->h.version, "...and has correct version");
-    is_int(request->h.id, reply->h.id, "...and has correct id");
+    is_int(ntohs(request->h.version), ntohs(reply->h.version),
+           "...and has correct version");
+    is_int(ntohs(request->h.id), ntohs(reply->h.id),
+           "...and has correct id");
     is_int(LBCD_OP_LBINFO, ntohs(reply->h.op),
            "...and has correct operation");
     is_int(LBCD_STATUS_OK, ntohs(reply->h.status),
@@ -164,17 +166,21 @@ main(void)
 
     /* Check that the reply is what we expect. */
     is_sane_reply(&request, &reply, result, "complex protocol three query");
-    is_int(reply.weights[0].host_weight, reply.weights[1].host_weight,
+    is_int(ntohl(reply.weights[0].host_weight),
+           ntohl(reply.weights[1].host_weight),
            "...default service weight matches first weight");
-    is_int(reply.weights[0].host_incr, reply.weights[1].host_incr,
+    is_int(ntohl(reply.weights[0].host_incr),
+           ntohl(reply.weights[1].host_incr),
            "...default service increment matches first increment");
-    is_int(reply.weights[0].host_weight, reply.weights[2].host_weight,
+    is_int(ntohl(reply.weights[0].host_weight),
+           ntohl(reply.weights[2].host_weight),
            "...load service weight matches first weight");
-    is_int(reply.weights[0].host_incr, reply.weights[2].host_incr,
+    is_int(ntohl(reply.weights[0].host_incr),
+           ntohl(reply.weights[2].host_incr),
            "...load service increment matches first increment");
-    is_int(1, htonl(reply.weights[3].host_weight),
+    is_int(1, ntohl(reply.weights[3].host_weight),
            "...rr service weight is 1");
-    is_int(1, htonl(reply.weights[3].host_incr),
+    is_int(1, ntohl(reply.weights[3].host_incr),
            "...rr service increment is 1");
 
     /* All done.  Clean up and return. */
