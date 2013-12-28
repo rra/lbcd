@@ -58,6 +58,7 @@ dist_man_MANS = client/lbcdclient.1
 
 # Substitute the installation paths into the systemd unit file.
 systemd/lbcd.service: $(srcdir)/systemd/lbcd.service.in
+	mkdir -p systemd
 	sed -e 's![@]sbindir[@]!$(sbindir)!g' \
 	    $(srcdir)/systemd/lbcd.service.in > $@
 
