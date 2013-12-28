@@ -53,8 +53,8 @@ lbcd_start(const char *first, ...)
         va_start(args, first);
         while ((arg = va_arg(args, const char *)) != NULL)
             length++;
+        va_end(args);
     }
-    va_end(args);
     argv = bmalloc(length * sizeof(const char *));
     i = 0;
     argv[i++] = path_lbcd;
@@ -67,8 +67,10 @@ lbcd_start(const char *first, ...)
     argv[i++] = pidfile;
     if (first != NULL) {
         argv[i++] = first;
+        va_start(args, first);
         while ((arg = va_arg(args, const char *)) != NULL)
             argv[i++] = arg;
+        va_end(args);
     }
     argv[i] = NULL;
 
