@@ -93,15 +93,6 @@ main(void)
     ssize_t result;
     struct lbcd_reply reply;
     struct lbcd_request request;
-#if 0
-    static const struct lbcd_header request_v2 = {
-        2, 10, LBCD_OP_LBINFO, 0,
-    };
-    static const struct lbcd_request request_v3_default = {
-        { 3, 10, LBCD_OP_LBINFO, 1 },
-        { "default", "", "", "", "" },
-    };
-#endif
 
     /* Declare a plan. */
     plan(68);
