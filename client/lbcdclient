@@ -256,9 +256,8 @@ sub print_reply {
     # Base system data.
     say_stdout('MACHINE STATUS:');
     for my $type (qw(l1 l5 l15)) {
-        my $load = $result_ref->{$type};
-        my $real = $load / 100.0;
-        printf_stdout("%-12s = %-12d (%.2f)\n", $type, $load, $real);
+        my $load = $result_ref->{$type} / 100.0;
+        printf_stdout("%-12s = %.2f\n", $type, $load);
     }
     for my $type (qw(current_time boot_time user_mtime)) {
         my $time = $result_ref->{$type};
