@@ -42,6 +42,9 @@ lbcd (3.5.0-1) UNRELEASED; urgency=low
     Continue to use DAEMON_OPTS in /etc/default/lbcd to configure the
     behavior of lbcd for the time being to ensure compatibility between
     the init systems and a clean upgrade path.
+  * Remove the start parameters to dh_installinit.  These are now ignored
+    by the dependency-based init system and produce warnings on postinst
+    execution.
 
  -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
 

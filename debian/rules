@@ -10,4 +10,4 @@ override_dh_installchangelogs:
 	dh_installchangelogs NEWS
 
 override_dh_installinit:
-	dh_installinit -- start 20 2 3 4 5 .
+	dh_installinit
