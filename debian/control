@@ -5,7 +5,7 @@ Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Guido Guenther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 9), dh-autoreconf, dh-systemd,
  libsystemd-daemon-dev, libtest-minimumversion-perl, libtest-pod-perl,
- libtest-strict-perl
+ libtest-strict-perl, pkg-config
 Standards-Version: 3.9.5
 Homepage: http://www.eyrie.org/~eagle/software/lbcd/
 Vcs-Git: git://git.eyrie.org/system/lbcd.git -b debian
