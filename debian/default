@@ -1,8 +1,9 @@
-# /etc/default/lbcd -- Defaults for the lbcd init script.  -*- sh -*-
+# Defaults for the lbcd daemon.  -*- sh -*-
 #
-# This file is sourced by /etc/init.d/lbcd and is used to configure the
-# behavior of the init script.  This file must follow standard POSIX shell
-# syntax.
+# This file is sourced by lbcd's startup configuration and is used to
+# configure the behavior of the daemon.  This file must follow standard POSIX
+# shell syntax.  For systemd compatibility, it should be restricted to simple
+# variable assignments.
 
 # Uncomment this line to not start lbcd at boot time.  Use of this option
 # is supported for backward compatibility but is deprecated.  The best way
@@ -10,6 +11,6 @@
 #NO_START=1
 
 # Additional options to pass to lbcd.  This is the place to put -R, -c, or
-# any similar options that are needed.  Keep the -P option so that the init
-# script will continue working properly.
-DAEMON_OPTS="-P /var/run/lbcd/lbcd.pid"
+# any similar options that are needed.  Do not add -P here; it will be
+# added as needed by the init script.
+DAEMON_OPTS=""

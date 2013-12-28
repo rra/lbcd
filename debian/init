@@ -36,6 +36,10 @@ GROUP=lbcd
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
 
+# Add the PID file flag to DAEMON_OPTS since the init script relies on a
+# specific PID file location.
+DAEMON_OPTS="$DAEMON_OPTS -P $PIDFILE"
+
 # Create a directory for the PID file, since lbcd runs as a non-root user and
 # creates its own PID file.
 create_piddir()

@@ -26,6 +26,12 @@ lbcd (3.5.0-1) UNRELEASED; urgency=low
     - systemd socket activation and synchronization support has been
       added, as has a -Z option to raise SIGSTOP for upstart
       synchronization.
+  * Remove the -P option from /etc/default/lbcd.  This isn't useful for
+    upstart and systemd, and the init script requires a specific setting,
+    so it is now set directly in the init script.  This option should be
+    removed on upgrades; if not, the daemon may not start under systemd or
+    upstart, since they will not create the (now-unnecessary) directory
+    for the PID file.
 
  -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
 
