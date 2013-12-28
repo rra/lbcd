@@ -274,6 +274,7 @@ request_recv(struct lbcd_config *config, socket_type fd)
             if (!service_allowed(config, service)) {
                 warn("client %s: service %s not allowed", source, service);
                 send_status(request, fd, LBCD_STATUS_ERROR);
+                free(service);
                 goto fail;
             }
             vector_add(request->services, service);
