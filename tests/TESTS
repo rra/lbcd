@@ -14,6 +14,7 @@ portable/snprintf
 portable/strlcat
 portable/strlcpy
 portable/strndup
+server/basic
 util/fdflag
 util/messages
 util/network/addr-ipv4

@@ -24,6 +24,7 @@
 /tests/portable/strlcpy-t
 /tests/portable/strndup-t
 /tests/runtests
+/tests/server/basic-t
 /tests/util/fdflag-t
 /tests/util/messages-t
 /tests/util/network/addr-ipv4-t
