@@ -74,7 +74,7 @@ server/lbcd.8: $(srcdir)/server/lbcd.8.in
 
 # Clean rules.  Work around a misfeature of Automake and remove all the
 # results of running autogen.
-CLEANFILES = lbcd.8 systemd/lbcd.service
+CLEANFILES = server/lbcd.8 systemd/lbcd.service
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		\
 	build-aux/config.guess build-aux/config.sub build-aux/depcomp	\
 	build-aux/install-sh build-aux/missing config.h.in config.h.in~	\
