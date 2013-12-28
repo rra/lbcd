@@ -5,12 +5,7 @@
 # shell syntax.  For systemd compatibility, it should be restricted to simple
 # variable assignments.
 
-# Uncomment this line to not start lbcd at boot time.  Use of this option
-# is supported for backward compatibility but is deprecated.  The best way
-# to stop lbcd from starting at boot is "update-rc.d disable lbcd".
-#NO_START=1
-
-# Additional options to pass to lbcd.  This is the place to put -R, -c, or
-# any similar options that are needed.  Do not add -P here; it will be
-# added as needed by the init script.
+# Additional options to pass to lbcd.  This is the place to put -R, -c, -a, or
+# any similar options that are needed.  Do not add -P here; it will be added
+# as needed by the init script.
 DAEMON_OPTS=""

@@ -2,9 +2,23 @@
 
 set -e
 
+# Add a user for the daemon to run as.
 if ! getent passwd lbcd >/dev/null; then
     adduser --disabled-password --quiet --system --no-create-home \
 	--gecos "Load Balancing Client Daemon" --group lbcd
+fi
+
+# Handle upgrades from versions supporting NO_START in /etc/default/lbcd.
+# Convert this to a properly disabled configuration.  upstart does not support
+# update-rc.d <service> disable, so upstart users will need to manually
+# disable the daemon for now.
+if [ "$1" = 'configure' ] && [ -f /etc/default/lbcd ] ; then
+    if [ -n "$2" ] && dpkg --compare-versions "$2" lt 3.5.0 ; then
+        . /etc/default/lbcd
+        if [ "$NO_START" = 1 ] ; then
+            update-rc.d lbcd disable
+        fi
+    fi
 fi
 
 #DEBHELPER#

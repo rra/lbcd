@@ -32,6 +32,11 @@ lbcd (3.5.0-1) UNRELEASED; urgency=low
     removed on upgrades; if not, the daemon may not start under systemd or
     upstart, since they will not create the (now-unnecessary) directory
     for the PID file.
+  * The NO_START option in /etc/default/lbcd is no longer supported.  On
+    upgrade, it will be converted into update-rc.d lbcd disable, which
+    will disable daemon startup in systemd and sysvinit.  upstart users
+    will need to manually disable the daemon since the update-rc.d disable
+    interface currently doesn't support upstart.
 
  -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
 
