@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Guido Guenther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 9), dh-autoreconf, dh-systemd,
- libtest-pod-perl
+ libsystemd-daemon-dev, libtest-minimumversion-perl, libtest-pod-perl,
+ libtest-strict-perl
 Standards-Version: 3.9.5
 Homepage: http://www.eyrie.org/~eagle/software/lbcd/
 Vcs-Git: git://git.eyrie.org/system/lbcd.git -b debian
@@ -13,7 +14,8 @@ Vcs-Browser: http://git.eyrie.org/?p=system/lbcd.git
 Package: lbcd
 Architecture: any
 Multi-Arch: foreign
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, adduser,
+ libio-socket-inet6-perl
 Description: Return system load via UDP for remote load balancers
  lbcd is a daemon that answers UDP queries for system load information and
  returns such information as uptime, load, number of logged-in users,
