@@ -57,12 +57,13 @@ is_sane_reply(struct lbcd_request *request, struct lbcd_reply *reply,
     now = time(NULL);
     ok(ntohl(reply->boot_time) > 946713600,
        "...boot time later than 2000-01-01");
-    ok(ntohl(reply->boot_time) < now, "...boot time before the current time");
+    ok((time_t) ntohl(reply->boot_time) < now,
+       "...boot time before the current time");
     ok(labs((time_t) ntohl(reply->current_time) - now) < 2,
        "...current time within two seconds");
     ok(ntohl(reply->user_mtime) > 946713600,
        "...user mtime later than 2000-01-01");
-    ok(ntohl(reply->user_mtime) < now,
+    ok((time_t) ntohl(reply->user_mtime) < now,
        "...user mtime before the current time");
     ok(ntohs(reply->l1) < 20000, "...1 minute load less than 200");
     ok(ntohs(reply->l5) < 20000, "...1 minute load less than 200");
