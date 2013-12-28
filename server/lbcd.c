@@ -394,6 +394,17 @@ handle_requests(struct lbcd_config *config)
     socket_type *fds;
     unsigned int count;
     FILE *pid;
+    struct sigaction sa;
+
+    /*
+     * Ignore SIGHUP.  This is used to tell a daemon to reload its
+     * configuration and we have no configuration, so ignoring it seems to
+     * make the most sense.
+     */
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SIG_IGN;
+    if (sigaction(SIGHUP, &sa, NULL) < 0)
+        syswarn("cannot set SIGHUP handler");
 
     /* Open UDP socket. */
     bind_socket(config, &fds, &count);

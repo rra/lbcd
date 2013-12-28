@@ -24,6 +24,12 @@ lbcd 3.5.0 (unreleased)
     Implement lbcd -l, which now logs to syslog each incoming client
     request and its protocol version.
 
+    lbcd now ignores SIGHUP instead of exiting.  SIGHUP is conventionally
+    used to tell a daemon to reload its configuration, and lbcd has no
+    configuration and therefore trivially satisfies this, so ignoring the
+    signal seems like the most consistent approach.  Use SIGTERM to tell
+    the daemon to exit.
+
     lbcdclient has been rewritten.  The output format is now completely
     different and more human-readable.  The timeout and port are
     configurable on the command line, and the option parsing now supports
