@@ -1,0 +1,20 @@
+# systemd configuration for lbcd.  -*- conf -*-
+
+[Unit]
+Description=responder for load balancing
+Documentation=man:lbcd(8)
+Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+
+[Service]
+Type=notify
+NotifyAccess=main
+Restart=always
+
+# Support for /etc/default/lbcd is here only for backward compatibility with
+# the lbcd init script shipped with Debian.  It and the $DAEMON_OPTS reference
+# can be dropped if this backward compatibility is not needed.
+EnvironmentFile=-/etc/default/lbcd
+ExecStart=@sbindir@/lbcd -f -l $DAEMON_OPTS
+
+[Install]
+WantedBy=mutli-user.target

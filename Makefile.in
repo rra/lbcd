@@ -24,6 +24,7 @@
 
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -86,7 +87,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-sbin_PROGRAMS = lbcd$(EXEEXT)
+sbin_PROGRAMS = server/lbcd$(EXEEXT)
 check_PROGRAMS = tests/runtests$(EXEEXT) \
 	tests/portable/asprintf-t$(EXEEXT) \
 	tests/portable/daemon-t$(EXEEXT) \
@@ -98,24 +99,30 @@ check_PROGRAMS = tests/runtests$(EXEEXT) \
 	tests/portable/snprintf-t$(EXEEXT) \
 	tests/portable/strlcat-t$(EXEEXT) \
 	tests/portable/strlcpy-t$(EXEEXT) \
-	tests/portable/strndup-t$(EXEEXT) tests/util/fdflag-t$(EXEEXT) \
-	tests/util/messages-t$(EXEEXT) tests/util/network-t$(EXEEXT) \
+	tests/portable/strndup-t$(EXEEXT) \
+	tests/server/basic-t$(EXEEXT) tests/server/errors-t$(EXEEXT) \
+	tests/util/fdflag-t$(EXEEXT) tests/util/messages-t$(EXEEXT) \
+	tests/util/network/addr-ipv4-t$(EXEEXT) \
+	tests/util/network/addr-ipv6-t$(EXEEXT) \
+	tests/util/network/client-t$(EXEEXT) \
+	tests/util/network/server-t$(EXEEXT) \
 	tests/util/vector-t$(EXEEXT) tests/util/xmalloc$(EXEEXT) \
 	tests/util/xwrite-t$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in $(top_srcdir)/portable/strndup.c \
-	$(top_srcdir)/portable/inet_ntop.c \
-	$(top_srcdir)/portable/asprintf.c \
-	$(top_srcdir)/portable/daemon.c \
-	$(top_srcdir)/portable/inet_aton.c \
+	$(srcdir)/config.h.in $(top_srcdir)/portable/daemon.c \
 	$(top_srcdir)/portable/strlcpy.c \
-	$(top_srcdir)/portable/getnameinfo.c \
-	$(top_srcdir)/portable/strlcat.c \
+	$(top_srcdir)/portable/strndup.c \
 	$(top_srcdir)/portable/snprintf.c \
+	$(top_srcdir)/portable/getaddrinfo.c \
+	$(top_srcdir)/portable/strlcat.c \
+	$(top_srcdir)/portable/inet_aton.c \
+	$(top_srcdir)/portable/asprintf.c \
+	$(top_srcdir)/portable/mkstemp.c \
+	$(top_srcdir)/portable/inet_ntop.c \
 	$(top_srcdir)/portable/inet_ntoa.c \
-	$(top_srcdir)/portable/getaddrinfo.c $(dist_bin_SCRIPTS) \
+	$(top_srcdir)/portable/getnameinfo.c $(dist_bin_SCRIPTS) \
 	$(top_srcdir)/build-aux/depcomp $(dist_man_MANS) NEWS README \
 	TODO build-aux/ar-lib build-aux/compile build-aux/depcomp \
 	build-aux/install-sh build-aux/missing \
@@ -125,7 +132,8 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/inet-ntoa.m4 \
 	$(top_srcdir)/m4/snprintf.m4 $(top_srcdir)/m4/socket.m4 \
-	$(top_srcdir)/m4/vamacros.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/systemd.m4 $(top_srcdir)/m4/vamacros.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -159,7 +167,8 @@ portable_libportable_a_OBJECTS = $(am_portable_libportable_a_OBJECTS)
 tests_tap_libtap_a_AR = $(AR) $(ARFLAGS)
 tests_tap_libtap_a_LIBADD =
 am_tests_tap_libtap_a_OBJECTS = tests/tap/basic.$(OBJEXT) \
-	tests/tap/process.$(OBJEXT) tests/tap/string.$(OBJEXT)
+	tests/tap/lbcd.$(OBJEXT) tests/tap/process.$(OBJEXT) \
+	tests/tap/string.$(OBJEXT)
 tests_tap_libtap_a_OBJECTS = $(am_tests_tap_libtap_a_OBJECTS)
 util_libutil_a_AR = $(AR) $(ARFLAGS)
 util_libutil_a_LIBADD =
@@ -169,14 +178,20 @@ am_util_libutil_a_OBJECTS = util/fdflag.$(OBJEXT) \
 	util/xwrite.$(OBJEXT)
 util_libutil_a_OBJECTS = $(am_util_libutil_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man8dir)"
+	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man8dir)" \
+	"$(DESTDIR)$(systemdsystemunitdir)"
 PROGRAMS = $(sbin_PROGRAMS)
-am_lbcd_OBJECTS = get_user.$(OBJEXT) kernel.$(OBJEXT) lbcd.$(OBJEXT) \
-	load.$(OBJEXT) server.$(OBJEXT) tmp_full.$(OBJEXT) \
-	weight.$(OBJEXT)
-lbcd_OBJECTS = $(am_lbcd_OBJECTS)
-lbcd_DEPENDENCIES = modules/libmodules.a util/libutil.a \
-	portable/libportable.a
+am_server_lbcd_OBJECTS = server/server_lbcd-get_user.$(OBJEXT) \
+	server/server_lbcd-kernel.$(OBJEXT) \
+	server/server_lbcd-lbcd.$(OBJEXT) \
+	server/server_lbcd-load.$(OBJEXT) \
+	server/server_lbcd-server.$(OBJEXT) \
+	server/server_lbcd-tmp_full.$(OBJEXT) \
+	server/server_lbcd-weight.$(OBJEXT)
+server_lbcd_OBJECTS = $(am_server_lbcd_OBJECTS)
+am__DEPENDENCIES_1 =
+server_lbcd_DEPENDENCIES = modules/libmodules.a util/libutil.a \
+	portable/libportable.a $(am__DEPENDENCIES_1)
 am_tests_portable_asprintf_t_OBJECTS =  \
 	tests/portable/asprintf-t.$(OBJEXT) \
 	tests/portable/asprintf.$(OBJEXT)
@@ -257,6 +272,14 @@ tests_portable_strndup_t_DEPENDENCIES = tests/tap/libtap.a \
 tests_runtests_SOURCES = tests/runtests.c
 tests_runtests_OBJECTS = tests/tests_runtests-runtests.$(OBJEXT)
 tests_runtests_LDADD = $(LDADD)
+tests_server_basic_t_SOURCES = tests/server/basic-t.c
+tests_server_basic_t_OBJECTS = tests/server/basic-t.$(OBJEXT)
+tests_server_basic_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_server_errors_t_SOURCES = tests/server/errors-t.c
+tests_server_errors_t_OBJECTS = tests/server/errors-t.$(OBJEXT)
+tests_server_errors_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
 tests_util_fdflag_t_SOURCES = tests/util/fdflag-t.c
 tests_util_fdflag_t_OBJECTS = tests/util/fdflag-t.$(OBJEXT)
 tests_util_fdflag_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
@@ -265,10 +288,28 @@ tests_util_messages_t_SOURCES = tests/util/messages-t.c
 tests_util_messages_t_OBJECTS = tests/util/messages-t.$(OBJEXT)
 tests_util_messages_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
-tests_util_network_t_SOURCES = tests/util/network-t.c
-tests_util_network_t_OBJECTS = tests/util/network-t.$(OBJEXT)
-tests_util_network_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
-	portable/libportable.a
+tests_util_network_addr_ipv4_t_SOURCES =  \
+	tests/util/network/addr-ipv4-t.c
+tests_util_network_addr_ipv4_t_OBJECTS =  \
+	tests/util/network/addr-ipv4-t.$(OBJEXT)
+tests_util_network_addr_ipv4_t_DEPENDENCIES = tests/tap/libtap.a \
+	util/libutil.a portable/libportable.a
+tests_util_network_addr_ipv6_t_SOURCES =  \
+	tests/util/network/addr-ipv6-t.c
+tests_util_network_addr_ipv6_t_OBJECTS =  \
+	tests/util/network/addr-ipv6-t.$(OBJEXT)
+tests_util_network_addr_ipv6_t_DEPENDENCIES = tests/tap/libtap.a \
+	util/libutil.a portable/libportable.a
+tests_util_network_client_t_SOURCES = tests/util/network/client-t.c
+tests_util_network_client_t_OBJECTS =  \
+	tests/util/network/client-t.$(OBJEXT)
+tests_util_network_client_t_DEPENDENCIES = tests/tap/libtap.a \
+	util/libutil.a portable/libportable.a
+tests_util_network_server_t_SOURCES = tests/util/network/server-t.c
+tests_util_network_server_t_OBJECTS =  \
+	tests/util/network/server-t.$(OBJEXT)
+tests_util_network_server_t_DEPENDENCIES = tests/tap/libtap.a \
+	util/libutil.a portable/libportable.a
 tests_util_vector_t_SOURCES = tests/util/vector-t.c
 tests_util_vector_t_OBJECTS = tests/util/vector-t.$(OBJEXT)
 tests_util_vector_t_DEPENDENCIES = tests/tap/libtap.a util/libutil.a \
@@ -345,7 +386,7 @@ am__v_CCLD_1 =
 SOURCES = $(modules_libmodules_a_SOURCES) \
 	$(portable_libportable_a_SOURCES) \
 	$(tests_tap_libtap_a_SOURCES) $(util_libutil_a_SOURCES) \
-	$(lbcd_SOURCES) $(tests_portable_asprintf_t_SOURCES) \
+	$(server_lbcd_SOURCES) $(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_daemon_t_SOURCES) \
 	$(tests_portable_getaddrinfo_t_SOURCES) \
 	$(tests_portable_getnameinfo_t_SOURCES) \
@@ -356,13 +397,16 @@ SOURCES = $(modules_libmodules_a_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
 	$(tests_portable_strndup_t_SOURCES) tests/runtests.c \
+	tests/server/basic-t.c tests/server/errors-t.c \
 	tests/util/fdflag-t.c tests/util/messages-t.c \
-	tests/util/network-t.c tests/util/vector-t.c \
+	tests/util/network/addr-ipv4-t.c \
+	tests/util/network/addr-ipv6-t.c tests/util/network/client-t.c \
+	tests/util/network/server-t.c tests/util/vector-t.c \
 	tests/util/xmalloc.c $(tests_util_xwrite_t_SOURCES)
 DIST_SOURCES = $(modules_libmodules_a_SOURCES) \
 	$(portable_libportable_a_SOURCES) \
 	$(tests_tap_libtap_a_SOURCES) $(util_libutil_a_SOURCES) \
-	$(lbcd_SOURCES) $(tests_portable_asprintf_t_SOURCES) \
+	$(server_lbcd_SOURCES) $(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_daemon_t_SOURCES) \
 	$(tests_portable_getaddrinfo_t_SOURCES) \
 	$(tests_portable_getnameinfo_t_SOURCES) \
@@ -373,8 +417,11 @@ DIST_SOURCES = $(modules_libmodules_a_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
 	$(tests_portable_strndup_t_SOURCES) tests/runtests.c \
+	tests/server/basic-t.c tests/server/errors-t.c \
 	tests/util/fdflag-t.c tests/util/messages-t.c \
-	tests/util/network-t.c tests/util/vector-t.c \
+	tests/util/network/addr-ipv4-t.c \
+	tests/util/network/addr-ipv6-t.c tests/util/network/client-t.c \
+	tests/util/network/server-t.c tests/util/vector-t.c \
 	tests/util/xmalloc.c $(tests_util_xwrite_t_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -385,6 +432,7 @@ man1dir = $(mandir)/man1
 man8dir = $(mandir)/man8
 NROFF = nroff
 MANS = $(dist_man_MANS) $(man_MANS)
+DATA = $(systemdsystemunit_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -467,10 +515,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_DAEMON_CFLAGS = @SYSTEMD_DAEMON_CFLAGS@
+SYSTEMD_DAEMON_LIBS = @SYSTEMD_DAEMON_LIBS@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -511,24 +564,37 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE arch/aix.c arch/bsd.c arch/darwin.c	   \
-	arch/hpux10.c arch/hpux9.c arch/irix.c arch/linux.c arch/osf.c	   \
-	arch/solaris.c autogen lbcd.8.in lbcd.pod tests/README tests/TESTS \
-	tests/data/perl.conf tests/docs/pod-spelling-t tests/docs/pod-t	   \
-	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			   \
-	tests/tap/perl/Test/RRA/Automake.pm				   \
+EXTRA_DIST = .gitignore LICENSE autogen server/arch/aix.c server/arch/bsd.c \
+	server/arch/darwin.c server/arch/hpux10.c server/arch/hpux9.c	    \
+	server/arch/irix.c server/arch/linux.c server/arch/osf.c	    \
+	server/arch/solaris.c server/lbcd.8.in server/lbcd.pod		    \
+	systemd/lbcd.service.in systemd/lbcd.socket tests/README	    \
+	tests/TESTS tests/data/perl.conf tests/data/perlcriticrc	    \
+	tests/data/perltidyrc tests/docs/pod-spelling-t tests/docs/pod-t    \
+	tests/perl/critic-t tests/perl/minimum-version-t		    \
+	tests/perl/strict-t tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm  \
+	tests/tap/perl/Test/RRA/Automake.pm				    \
 	tests/tap/perl/Test/RRA/Config.pm tests/util/xmalloc-t
 
+
+# Override systemdsystemunitdir when running distcheck so that we don't try
+# to install files in the system directory.
+DISTCHECK_CONFIGURE_FLAGS = \
+	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+
+
+# Supporting convenience libraries used by other targets.
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
-        portable/getnameinfo.h portable/macros.h portable/socket.h	 \
-        portable/statvfs.h portable/stdbool.h portable/system.h		 \
-        portable/uio.h
+	portable/getnameinfo.h portable/macros.h portable/sd-daemon.h	 \
+	portable/socket.h portable/statvfs.h portable/stdbool.h		 \
+	portable/system.h portable/uio.h
 
 portable_libportable_a_LIBADD = $(LIBOBJS)
 modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
@@ -542,21 +608,32 @@ util_libutil_a_SOURCES = util/fdflag.c util/fdflag.h util/macros.h	\
 	util/vector.c util/vector.h util/xmalloc.c util/xmalloc.h	\
 	util/xwrite.c util/xwrite.h
 
+server_lbcd_SOURCES = server/get_user.c server/kernel.c server/internal.h \
+	server/lbcd.c server/load.c server/protocol.h server/server.c	  \
+	server/tmp_full.c server/weight.c
 
-# The maximum weight will be used if this file exists.
-AM_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"'
-lbcd_SOURCES = get_user.c kernel.c internal.h lbcd.c load.c protocol.h	\
-	server.c tmp_full.c weight.c
+server_lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
+	$(SYSTEMD_DAEMON_CFLAGS)
 
-lbcd_LDADD = modules/libmodules.a util/libutil.a portable/libportable.a
-dist_bin_SCRIPTS = lbcdclient
-dist_man_MANS = lbcdclient.1
-man_MANS = lbcd.8
-CLEANFILES = lbcd.8
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
-	build-aux/install-sh build-aux/missing config.h.in config.h.in~ \
-	configure lbcd.8 lbcdclient.1
+server_lbcd_LDADD = modules/libmodules.a util/libutil.a \
+	portable/libportable.a $(SYSTEMD_DAEMON_LIBS)
+
+man_MANS = server/lbcd.8
+
+# The lbcdclient command-line query tool.
+dist_bin_SCRIPTS = client/lbcdclient
+dist_man_MANS = client/lbcdclient.1
+
+# Install the systemd unit file if systemd support was detected.
+@HAVE_SYSTEMD_TRUE@systemdsystemunit_DATA = systemd/lbcd.service systemd/lbcd.socket
+
+# Clean rules.  Work around a misfeature of Automake and remove all the
+# results of running autogen.
+CLEANFILES = server/lbcd.8 systemd/lbcd.service
+MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		\
+	build-aux/config.guess build-aux/config.sub build-aux/depcomp	\
+	build-aux/install-sh build-aux/missing config.h.in config.h.in~	\
+	configure server/lbcd.8.in client/lbcdclient.1
 
 
 # A set of flags for warnings.  Add -O because gcc won't find some warnings
@@ -565,23 +642,25 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile \
 #
 #     -Wconversion      http://bugs.debian.org/488884 (htons warnings)
 #
-# Last checked against gcc 4.6.1 (2011-05-04).  -D_FORTIFY_SOURCE=2 enables
+# Last checked against gcc 4.7.2 (2013-04-22).  -D_FORTIFY_SOURCE=2 enables
 # warn_unused_result attribute markings on glibc functions on Linux, which
 # catches a few more issues.
-WARNINGS = -g -O -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wendif-labels	    \
-	-Wformat=2 -Winit-self -Wswitch-enum -Wdeclaration-after-statement  \
-	-Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align	    \
-	-Wwrite-strings -Wjump-misses-init -Wlogical-op			    \
-	-Wstrict-prototypes -Wmissing-prototypes -Wredundant-decls	    \
-	-Wnested-externs -Werror
+WARNINGS = -g -O -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wendif-labels	   \
+	-Wformat=2 -Winit-self -Wswitch-enum -Wuninitialized -Wfloat-equal \
+	-Wdeclaration-after-statement -Wshadow -Wpointer-arith		   \
+	-Wbad-function-cast -Wcast-align -Wwrite-strings		   \
+	-Wjump-misses-init -Wlogical-op -Wstrict-prototypes		   \
+	-Wold-style-definition -Wmissing-prototypes -Wnormalized=nfc	   \
+	-Wpacked -Wredundant-decls -Wnested-externs -Winline -Wvla -Werror
 
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
         -DBUILD='"$(abs_top_builddir)/tests"'
 
 check_LIBRARIES = tests/tap/libtap.a
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h	\
-	tests/tap/macros.h tests/tap/process.c tests/tap/process.h	\
-	tests/tap/string.c tests/tap/string.h
+	tests/tap/lbcd.c tests/tap/lbcd.h tests/tap/macros.h		\
+	tests/tap/process.c tests/tap/process.h tests/tap/string.c	\
+	tests/tap/string.h
 
 
 # All of the test programs.
@@ -631,14 +710,29 @@ tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
 	tests/portable/strndup.c
 
 tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.a
+tests_server_basic_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+
+tests_server_errors_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+
 tests_util_fdflag_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 
 tests_util_messages_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 
-tests_util_network_t_LDADD = tests/tap/libtap.a util/libutil.a \
-	portable/libportable.a
+tests_util_network_addr_ipv4_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+
+tests_util_network_addr_ipv6_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+
+tests_util_network_client_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
+
+tests_util_network_server_t_LDADD = tests/tap/libtap.a util/libutil.a \
+        portable/libportable.a
 
 tests_util_vector_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
@@ -768,6 +862,8 @@ tests/tap/$(DEPDIR)/$(am__dirstamp):
 	@: > tests/tap/$(DEPDIR)/$(am__dirstamp)
 tests/tap/basic.$(OBJEXT): tests/tap/$(am__dirstamp) \
 	tests/tap/$(DEPDIR)/$(am__dirstamp)
+tests/tap/lbcd.$(OBJEXT): tests/tap/$(am__dirstamp) \
+	tests/tap/$(DEPDIR)/$(am__dirstamp)
 tests/tap/process.$(OBJEXT): tests/tap/$(am__dirstamp) \
 	tests/tap/$(DEPDIR)/$(am__dirstamp)
 tests/tap/string.$(OBJEXT): tests/tap/$(am__dirstamp) \
@@ -845,10 +941,30 @@ uninstall-sbinPROGRAMS:
 
 clean-sbinPROGRAMS:
 	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
+server/$(am__dirstamp):
+	@$(MKDIR_P) server
+	@: > server/$(am__dirstamp)
+server/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) server/$(DEPDIR)
+	@: > server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-get_user.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-kernel.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-lbcd.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-load.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-server.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-tmp_full.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
+server/server_lbcd-weight.$(OBJEXT): server/$(am__dirstamp) \
+	server/$(DEPDIR)/$(am__dirstamp)
 
-lbcd$(EXEEXT): $(lbcd_OBJECTS) $(lbcd_DEPENDENCIES) $(EXTRA_lbcd_DEPENDENCIES) 
-	@rm -f lbcd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(lbcd_OBJECTS) $(lbcd_LDADD) $(LIBS)
+server/lbcd$(EXEEXT): $(server_lbcd_OBJECTS) $(server_lbcd_DEPENDENCIES) $(EXTRA_server_lbcd_DEPENDENCIES) server/$(am__dirstamp)
+	@rm -f server/lbcd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(server_lbcd_OBJECTS) $(server_lbcd_LDADD) $(LIBS)
 tests/portable/$(am__dirstamp):
 	@$(MKDIR_P) tests/portable
 	@: > tests/portable/$(am__dirstamp)
@@ -957,6 +1073,24 @@ tests/tests_runtests-runtests.$(OBJEXT): tests/$(am__dirstamp) \
 tests/runtests$(EXEEXT): $(tests_runtests_OBJECTS) $(tests_runtests_DEPENDENCIES) $(EXTRA_tests_runtests_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/runtests$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_runtests_OBJECTS) $(tests_runtests_LDADD) $(LIBS)
+tests/server/$(am__dirstamp):
+	@$(MKDIR_P) tests/server
+	@: > tests/server/$(am__dirstamp)
+tests/server/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) tests/server/$(DEPDIR)
+	@: > tests/server/$(DEPDIR)/$(am__dirstamp)
+tests/server/basic-t.$(OBJEXT): tests/server/$(am__dirstamp) \
+	tests/server/$(DEPDIR)/$(am__dirstamp)
+
+tests/server/basic-t$(EXEEXT): $(tests_server_basic_t_OBJECTS) $(tests_server_basic_t_DEPENDENCIES) $(EXTRA_tests_server_basic_t_DEPENDENCIES) tests/server/$(am__dirstamp)
+	@rm -f tests/server/basic-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_server_basic_t_OBJECTS) $(tests_server_basic_t_LDADD) $(LIBS)
+tests/server/errors-t.$(OBJEXT): tests/server/$(am__dirstamp) \
+	tests/server/$(DEPDIR)/$(am__dirstamp)
+
+tests/server/errors-t$(EXEEXT): $(tests_server_errors_t_OBJECTS) $(tests_server_errors_t_DEPENDENCIES) $(EXTRA_tests_server_errors_t_DEPENDENCIES) tests/server/$(am__dirstamp)
+	@rm -f tests/server/errors-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_server_errors_t_OBJECTS) $(tests_server_errors_t_LDADD) $(LIBS)
 tests/util/$(am__dirstamp):
 	@$(MKDIR_P) tests/util
 	@: > tests/util/$(am__dirstamp)
@@ -975,12 +1109,40 @@ tests/util/messages-t.$(OBJEXT): tests/util/$(am__dirstamp) \
 tests/util/messages-t$(EXEEXT): $(tests_util_messages_t_OBJECTS) $(tests_util_messages_t_DEPENDENCIES) $(EXTRA_tests_util_messages_t_DEPENDENCIES) tests/util/$(am__dirstamp)
 	@rm -f tests/util/messages-t$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_util_messages_t_OBJECTS) $(tests_util_messages_t_LDADD) $(LIBS)
-tests/util/network-t.$(OBJEXT): tests/util/$(am__dirstamp) \
-	tests/util/$(DEPDIR)/$(am__dirstamp)
+tests/util/network/$(am__dirstamp):
+	@$(MKDIR_P) tests/util/network
+	@: > tests/util/network/$(am__dirstamp)
+tests/util/network/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) tests/util/network/$(DEPDIR)
+	@: > tests/util/network/$(DEPDIR)/$(am__dirstamp)
+tests/util/network/addr-ipv4-t.$(OBJEXT):  \
+	tests/util/network/$(am__dirstamp) \
+	tests/util/network/$(DEPDIR)/$(am__dirstamp)
 
-tests/util/network-t$(EXEEXT): $(tests_util_network_t_OBJECTS) $(tests_util_network_t_DEPENDENCIES) $(EXTRA_tests_util_network_t_DEPENDENCIES) tests/util/$(am__dirstamp)
-	@rm -f tests/util/network-t$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_util_network_t_OBJECTS) $(tests_util_network_t_LDADD) $(LIBS)
+tests/util/network/addr-ipv4-t$(EXEEXT): $(tests_util_network_addr_ipv4_t_OBJECTS) $(tests_util_network_addr_ipv4_t_DEPENDENCIES) $(EXTRA_tests_util_network_addr_ipv4_t_DEPENDENCIES) tests/util/network/$(am__dirstamp)
+	@rm -f tests/util/network/addr-ipv4-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_util_network_addr_ipv4_t_OBJECTS) $(tests_util_network_addr_ipv4_t_LDADD) $(LIBS)
+tests/util/network/addr-ipv6-t.$(OBJEXT):  \
+	tests/util/network/$(am__dirstamp) \
+	tests/util/network/$(DEPDIR)/$(am__dirstamp)
+
+tests/util/network/addr-ipv6-t$(EXEEXT): $(tests_util_network_addr_ipv6_t_OBJECTS) $(tests_util_network_addr_ipv6_t_DEPENDENCIES) $(EXTRA_tests_util_network_addr_ipv6_t_DEPENDENCIES) tests/util/network/$(am__dirstamp)
+	@rm -f tests/util/network/addr-ipv6-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_util_network_addr_ipv6_t_OBJECTS) $(tests_util_network_addr_ipv6_t_LDADD) $(LIBS)
+tests/util/network/client-t.$(OBJEXT):  \
+	tests/util/network/$(am__dirstamp) \
+	tests/util/network/$(DEPDIR)/$(am__dirstamp)
+
+tests/util/network/client-t$(EXEEXT): $(tests_util_network_client_t_OBJECTS) $(tests_util_network_client_t_DEPENDENCIES) $(EXTRA_tests_util_network_client_t_DEPENDENCIES) tests/util/network/$(am__dirstamp)
+	@rm -f tests/util/network/client-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_util_network_client_t_OBJECTS) $(tests_util_network_client_t_LDADD) $(LIBS)
+tests/util/network/server-t.$(OBJEXT):  \
+	tests/util/network/$(am__dirstamp) \
+	tests/util/network/$(DEPDIR)/$(am__dirstamp)
+
+tests/util/network/server-t$(EXEEXT): $(tests_util_network_server_t_OBJECTS) $(tests_util_network_server_t_DEPENDENCIES) $(EXTRA_tests_util_network_server_t_DEPENDENCIES) tests/util/network/$(am__dirstamp)
+	@rm -f tests/util/network/server-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_util_network_server_t_OBJECTS) $(tests_util_network_server_t_LDADD) $(LIBS)
 tests/util/vector-t.$(OBJEXT): tests/util/$(am__dirstamp) \
 	tests/util/$(DEPDIR)/$(am__dirstamp)
 
@@ -1043,22 +1205,18 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f modules/*.$(OBJEXT)
 	-rm -f portable/*.$(OBJEXT)
+	-rm -f server/*.$(OBJEXT)
 	-rm -f tests/*.$(OBJEXT)
 	-rm -f tests/portable/*.$(OBJEXT)
+	-rm -f tests/server/*.$(OBJEXT)
 	-rm -f tests/tap/*.$(OBJEXT)
 	-rm -f tests/util/*.$(OBJEXT)
+	-rm -f tests/util/network/*.$(OBJEXT)
 	-rm -f util/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_user.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kernel.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lbcd.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tmp_full.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/weight.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modules/$(DEPDIR)/check_reply.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modules/$(DEPDIR)/ftp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modules/$(DEPDIR)/http.Po@am__quote@
@@ -1080,10 +1238,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/inet_aton.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/inet_ntoa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/inet_ntop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/mkstemp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/snprintf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strlcat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strlcpy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strndup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-get_user.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-kernel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-lbcd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-load.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-tmp_full.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@server/$(DEPDIR)/server_lbcd-weight.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_runtests-runtests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/asprintf-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/asprintf.Po@am__quote@
@@ -1107,17 +1273,23 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strlcpy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strndup-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strndup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/server/$(DEPDIR)/basic-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/server/$(DEPDIR)/errors-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/tap/$(DEPDIR)/basic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/tap/$(DEPDIR)/lbcd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/tap/$(DEPDIR)/process.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/tap/$(DEPDIR)/string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/fakewrite.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/fdflag-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/messages-t.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/network-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/vector-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/xmalloc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/xwrite-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/util/$(DEPDIR)/xwrite.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/util/network/$(DEPDIR)/addr-ipv4-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/util/network/$(DEPDIR)/addr-ipv6-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/util/network/$(DEPDIR)/client-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/util/network/$(DEPDIR)/server-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@util/$(DEPDIR)/fdflag.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@util/$(DEPDIR)/messages.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@util/$(DEPDIR)/network.Po@am__quote@
@@ -1140,6 +1312,104 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+server/server_lbcd-get_user.o: server/get_user.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-get_user.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-get_user.Tpo -c -o server/server_lbcd-get_user.o `test -f 'server/get_user.c' || echo '$(srcdir)/'`server/get_user.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-get_user.Tpo server/$(DEPDIR)/server_lbcd-get_user.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/get_user.c' object='server/server_lbcd-get_user.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-get_user.o `test -f 'server/get_user.c' || echo '$(srcdir)/'`server/get_user.c
+
+server/server_lbcd-get_user.obj: server/get_user.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-get_user.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-get_user.Tpo -c -o server/server_lbcd-get_user.obj `if test -f 'server/get_user.c'; then $(CYGPATH_W) 'server/get_user.c'; else $(CYGPATH_W) '$(srcdir)/server/get_user.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-get_user.Tpo server/$(DEPDIR)/server_lbcd-get_user.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/get_user.c' object='server/server_lbcd-get_user.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-get_user.obj `if test -f 'server/get_user.c'; then $(CYGPATH_W) 'server/get_user.c'; else $(CYGPATH_W) '$(srcdir)/server/get_user.c'; fi`
+
+server/server_lbcd-kernel.o: server/kernel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-kernel.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-kernel.Tpo -c -o server/server_lbcd-kernel.o `test -f 'server/kernel.c' || echo '$(srcdir)/'`server/kernel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-kernel.Tpo server/$(DEPDIR)/server_lbcd-kernel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/kernel.c' object='server/server_lbcd-kernel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-kernel.o `test -f 'server/kernel.c' || echo '$(srcdir)/'`server/kernel.c
+
+server/server_lbcd-kernel.obj: server/kernel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-kernel.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-kernel.Tpo -c -o server/server_lbcd-kernel.obj `if test -f 'server/kernel.c'; then $(CYGPATH_W) 'server/kernel.c'; else $(CYGPATH_W) '$(srcdir)/server/kernel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-kernel.Tpo server/$(DEPDIR)/server_lbcd-kernel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/kernel.c' object='server/server_lbcd-kernel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-kernel.obj `if test -f 'server/kernel.c'; then $(CYGPATH_W) 'server/kernel.c'; else $(CYGPATH_W) '$(srcdir)/server/kernel.c'; fi`
+
+server/server_lbcd-lbcd.o: server/lbcd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-lbcd.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-lbcd.Tpo -c -o server/server_lbcd-lbcd.o `test -f 'server/lbcd.c' || echo '$(srcdir)/'`server/lbcd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-lbcd.Tpo server/$(DEPDIR)/server_lbcd-lbcd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/lbcd.c' object='server/server_lbcd-lbcd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-lbcd.o `test -f 'server/lbcd.c' || echo '$(srcdir)/'`server/lbcd.c
+
+server/server_lbcd-lbcd.obj: server/lbcd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-lbcd.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-lbcd.Tpo -c -o server/server_lbcd-lbcd.obj `if test -f 'server/lbcd.c'; then $(CYGPATH_W) 'server/lbcd.c'; else $(CYGPATH_W) '$(srcdir)/server/lbcd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-lbcd.Tpo server/$(DEPDIR)/server_lbcd-lbcd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/lbcd.c' object='server/server_lbcd-lbcd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-lbcd.obj `if test -f 'server/lbcd.c'; then $(CYGPATH_W) 'server/lbcd.c'; else $(CYGPATH_W) '$(srcdir)/server/lbcd.c'; fi`
+
+server/server_lbcd-load.o: server/load.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-load.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-load.Tpo -c -o server/server_lbcd-load.o `test -f 'server/load.c' || echo '$(srcdir)/'`server/load.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-load.Tpo server/$(DEPDIR)/server_lbcd-load.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/load.c' object='server/server_lbcd-load.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-load.o `test -f 'server/load.c' || echo '$(srcdir)/'`server/load.c
+
+server/server_lbcd-load.obj: server/load.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-load.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-load.Tpo -c -o server/server_lbcd-load.obj `if test -f 'server/load.c'; then $(CYGPATH_W) 'server/load.c'; else $(CYGPATH_W) '$(srcdir)/server/load.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-load.Tpo server/$(DEPDIR)/server_lbcd-load.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/load.c' object='server/server_lbcd-load.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-load.obj `if test -f 'server/load.c'; then $(CYGPATH_W) 'server/load.c'; else $(CYGPATH_W) '$(srcdir)/server/load.c'; fi`
+
+server/server_lbcd-server.o: server/server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-server.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-server.Tpo -c -o server/server_lbcd-server.o `test -f 'server/server.c' || echo '$(srcdir)/'`server/server.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-server.Tpo server/$(DEPDIR)/server_lbcd-server.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/server.c' object='server/server_lbcd-server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-server.o `test -f 'server/server.c' || echo '$(srcdir)/'`server/server.c
+
+server/server_lbcd-server.obj: server/server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-server.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-server.Tpo -c -o server/server_lbcd-server.obj `if test -f 'server/server.c'; then $(CYGPATH_W) 'server/server.c'; else $(CYGPATH_W) '$(srcdir)/server/server.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-server.Tpo server/$(DEPDIR)/server_lbcd-server.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/server.c' object='server/server_lbcd-server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-server.obj `if test -f 'server/server.c'; then $(CYGPATH_W) 'server/server.c'; else $(CYGPATH_W) '$(srcdir)/server/server.c'; fi`
+
+server/server_lbcd-tmp_full.o: server/tmp_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-tmp_full.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-tmp_full.Tpo -c -o server/server_lbcd-tmp_full.o `test -f 'server/tmp_full.c' || echo '$(srcdir)/'`server/tmp_full.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-tmp_full.Tpo server/$(DEPDIR)/server_lbcd-tmp_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/tmp_full.c' object='server/server_lbcd-tmp_full.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-tmp_full.o `test -f 'server/tmp_full.c' || echo '$(srcdir)/'`server/tmp_full.c
+
+server/server_lbcd-tmp_full.obj: server/tmp_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-tmp_full.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-tmp_full.Tpo -c -o server/server_lbcd-tmp_full.obj `if test -f 'server/tmp_full.c'; then $(CYGPATH_W) 'server/tmp_full.c'; else $(CYGPATH_W) '$(srcdir)/server/tmp_full.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-tmp_full.Tpo server/$(DEPDIR)/server_lbcd-tmp_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/tmp_full.c' object='server/server_lbcd-tmp_full.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-tmp_full.obj `if test -f 'server/tmp_full.c'; then $(CYGPATH_W) 'server/tmp_full.c'; else $(CYGPATH_W) '$(srcdir)/server/tmp_full.c'; fi`
+
+server/server_lbcd-weight.o: server/weight.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-weight.o -MD -MP -MF server/$(DEPDIR)/server_lbcd-weight.Tpo -c -o server/server_lbcd-weight.o `test -f 'server/weight.c' || echo '$(srcdir)/'`server/weight.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-weight.Tpo server/$(DEPDIR)/server_lbcd-weight.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/weight.c' object='server/server_lbcd-weight.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-weight.o `test -f 'server/weight.c' || echo '$(srcdir)/'`server/weight.c
+
+server/server_lbcd-weight.obj: server/weight.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT server/server_lbcd-weight.obj -MD -MP -MF server/$(DEPDIR)/server_lbcd-weight.Tpo -c -o server/server_lbcd-weight.obj `if test -f 'server/weight.c'; then $(CYGPATH_W) 'server/weight.c'; else $(CYGPATH_W) '$(srcdir)/server/weight.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) server/$(DEPDIR)/server_lbcd-weight.Tpo server/$(DEPDIR)/server_lbcd-weight.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='server/weight.c' object='server/server_lbcd-weight.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_lbcd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o server/server_lbcd-weight.obj `if test -f 'server/weight.c'; then $(CYGPATH_W) 'server/weight.c'; else $(CYGPATH_W) '$(srcdir)/server/weight.c'; fi`
 
 tests/tests_runtests-runtests.o: tests/runtests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_runtests_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/tests_runtests-runtests.o -MD -MP -MF tests/$(DEPDIR)/tests_runtests-runtests.Tpo -c -o tests/tests_runtests-runtests.o `test -f 'tests/runtests.c' || echo '$(srcdir)/'`tests/runtests.c
@@ -1240,6 +1510,27 @@ uninstall-man8:
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^8][0-9a-z]*$$,8,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
 	dir='$(DESTDIR)$(man8dir)'; $(am__uninstall_files_from_dir)
+install-systemdsystemunitDATA: $(systemdsystemunit_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(systemdsystemunit_DATA)'; test -n "$(systemdsystemunitdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(systemdsystemunitdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(systemdsystemunitdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(systemdsystemunitdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(systemdsystemunitdir)" || exit $$?; \
+	done
+
+uninstall-systemdsystemunitDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(systemdsystemunit_DATA)'; test -n "$(systemdsystemunitdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(systemdsystemunitdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -1471,9 +1762,10 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_LIBRARIES) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(MANS) config.h
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA) \
+		config.h
 installdirs:
-	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man8dir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man8dir)" "$(DESTDIR)$(systemdsystemunitdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1508,14 +1800,20 @@ distclean-generic:
 	-rm -f modules/$(am__dirstamp)
 	-rm -f portable/$(DEPDIR)/$(am__dirstamp)
 	-rm -f portable/$(am__dirstamp)
+	-rm -f server/$(DEPDIR)/$(am__dirstamp)
+	-rm -f server/$(am__dirstamp)
 	-rm -f tests/$(DEPDIR)/$(am__dirstamp)
 	-rm -f tests/$(am__dirstamp)
 	-rm -f tests/portable/$(DEPDIR)/$(am__dirstamp)
 	-rm -f tests/portable/$(am__dirstamp)
+	-rm -f tests/server/$(DEPDIR)/$(am__dirstamp)
+	-rm -f tests/server/$(am__dirstamp)
 	-rm -f tests/tap/$(DEPDIR)/$(am__dirstamp)
 	-rm -f tests/tap/$(am__dirstamp)
 	-rm -f tests/util/$(DEPDIR)/$(am__dirstamp)
 	-rm -f tests/util/$(am__dirstamp)
+	-rm -f tests/util/network/$(DEPDIR)/$(am__dirstamp)
+	-rm -f tests/util/network/$(am__dirstamp)
 	-rm -f util/$(DEPDIR)/$(am__dirstamp)
 	-rm -f util/$(am__dirstamp)
 
@@ -1530,7 +1828,7 @@ clean-am: clean-checkLIBRARIES clean-checkPROGRAMS clean-generic \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) modules/$(DEPDIR) portable/$(DEPDIR) tests/$(DEPDIR) tests/portable/$(DEPDIR) tests/tap/$(DEPDIR) tests/util/$(DEPDIR) util/$(DEPDIR)
+	-rm -rf modules/$(DEPDIR) portable/$(DEPDIR) server/$(DEPDIR) tests/$(DEPDIR) tests/portable/$(DEPDIR) tests/server/$(DEPDIR) tests/tap/$(DEPDIR) tests/util/$(DEPDIR) tests/util/network/$(DEPDIR) util/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -1547,7 +1845,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-man
+install-data-am: install-man install-systemdsystemunitDATA
 
 install-dvi: install-dvi-am
 
@@ -1578,7 +1876,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) modules/$(DEPDIR) portable/$(DEPDIR) tests/$(DEPDIR) tests/portable/$(DEPDIR) tests/tap/$(DEPDIR) tests/util/$(DEPDIR) util/$(DEPDIR)
+	-rm -rf modules/$(DEPDIR) portable/$(DEPDIR) server/$(DEPDIR) tests/$(DEPDIR) tests/portable/$(DEPDIR) tests/server/$(DEPDIR) tests/tap/$(DEPDIR) tests/util/$(DEPDIR) tests/util/network/$(DEPDIR) util/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1595,7 +1893,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-dist_binSCRIPTS uninstall-man \
-	uninstall-sbinPROGRAMS
+	uninstall-sbinPROGRAMS uninstall-systemdsystemunitDATA
 
 uninstall-man: uninstall-man1 uninstall-man8
 
@@ -1614,17 +1912,26 @@ uninstall-man: uninstall-man1 uninstall-man8
 	install-exec install-exec-am install-html install-html-am \
 	install-info install-info-am install-man install-man1 \
 	install-man8 install-pdf install-pdf-am install-ps \
-	install-ps-am install-sbinPROGRAMS install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-dist_binSCRIPTS uninstall-man \
-	uninstall-man1 uninstall-man8 uninstall-sbinPROGRAMS
+	install-ps-am install-sbinPROGRAMS install-strip \
+	install-systemdsystemunitDATA installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-dist_binSCRIPTS uninstall-man uninstall-man1 \
+	uninstall-man8 uninstall-sbinPROGRAMS \
+	uninstall-systemdsystemunitDATA
 
 
-lbcd.8: $(srcdir)/lbcd.8.in
+# Substitute the installation paths into the systemd unit file.
+systemd/lbcd.service: $(srcdir)/systemd/lbcd.service.in
+	mkdir -p systemd
+	sed -e 's![@]sbindir[@]!$(sbindir)!g' \
+	    $(srcdir)/systemd/lbcd.service.in > $@
+
+# Substitute the system configuration path into the manual page.
+server/lbcd.8: $(srcdir)/server/lbcd.8.in
 	sed 's%\(\\f(CI\)*\@sysconfdir\(\\fI\)*\@%$(sysconfdir)%' \
-	    < $(srcdir)/lbcd.8.in > $@
+	    < $(srcdir)/server/lbcd.8.in > $@
 
 warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)'
@@ -1632,6 +1939,19 @@ warnings:
 
 check-local: $(check_PROGRAMS)
 	cd tests && ./runtests -l $(abs_top_srcdir)/tests/TESTS
+
+# Used by maintainers to run the main test suite under valgrind.  Suppress
+# the xmalloc and pod-spelling tests because the former won't work properly
+# under valgrind (due to increased memory usage) and the latter is pointless
+# to run under valgrind.
+check-valgrind: $(check_PROGRAMS)
+	rm -rf $(abs_top_builddir)/tmp-valgrind
+	mkdir $(abs_top_builddir)/tmp-valgrind
+	env RRA_MAINTAINER_TESTS= valgrind --leak-check=full	\
+	    --show-reachable=yes --trace-children=yes		\
+	    --log-file=$(abs_top_builddir)/tmp-valgrind/log.%p	\
+	    --trace-children-skip="/bin/sh,*/cat,*/diff,*/expr,*/grep,*/mkdir,*/rm,*/rmdir,*/sed,*/sleep,*/true,*/wc,*/docs/*-t,*/perl/*-t" \
+	    tests/runtests -l '$(abs_top_srcdir)/tests/TESTS'
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

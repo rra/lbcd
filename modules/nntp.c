@@ -11,7 +11,7 @@
 #include <config.h>
 #include <portable/system.h>
 
-#include <internal.h>
+#include <server/internal.h>
 #include <modules/modules.h>
 #include <util/macros.h>
 
