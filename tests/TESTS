@@ -1,5 +1,8 @@
 docs/pod
 docs/pod-spelling
+perl/critic
+perl/minimum-version
+perl/strict
 portable/asprintf
 portable/daemon
 portable/getaddrinfo
@@ -11,9 +14,14 @@ portable/snprintf
 portable/strlcat
 portable/strlcpy
 portable/strndup
+server/basic
+server/errors
 util/fdflag
 util/messages
-util/network
+util/network/addr-ipv4
+util/network/addr-ipv6
+util/network/client
+util/network/server
 util/vector
 util/xmalloc
 util/xwrite

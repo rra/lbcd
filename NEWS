@@ -1,5 +1,85 @@
                         User-Visible lbcd Changes
 
+lbcd 3.5.0 (2013-12-28)
+
+    lbcd no longer allows the client to request probes of arbitrary
+    supported services.  Instead, specify the services lbcd should allow
+    to be queried with the -a option, which can be given multiple times.
+    Querying any service not listed with an -a option will result in an
+    error reply.
+
+    Drop support for lbcd -s, to stop a running daemon, and lbcd -r, to
+    restart a running daemon.  This sort of daemon management is best done
+    via a system framework, whether init scripts, upstart, or systemd.
+
+    lbcd no longer writes its PID file to /var/run/lbcd.pid by default.
+    The -P option, specifying where to write a PID file, is still
+    supported, but unless it is given, lbcd does not write out a PID file.
+    lbcd also now removes any PID file it creates on exit.
+
+    lbcdclient has been rewritten.  The output format is now completely
+    different and more human-readable.  The timeout and port are
+    configurable on the command line, and the option parsing now supports
+    long options.  The command no longer takes a list of multiple servers
+    to query, and exits with an error message if it cannot reach a server
+    within the timeout.  lbcdclient supports IPv6 if the IO::Socket::INET6
+    Perl module is installed.
+
+    lbcd supports a new -f option, which runs the daemon in the foreground
+    (as preferred by modern init systems) but still logs to syslog, unlike
+    the existing -d option which also moves logging to standard output and
+    standard error.
+
+    Implement lbcd -l, which now logs to syslog each incoming client
+    request and its protocol version.
+
+    lbcd now ignores SIGHUP instead of exiting.  SIGHUP is conventionally
+    used to tell a daemon to reload its configuration, and lbcd has no
+    configuration and therefore trivially satisfies this, so ignoring the
+    signal seems like the most consistent approach.  Use SIGTERM to tell
+    the daemon to exit.
+
+    lbcd now supports IPv6.  The bind address given with -b may be an IPv6
+    address, and by default it listens to both IPv4 and IPv6 addresses on
+    hosts that support IPv6.  The -b option can now be given multiple
+    times to bind to multiple addresses.
+
+    lbcd now considers a user to be on console if any user is logged in
+    from an "address" that starts with ":0".  Modern Linux systems with a
+    display manager will show console users this way rather than logins to
+    tty1 or console.
+
+    Add support for systemd.  If built on a system with systemd installed,
+    lbcd will install (but not enable) systemd units to start lbcd via
+    socket activation.  lbcd will also notify systemd when its
+    initialization is complete if started by systemd with service
+    notification enabled.  Distributors are encouraged to modify the
+    provided lbcd.service file to set User and Group to a separate user
+    and group created for that purpose, although this is not done in the
+    default unit files due to the difficulty with creating users portably.
+
+    Add support for upstart's expect stop daemon synchronization method.
+    When starting lbcd with upstart, pass the new -Z option to lbcd, and
+    it will raise SIGSTOP when ready to accept connections, signaling to
+    upstart that the daemon has fully started.
+
+    Fix source typo that prevented compilation on Mac OS X.  (It is
+    probably obvious that the developer doesn't have access to Mac OS X
+    systems to test compilation....)
+
+    Update to rra-c-util 5.0:
+
+    * The network_bind_* functions now take a socket type.
+    * Improved error handling from network_bind_* functions.
+    * New network_wait_any function to wait on a set of file descriptors.
+    * vector_free and cvector_free now can take NULL pointers.
+    * New TAP add-on to spawn background processes.
+    * Update warning flags to gcc 4.7.2.
+
+    Update to C TAP Harness 2.4:
+
+    * Add new diag_file_add and _remove API to the C TAP library.
+
 lbcd 3.4.2 (2013-12-17)
 
     Support getutxent and use it in preference to getutent, falling back

@@ -8,7 +8,7 @@ dnl
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.64])
-AC_INIT([lbcd], [3.4.2], [eagle@eyrie.org])
+AC_INIT([lbcd], [3.5.0], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
@@ -24,6 +24,9 @@ AM_PROG_AR
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl Support installation of systemd unit files.
+RRA_WITH_SYSTEMD_UNITDIR
+
 dnl Probes for networking libraries.
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([socket], [socket], ,
@@ -36,6 +39,9 @@ AC_SEARCH_LIBS([kstat_open], [kstat])
 AC_CHECK_LIB([mld], [main], [LIBS="$LIBS -lmld"])
 AC_SEARCH_LIBS([nlist], [elf])
 
+dnl Probes for general support libraries.
+RRA_LIB_SYSTEMD_DAEMON_OPTIONAL
+
 dnl General C library probes.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([search.h sys/bittypes.h sys/filio.h sys/select.h \
@@ -47,11 +53,14 @@ AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_CHECK_TYPES([sig_atomic_t], [], [],
+    [#include <sys/types.h>
+     #include <signal.h>])
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
 AC_CHECK_FUNCS([getutent getutxent hsearch setrlimit setsid statvfs])
-AC_REPLACE_FUNCS([asprintf daemon strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([asprintf daemon mkstemp strlcat strlcpy strndup])
 
 dnl Additional probes for networking portability and IPv6.
 AC_CHECK_DECLS([h_errno], [], [], [#include <netdb.h>])

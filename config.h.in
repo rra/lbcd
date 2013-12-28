@@ -74,8 +74,14 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `mkstemp' function. */
+#undef HAVE_MKSTEMP
+
 /* Define if <sys/socket.h> defines the SA_LEN macro. */
 #undef HAVE_SA_LEN
+
+/* Define if sd_notify is available. */
+#undef HAVE_SD_NOTIFY
 
 /* Define to 1 if you have the <search.h> header file. */
 #undef HAVE_SEARCH_H
@@ -85,6 +91,9 @@
 
 /* Define to 1 if you have the `setsid' function. */
 #undef HAVE_SETSID
+
+/* Define to 1 if the system has the type `sig_atomic_t'. */
+#undef HAVE_SIG_ATOMIC_T
 
 /* Define if your system has a working snprintf function. */
 #undef HAVE_SNPRINTF
