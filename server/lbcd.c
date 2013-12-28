@@ -354,6 +354,7 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
         *fds = xcalloc(status, sizeof(socket_type));
         for (i = 0; i < (size_t) status; i++)
             (*fds)[i] = SD_LISTEN_FDS_START + i;
+        *count = status;
         return;
     }
 
