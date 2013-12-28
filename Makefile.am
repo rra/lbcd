@@ -10,7 +10,8 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = .gitignore LICENSE autogen server/arch/aix.c server/arch/bsd.c \
 	server/arch/darwin.c server/arch/hpux10.c server/arch/hpux9.c	    \
 	server/arch/irix.c server/arch/linux.c server/arch/osf.c	    \
-	server/arch/solaris.c server/lbcd.8.in server/lbcd.pod tests/README \
+	server/arch/solaris.c server/lbcd.8.in server/lbcd.pod		    \
+	systemd/lbcd.service.in systemd/lbcd.socket tests/README	    \
 	tests/TESTS tests/data/perl.conf tests/data/perlcriticrc	    \
 	tests/data/perltidyrc tests/docs/pod-spelling-t tests/docs/pod-t    \
 	tests/perl/critic-t tests/perl/minimum-version-t		    \
@@ -26,9 +27,9 @@ DISTCHECK_CONFIGURE_FLAGS = \
 # Supporting convenience libraries used by other targets.
 noinst_LIBRARIES = modules/libmodules.a portable/libportable.a util/libutil.a
 portable_libportable_a_SOURCES = portable/dummy.c portable/getaddrinfo.h \
-        portable/getnameinfo.h portable/macros.h portable/socket.h	 \
-        portable/statvfs.h portable/stdbool.h portable/system.h		 \
-        portable/uio.h
+	portable/getnameinfo.h portable/macros.h portable/sd-daemon.h	 \
+	portable/socket.h portable/statvfs.h portable/stdbool.h		 \
+	portable/system.h portable/uio.h
 portable_libportable_a_LIBADD = $(LIBOBJS)
 modules_libmodules_a_SOURCES = modules/check_reply.c modules/ftp.c	 \
 	modules/http.c modules/imap.c modules/ldap.c modules/modules.h	 \
