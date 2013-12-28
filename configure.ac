@@ -53,6 +53,9 @@ AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_CHECK_TYPES([sig_atomic_t], [], [],
+    [#include <sys/types.h>
+     #include <signal.h>])
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF

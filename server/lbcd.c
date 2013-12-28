@@ -22,10 +22,14 @@
 #include <syslog.h>
 
 #include <server/internal.h>
+#include <util/macros.h>
 #include <util/messages.h>
 #include <util/network.h>
 #include <util/vector.h>
 #include <util/xmalloc.h>
+
+/* Flag indicating whether we've received a signal asking us to exit. */
+static volatile sig_atomic_t exit_signaled = 0;
 
 /* The usage message. */
 const char usage_message[] = "\
@@ -94,6 +98,18 @@ version(void)
 {
     printf("lbcd protocol %d version %s\n", LBCD_VERSION, PACKAGE_VERSION);
     exit(0);
+}
+
+
+/*
+ * Signal handler for signals asking for a clean shutdown.  Set the
+ * exit_signaled global so that we exit cleanly the next time through the
+ * processing loop.
+ */
+static void
+exit_handler(int sig UNUSED)
+{
+    exit_signaled = 1;
 }
 
 
@@ -385,14 +401,15 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
 
 
 /*
- * Set up our network connection and handle incoming requests.
+ * Set up our network connection and handle incoming requests.  This function
+ * loops until we receive a signal telling us to exit, and then returns.
  */
 static void
 handle_requests(struct lbcd_config *config)
 {
     int status;
     socket_type *fds;
-    unsigned int count;
+    unsigned int count, i;
     FILE *pid;
     struct sigaction sa;
 
@@ -405,6 +422,13 @@ handle_requests(struct lbcd_config *config)
     sa.sa_handler = SIG_IGN;
     if (sigaction(SIGHUP, &sa, NULL) < 0)
         syswarn("cannot set SIGHUP handler");
+
+    /* Set up exit handlers for signals that call for a clean shutdown. */
+    sa.sa_handler = exit_handler;
+    if (sigaction(SIGINT, &sa, NULL) < 0)
+        syswarn("cannot set SIGINT handler");
+    if (sigaction(SIGTERM, &sa, NULL) < 0)
+        syswarn("cannot set SIGTERM handler");
 
     /* Open UDP socket. */
     bind_socket(config, &fds, &count);
@@ -436,10 +460,23 @@ handle_requests(struct lbcd_config *config)
         socket_type fd;
         struct request *request;
 
-        /* Wait for an incoming message to one of our bound sockets. */
+        /* If an exit was signaled, log a message and exit the loop. */
+        if (exit_signaled) {
+            notice("signal received, exiting");
+            break;
+        }
+
+        /*
+         * Wait for an incoming message to one of our bound sockets.  If we
+         * get a signal, restart at the beginning of the loop, which will
+         * then break out of the loop if we were signaled to exit.
+         */
         fd = network_wait_any(fds, count);
-        if (fd == INVALID_SOCKET)
-            sysdie("cannot wait for incoming connections");
+        if (fd == INVALID_SOCKET) {
+            if (errno != EINTR)
+                sysdie("cannot wait for incoming connections");
+            continue;
+        }
 
         /* Accept and process the message. */
         request = request_recv(config, fd);
@@ -457,6 +494,13 @@ handle_requests(struct lbcd_config *config)
         }
         request_free(request);
     }
+
+    /* Signaled to exit.  Free our resources and remove our PID file. */
+    if (config->pid_file != NULL)
+        unlink(config->pid_file);
+    for (i = 0; i < count; i++)
+        close(fds[i]);
+    free(fds);
 }
 
 
@@ -585,7 +629,16 @@ main(int argc, char **argv)
         message_handlers_die(1, message_log_syslog_err);
     }
 
-    /* Become a daemon.  handle_requests never returns. */
+    /* Become a daemon.  handle_requests only returns when signaled. */
     handle_requests(&config);
+
+    /*
+     * Free resources.  This really isn't necessary, but it means that we can
+     * test lbcd under valgrind with aggressive memory leak checking and be
+     * sure that we've caught all leaks, since sometimes reachable memory is
+     * actually a leak.
+     */
+    vector_free(config.bindaddrs);
+    vector_free(config.services);
     return 0;
 }

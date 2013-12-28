@@ -1,7 +1,7 @@
 =for stopwords
 lbcd -dfhlRtZ UDP DNS-based balancer lbnamed lbnamed's iptables IP
 Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT SIGCONT
-SIGSTOP daemontools runit systemd queryable
+SIGSTOP daemontools runit systemd queryable SIGTERM SIGINT
 
 =head1 NAME
 
@@ -162,7 +162,8 @@ LOG_INFO priority.
 
 =item B<-P> I<file>
 
-Store the PID of the running daemon in I<file>.
+Store the PID of the running daemon in I<file>.  I<file> will be deleted
+when B<lbcd> exits normally (via a SIGTERM or SIGINT signal).
 
 =item B<-p> I<port>
 
