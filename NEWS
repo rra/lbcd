@@ -16,6 +16,14 @@ lbcd 3.5.0 (unreleased)
     The -P option, specifying where to write a PID file, is still
     supported, but unless it is given, lbcd does not write out a PID file.
 
+    lbcdclient has been rewritten.  The output format is now completely
+    different and more human-readable.  The timeout and port are
+    configurable on the command line, and the option parsing now supports
+    long options.  The command no longer takes a list of multiple servers
+    to query, and exits with an error message if it cannot reach a server
+    within the timeout.  lbcdclient supports IPv6 if the IO::Socket::INET6
+    Perl module is installed.
+
     lbcd supports a new -f option, which runs the daemon in the foreground
     (as preferred by modern init systems) but still logs to syslog, unlike
     the existing -d option which also moves logging to standard output and
@@ -29,14 +37,6 @@ lbcd 3.5.0 (unreleased)
     configuration and therefore trivially satisfies this, so ignoring the
     signal seems like the most consistent approach.  Use SIGTERM to tell
     the daemon to exit.
-
-    lbcdclient has been rewritten.  The output format is now completely
-    different and more human-readable.  The timeout and port are
-    configurable on the command line, and the option parsing now supports
-    long options.  The command no longer takes a list of multiple servers
-    to query, and exits with an error message if it cannot reach a server
-    within the timeout.  lbcdclient supports IPv6 if the IO::Socket::INET6
-    Perl module is installed.
 
     lbcd now supports IPv6.  The bind address given with -b may be an IPv6
     address, and by default it listens to both IPv4 and IPv6 addresses on
