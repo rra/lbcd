@@ -37,6 +37,11 @@ lbcd (3.5.0-1) UNRELEASED; urgency=low
     will disable daemon startup in systemd and sysvinit.  upstart users
     will need to manually disable the daemon since the update-rc.d disable
     interface currently doesn't support upstart.
+  * systemd and upstart are now supported with native service
+    configuration.  Socket activation is used on systems running systemd.
+    Continue to use DAEMON_OPTS in /etc/default/lbcd to configure the
+    behavior of lbcd for the time being to ensure compatibility between
+    the init systems and a clean upgrade path.
 
  -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
 

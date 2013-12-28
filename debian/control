@@ -3,7 +3,8 @@ Section: net
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Guido Guenther <agx@sigxcpu.org>
-Build-Depends: debhelper (>= 9), dh-autoreconf, libtest-pod-perl
+Build-Depends: debhelper (>= 9), dh-autoreconf, dh-systemd,
+ libtest-pod-perl
 Standards-Version: 3.9.5
 Homepage: http://www.eyrie.org/~eagle/software/lbcd/
 Vcs-Git: git://git.eyrie.org/system/lbcd.git -b debian
