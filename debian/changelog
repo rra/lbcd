@@ -1,3 +1,34 @@
+lbcd (3.5.0-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - lbcd no longer allows the client to ask for arbitrary supported
+      service probes.  Instead, all services for which probes should be
+      permitted must be explicitly specified with the -a option, which can
+      be set in /etc/default/lbcd in DAEMON_ARGS.
+    - lbcd -s and -r to stop and restart lbcd have been dropped.
+    - lbcd no longer writes a PID file by default.  This is handled by the
+      Debian init script already.
+    - lbcd removes its PID file on exit if it wrote one.
+    - lbcdclient has been completely rewritten in modern Perl and now
+      supports IPv6 queries.  The output format is entirely different and
+      should be more readable.  It no longer takes multiple servers to
+      query, supports long options, supports configuring the timeout and
+      port, and exits with an error if it cannot reach a server within the
+      timeout period.
+    - lbcd supports a new -f option to run in the foreground while still
+      logging to syslog.
+    - lbcd -l now behaves as intended and logs each client request.
+    - lbcd now ignores SIGHUP (since there's no configuration to reload)
+      and exits cleanly on SIGTERM and SIGINT.
+    - lbcd now supports IPv6 and multiple bind addresses (the -b option).
+    - lbcd now considers there to be a user on console if any of the users
+      come from an "address" that starts with ":0".
+    - systemd socket activation and synchronization support has been
+      added, as has a -Z option to raise SIGSTOP for upstart
+      synchronization.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
+
 lbcd (3.4.2-1) unstable; urgency=medium
 
   * New upstream release.

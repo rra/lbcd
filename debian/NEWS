@@ -1,0 +1,10 @@
+lbcd (3.5.0-1) unstable; urgency=low
+
+  lbcd no longer allows the client to ask for arbitrary supported service
+  probes.  Instead, all services that a client may query must be
+  explicitly allowed with -a command-line options (set in DAEMON_ARGS in
+  /etc/default/lbcd).  This only applies to version three queries.
+  lbnamed only uses version two queries and is not affected.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:24:22 -0800
+
