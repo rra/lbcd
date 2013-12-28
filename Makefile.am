@@ -100,16 +100,17 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/portable/asprintf-t		\
-	tests/portable/daemon-t tests/portable/getaddrinfo-t		\
-	tests/portable/getnameinfo-t tests/portable/inet_aton-t		\
-	tests/portable/inet_ntoa-t tests/portable/inet_ntop-t		\
-	tests/portable/snprintf-t tests/portable/strlcat-t		\
-	tests/portable/strlcpy-t tests/portable/strndup-t		\
-	tests/server/basic-t tests/util/fdflag-t tests/util/messages-t	\
-	tests/util/network/addr-ipv4-t tests/util/network/addr-ipv6-t	\
-	tests/util/network/client-t tests/util/network/server-t		\
-	tests/util/vector-t tests/util/xmalloc tests/util/xwrite-t
+check_PROGRAMS = tests/runtests tests/portable/asprintf-t		   \
+	tests/portable/daemon-t tests/portable/getaddrinfo-t		   \
+	tests/portable/getnameinfo-t tests/portable/inet_aton-t		   \
+	tests/portable/inet_ntoa-t tests/portable/inet_ntop-t		   \
+	tests/portable/snprintf-t tests/portable/strlcat-t		   \
+	tests/portable/strlcpy-t tests/portable/strndup-t		   \
+	tests/server/basic-t tests/server/errors-t tests/util/fdflag-t	   \
+	tests/util/messages-t tests/util/network/addr-ipv4-t		   \
+	tests/util/network/addr-ipv6-t tests/util/network/client-t	   \
+	tests/util/network/server-t tests/util/vector-t tests/util/xmalloc \
+	tests/util/xwrite-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
         -DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/tap/libtap.a
@@ -154,6 +155,8 @@ tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
 	tests/portable/strndup.c
 tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.a
 tests_server_basic_t_LDADD = tests/tap/libtap.a util/libutil.a \
+	portable/libportable.a
+tests_server_errors_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
 tests_util_fdflag_t_LDADD = tests/tap/libtap.a util/libutil.a \
 	portable/libportable.a
