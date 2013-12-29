@@ -1,3 +1,9 @@
+lbcd (3.5.0-3) unstable; urgency=low
+
+  * Restrict the libsystemd-daemon-dev build dependency to linux-any.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 18:25:30 -0800
+
 lbcd (3.5.0-2) unstable; urgency=low
 
   * Patch the upstream-provided service unit to set user and group to
