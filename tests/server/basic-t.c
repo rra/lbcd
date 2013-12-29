@@ -61,7 +61,7 @@ is_sane_reply(struct lbcd_request *request, struct lbcd_reply *reply,
        "...boot time before the current time");
     ok(labs((time_t) ntohl(reply->current_time) - now) < 2,
        "...current time within two seconds");
-    ok((time_t) ntohl(reply->user_mtime) > 0,
+    ok((time_t) ntohl(reply->user_mtime) >= 0,
        "...user mtime later than 1970-01-01");
     ok((time_t) ntohl(reply->user_mtime) < now,
        "...user mtime before the current time");
