@@ -1,0 +1,32 @@
+From: Russ Allbery <eagle@eyrie.org>
+Date: Sat, 28 Dec 2013 21:36:30 -0800
+Subject: Fix systemd unit errors, service type
+
+Switch the lbcd systemd unit to Type=simple and add lbcd.socket to
+Also so that the two are linked.  There's no need to use notify for
+lbcd since the only resource it needs to set up is its socket, which
+socket activation handles.  Also fix a typo in the WantedBy field.
+---
+ systemd/lbcd.service.in | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/systemd/lbcd.service.in b/systemd/lbcd.service.in
+index bf62b8c..392544b 100644
+--- a/systemd/lbcd.service.in
++++ b/systemd/lbcd.service.in
+@@ -6,7 +6,7 @@ Documentation=man:lbcd(8)
+ Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+ 
+ [Service]
+-Type=notify
++Type=simple
+ NotifyAccess=main
+ Restart=always
+ User=lbcd
+@@ -19,4 +19,5 @@ EnvironmentFile=-/etc/default/lbcd
+ ExecStart=@sbindir@/lbcd -f -l $DAEMON_OPTS
+ 
+ [Install]
+-WantedBy=mutli-user.target
++Also=lbcd.socket
++WantedBy=multi-user.target

@@ -1,1 +1,2 @@
 0001-Set-user-and-group-in-service-unit.patch
+0002-Fix-systemd-unit-errors-service-type.patch
