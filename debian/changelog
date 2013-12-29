@@ -1,4 +1,4 @@
-lbcd (3.5.0-4) UNRELEASED; urgency=low
+lbcd (3.5.0-4) unstable; urgency=low
 
   * Switch the lbcd systemd configuration to Type=simple.  There's no need
     for startup notification for this service when using socket
@@ -11,7 +11,7 @@ lbcd (3.5.0-4) UNRELEASED; urgency=low
     disabled service on upstart.  Add a dependency on sysv-rc 2.88dsf-45
     or later, which added update-rc.d disable support for upstart.
 
- -- Russ Allbery <rra@debian.org>  Sun, 29 Dec 2013 12:55:36 -0800
+ -- Russ Allbery <rra@debian.org>  Sun, 29 Dec 2013 12:56:35 -0800
 
 lbcd (3.5.0-3) unstable; urgency=low
 
