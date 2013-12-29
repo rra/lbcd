@@ -1,8 +1,10 @@
 lbcd (3.5.0-3) unstable; urgency=low
 
   * Restrict the libsystemd-daemon-dev build dependency to linux-any.
+  * Remove one unnecessary Lintian override about redirecting update-rc.d
+    output.
 
- -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 18:25:30 -0800
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 19:58:45 -0800
 
 lbcd (3.5.0-2) unstable; urgency=low
 
