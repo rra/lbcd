@@ -3,8 +3,9 @@ lbcd (3.5.0-2) unstable; urgency=low
   * Patch the upstream-provided service unit to set user and group to
     lbcd.  Upstream's unit file cannot assume any particular user exists,
     so this has to be handled in distribution packaging.
+  * Add setuid and setgid directives to the upstart configuration.
 
- -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 17:39:27 -0800
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 17:42:16 -0800
 
 lbcd (3.5.0-1) unstable; urgency=low
 

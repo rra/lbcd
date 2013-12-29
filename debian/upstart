@@ -7,6 +7,8 @@ stop on runlevel [!2345]
 
 respawn
 expect stop
+setuid lbcd
+setgid lbcd
 
 pre-start script
     test -x /usr/sbin/lbcd || { stop; exit 0; }
