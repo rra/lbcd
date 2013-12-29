@@ -4,6 +4,7 @@
 Description=responder for load balancing
 Documentation=man:lbcd(8)
 Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+Requires=lbcd.socket
 
 [Service]
 Type=simple
