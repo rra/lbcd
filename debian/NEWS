@@ -9,9 +9,7 @@ lbcd (3.5.0-1) unstable; urgency=low
 
   The NO_START option in /etc/default/lbcd is no longer supported and will
   be converted to update-rc.d lbcd disable on upgrade.  To re-enable the
-  lbcd service later, run update-rc.d lbcd enable.  upstart users will
-  need to manually disable the service since the update-rc.d disable
-  interface currently doesn't support upstart.
+  lbcd service later, run update-rc.d lbcd enable.
 
   lbcd no longer allows the client to ask for arbitrary supported service
   probes.  Instead, all services that a client may query must be

@@ -7,8 +7,11 @@ lbcd (3.5.0-4) UNRELEASED; urgency=low
     version of multi-user.target.
   * Weaken the sanity check on user_mtime to allow for a result of zero,
     which should fix build issues on the Debian mips buildds.
+  * Remove now-unnecessary comment about the conversion of NO_START to a
+    disabled service on upstart.  Add a dependency on sysv-rc 2.88dsf-45
+    or later, which added update-rc.d disable support for upstart.
 
- -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 21:41:17 -0800
+ -- Russ Allbery <rra@debian.org>  Sun, 29 Dec 2013 12:55:36 -0800
 
 lbcd (3.5.0-3) unstable; urgency=low
 

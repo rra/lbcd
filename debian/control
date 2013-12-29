@@ -15,7 +15,7 @@ Package: lbcd
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, adduser,
- libio-socket-inet6-perl
+ libio-socket-inet6-perl, sysv-rc (>= 2.88dsf-45)
 Description: Return system load via UDP for remote load balancers
  lbcd is a daemon that answers UDP queries for system load information and
  returns such information as uptime, load, number of logged-in users,
