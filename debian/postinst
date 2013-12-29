@@ -16,7 +16,7 @@ if [ "$1" = 'configure' ] && [ -f /etc/default/lbcd ] ; then
     if [ -n "$2" ] && dpkg --compare-versions "$2" lt 3.5.0 ; then
         . /etc/default/lbcd
         if [ "$NO_START" = 1 ] ; then
-            update-rc.d lbcd disable
+            update-rc.d lbcd disable >/dev/null 2>&1
         fi
     fi
 fi
