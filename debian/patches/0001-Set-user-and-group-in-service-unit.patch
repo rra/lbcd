@@ -1,0 +1,25 @@
+From: Russ Allbery <eagle@eyrie.org>
+Date: Sat, 28 Dec 2013 17:37:17 -0800
+Subject: Set user and group in service unit
+
+On Debian, we want the daemon to run as user lbcd, group lbcd.
+This user and group are created in the postinst file.  Upstream's
+unit files cannot assume any particular users and therefore
+default to running as root.
+---
+ systemd/lbcd.service.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/systemd/lbcd.service.in b/systemd/lbcd.service.in
+index 124f294..bf62b8c 100644
+--- a/systemd/lbcd.service.in
++++ b/systemd/lbcd.service.in
+@@ -9,6 +9,8 @@ Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+ Type=notify
+ NotifyAccess=main
+ Restart=always
++User=lbcd
++Group=lbcd
+ 
+ # Support for /etc/default/lbcd is here only for backward compatibility with
+ # the lbcd init script shipped with Debian.  It and the $DAEMON_OPTS reference
