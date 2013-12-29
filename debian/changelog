@@ -1,4 +1,4 @@
-lbcd (3.5.0-1) UNRELEASED; urgency=low
+lbcd (3.5.0-1) unstable; urgency=low
 
   * New upstream release.
     - lbcd no longer allows the client to ask for arbitrary supported
@@ -48,7 +48,7 @@ lbcd (3.5.0-1) UNRELEASED; urgency=low
     by the dependency-based init system and produce warnings on postinst
     execution.
 
- -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:22:37 -0800
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 16:19:16 -0800
 
 lbcd (3.4.2-1) unstable; urgency=medium
 
