@@ -4,7 +4,7 @@ lbcd (3.5.0-1) unstable; urgency=low
     - lbcd no longer allows the client to ask for arbitrary supported
       service probes.  Instead, all services for which probes should be
       permitted must be explicitly specified with the -a option, which can
-      be set in /etc/default/lbcd in DAEMON_ARGS.
+      be set in /etc/default/lbcd in DAEMON_OPTS.
     - lbcd -s and -r to stop and restart lbcd have been dropped.
     - lbcd no longer writes a PID file by default.  This is handled by the
       Debian init script already.
