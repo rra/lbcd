@@ -2,9 +2,11 @@ lbcd (3.5.0-4) UNRELEASED; urgency=low
 
   * Switch the lbcd systemd configuration to Type=simple.  There's no need
     for startup notification for this service when using socket
-    activation.  Link the service with lbcd.socket using Also.
+    activation.  Link the service with lbcd.socket using Also and Requires.
   * Fix a typo in the lbcd systemd service that referenced a misspelled
     version of multi-user.target.
+  * Weaken the sanity check on user_mtime to allow for a result of zero,
+    which should fix build issues on the Debian mips buildds.
 
  -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 21:41:17 -0800
 
