@@ -2,7 +2,7 @@
  * Test for basic lbcd server functionality.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2013
+ * Copyright 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -61,8 +61,6 @@ is_sane_reply(struct lbcd_request *request, struct lbcd_reply *reply,
        "...boot time before the current time");
     ok(labs((time_t) ntohl(reply->current_time) - now) < 2,
        "...current time within two seconds");
-    ok((time_t) ntohl(reply->user_mtime) >= 0,
-       "...user mtime later than 1970-01-01");
     ok((time_t) ntohl(reply->user_mtime) < now,
        "...user mtime before the current time");
     ok(ntohs(reply->l1) < 20000, "...1 minute load less than 200");
@@ -96,7 +94,7 @@ main(void)
     struct lbcd_request request;
 
     /* Declare a plan. */
-    plan(68);
+    plan(65);
 
     /* Start the lbcd daemon, allowing load and rr services. */
     lbcd_start("-a", "load", "-a", "rr", NULL);
