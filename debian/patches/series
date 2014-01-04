@@ -1,4 +1,0 @@
-0001-Set-user-and-group-in-service-unit.patch
-0002-Fix-systemd-unit-errors-service-type.patch
-0003-Add-explicit-Requires-from-lbcd.service-to-lbcd.sock.patch
-0004-Loosen-user_mtime-sanity-check.patch
