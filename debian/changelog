@@ -1,3 +1,11 @@
+lbcd (3.5.1-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - Mark lbcd listening sockets as close-on-exec.
+    - Document systemd environment variables and add examples section.
+
+ -- Russ Allbery <rra@debian.org>  Fri, 03 Jan 2014 22:07:17 -0800
+
 lbcd (3.5.0-4) unstable; urgency=low
 
   * Switch the lbcd systemd configuration to Type=simple.  There's no need
