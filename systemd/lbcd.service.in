@@ -10,6 +10,8 @@ Requires=lbcd.socket
 Type=simple
 NotifyAccess=main
 Restart=always
+User=lbcd
+Group=lbcd
 
 # Support for /etc/default/lbcd is here only for backward compatibility with
 # the lbcd init script shipped with Debian.  It and the $DAEMON_OPTS reference
