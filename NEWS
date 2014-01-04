@@ -1,6 +1,6 @@
                         User-Visible lbcd Changes
 
-lbcd 3.5.1 (unreleased)
+lbcd 3.5.1 (2014-01-03)
 
     Mark lbcd sockets listening as close-on-exec so that they're not
     inherited by weight commands run via the -c option.
