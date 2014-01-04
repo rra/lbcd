@@ -1,5 +1,12 @@
                              lbcd To-Do List
 
+lbcd:
+
+ * Implement a new protocol that requires a secret key in order to
+   return a reply in order to prevent lbcd from being used as a DoS
+   attack reflector.  Provide command-line options to specify IP
+   ranges that don't require the key and can use the old protocol.
+
 Modules:
 
  * The reported load numbers can wrap around at high loads.
