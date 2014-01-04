@@ -1,9 +1,5 @@
                              lbcd To-Do List
 
-lbcd:
-
- * Delete the PID file on exit.
-
 Modules:
 
  * The reported load numbers can wrap around at high loads.
