@@ -1,7 +1,7 @@
 =for stopwords
 lbcd -dfhlRtZ UDP DNS-based balancer lbnamed lbnamed's iptables IP
 Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT SIGCONT
-SIGSTOP daemontools runit systemd queryable SIGTERM SIGINT
+SIGSTOP daemontools runit systemd queryable SIGTERM SIGINT LDAP syncrepl
 
 =head1 NAME
 
@@ -237,6 +237,71 @@ useful when using upstart as the init system.
 
 =back
 
+=head1 EXAMPLES
+
+Run B<lbcd> as a daemon, using the default load service, and writing a
+PID file to F</var/run/lbcd.pid>:
+
+    lbcd -P /var/run/lbcd.pid
+
+Run B<lbcd> in the foreground, and log all client requests via syslog.
+This is a typical invocation with systemd, using socket activation.
+
+    lbcd -f -l
+
+The same, but raise SIGSTOP after B<lbcd> is ready to answer queries.
+This is a typical invocation with upstart.
+
+    lbcd -f -l -Z
+
+Run B<lbcd> as a daemon, with default behavior, but use round-robin as the
+default service.  This will equally balance queries across machines
+instead of trying to be sensitive to load.
+
+    lbcd -R
+
+Determine the weight of the system based on whether the local HTTP port is
+responding.  If it isn't, the system will return the maximum weight, which
+will cause it to drop out of the pool.
+
+    lbcd -w http:80
+
+Run the external program F</usr/bin/lb-slapd> to determine the weight.
+
+    lbcd -c /usr/bin/ldap-check
+
+This program should print, to standard output, two numbers separated by a
+space.  The first will be the weight and the second will be the load.  In
+this case, it does a query against a local LDAP search to determine its
+health.  (A good approach for LDAP slaves would be to check the syncrepl
+data to see if the slave is up-to-date.)
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item LISTEN_FDS
+
+=item LISTEN_PID
+
+If these environment variables are set, B<lbcd> will expect to be provided
+its listening sockets via the systemd socket activation protocol and will
+not attempt to bind its own sockets.  For more details on the protocol,
+see L<daemon(7)> and L<sd_listen_fds(3)>.
+
+=item NOTIFY_SOCKET
+
+If this environment variable is set, B<lbcd> will notify the socket named
+in this variable when it is ready to accept incoming packets using the
+systemd status notification protocol.  For more details, see L<daemon(7)>
+and L<sd_notify(3)>.
+
+Note that using socket activation is recommended when running under
+systemd, and status notification is not necessary or useful when using
+socket activation.
+
+=back
+
 =head1 FILES
 
 =over 4
@@ -257,13 +322,6 @@ B<-R> or B<-w>, no change to the returned weight will be made.
 
 =back
 
-=head1 SEE ALSO
-
-lbcdclient(1)
-
-The current version of this program is available from its web page at
-L<http://www.eyrie.org/~eagle/software/lbcd/>.
-
 =head1 AUTHORS
 
 Originally written by Roland Schemers and Larry Schwimmer.  Currently
@@ -272,7 +330,7 @@ maintained by Russ Allbery <eagle@eyrie.org>.
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006,
-2009, 2012, 2013 The Board of Trustees of the Leland Stanford Junior
+2009, 2012, 2013, 2014 The Board of Trustees of the Leland Stanford Junior
 University
 
 Copying and distribution of this file, with or without modification, are
@@ -280,4 +338,11 @@ permitted in any medium without royalty provided the copyright notice and
 this notice are preserved.  This file is offered as-is, without any
 warranty.
   
+=head1 SEE ALSO
+
+lbcdclient(1)
+
+The current version of this program is available from its web page at
+L<http://www.eyrie.org/~eagle/software/lbcd/>.
+
 =cut

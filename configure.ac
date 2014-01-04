@@ -2,13 +2,14 @@ dnl Autoconf configuration for lbcd.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Based on work by Larry Schwimmer
-dnl Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012, 2013
+dnl Copyright 1996, 1997, 1998, 2003, 2004, 2005, 2006, 2008, 2009, 2012,
+dnl     2013, 2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.64])
-AC_INIT([lbcd], [3.5.0], [eagle@eyrie.org])
+AC_INIT([lbcd], [3.5.1], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
