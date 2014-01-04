@@ -1,0 +1,24 @@
+From: Russ Allbery <eagle@eyrie.org>
+Date: Fri, 3 Jan 2014 22:21:15 -0800
+Subject: Set lbcd service user and group
+
+Add User=lbcd and Group=lbcd to the lbcd service unit.  Upstream
+cannot assume the existence of these users, but Debian can since
+the postinst script creates them.
+---
+ systemd/lbcd.service.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/systemd/lbcd.service.in b/systemd/lbcd.service.in
+index 5b24e57..d1d2ed3 100644
+--- a/systemd/lbcd.service.in
++++ b/systemd/lbcd.service.in
+@@ -10,6 +10,8 @@ Requires=lbcd.socket
+ Type=simple
+ NotifyAccess=main
+ Restart=always
++User=lbcd
++Group=lbcd
+ 
+ # Support for /etc/default/lbcd is here only for backward compatibility with
+ # the lbcd init script shipped with Debian.  It and the $DAEMON_OPTS reference
