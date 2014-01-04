@@ -10,7 +10,7 @@ Copyright: 1993-1994, 1996-1998, 2000, 2003-2009, 2012
 License: Expat
 
 Files: *
-Copyright: 1993-1994, 1996-2013
+Copyright: 1993-1994, 1996-2014
     The Board of Trustees of the Leland Stanford Junior University
   2000-2002, 2004-2013 Russ Allbery <eagle@eyrie.org>
   2007 Clif Redding
@@ -65,10 +65,9 @@ License: FSF-configure
  This script is free software; the Free Software Foundation gives unlimited
  permission to copy, distribute and modify it.
 
-Files: m4/inet-ntoa.m4 m4/lib-helper.m4 m4/lib-pathname.m4 m4/snprintf.m4
- m4/systemd.m4 m4/vamacros.m4
+Files: m4/inet-ntoa.m4 m4/snprintf.m4 m4/systemd.m4 m4/vamacros.m4
 Copyright: 1999-2001, 2003 Russ Allbery <eagle@eyrie.org>
-  2006, 2008-2009, 2011, 2013
+  2006, 2008-2009, 2013
     The Board of Trustees of the Leland Stanford Junior University
 License: unlimited
  This file is free software; the authors give unlimited permission to copy
@@ -142,7 +141,7 @@ License: Powell-snprintf
  on all source code distributions
 
 Files: server/lbcd.8.in server/lbcd.pod tests/README
-Copyright: 1993-1994, 1996-1998, 2000, 2003-2006, 2009, 2012-2013
+Copyright: 1993-1994, 1996-1998, 2000, 2003-2006, 2009, 2012-2014
     The Board of Trustees of the Leland Stanford Junior University
   2010 Russ Allbery <eagle@eyrie.org>
 License: all-permissive

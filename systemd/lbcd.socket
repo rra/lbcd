@@ -1,3 +1,5 @@
+# Socket configuration for lbcd service.  -*- conf -*-
+
 [Unit]
 Description=lbcd listening socket
 Documentation=man:lbcd(8)

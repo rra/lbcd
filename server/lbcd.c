@@ -6,7 +6,7 @@
  *
  * Written by Larry Schwimmer
  * Extensively modified by Russ Allbery <eagle@eyrie.org>
- * Copyright 1996, 1997, 1998, 2005, 2006, 2008, 2012, 2013
+ * Copyright 1996, 1997, 1998, 2005, 2006, 2008, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -22,6 +22,7 @@
 #include <syslog.h>
 
 #include <server/internal.h>
+#include <util/fdflag.h>
 #include <util/macros.h>
 #include <util/messages.h>
 #include <util/network.h>
@@ -356,8 +357,8 @@ is_ipv6(const char *string UNUSED)
  * socket.
  */
 static void
-bind_socket(struct lbcd_config *config, socket_type **fds,
-            unsigned int *count)
+bind_sockets(struct lbcd_config *config, socket_type **fds,
+             unsigned int *count)
 {
     int status;
     size_t i;
@@ -396,6 +397,8 @@ bind_socket(struct lbcd_config *config, socket_type **fds,
             if ((*fds)[i] == INVALID_SOCKET)
                 sysdie("cannot bind to address %s, port %hu", addr,
                        config->port);
+            if (!fdflag_close_exec((*fds)[i], true))
+                sysdie("cannot set file descriptor close on exec");
         }
     }
 }
@@ -431,8 +434,8 @@ handle_requests(struct lbcd_config *config)
     if (sigaction(SIGTERM, &sa, NULL) < 0)
         syswarn("cannot set SIGTERM handler");
 
-    /* Open UDP socket. */
-    bind_socket(config, &fds, &count);
+    /* Open listening sockets. */
+    bind_sockets(config, &fds, &count);
 
     /* Indicate to the world that we're ready to answer requests. */
     if (config->pid_file != NULL) {

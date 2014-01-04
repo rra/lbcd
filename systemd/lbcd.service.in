@@ -4,9 +4,10 @@
 Description=responder for load balancing
 Documentation=man:lbcd(8)
 Documentation=http://www.eyrie.org/~eagle/software/lbcd/
+Requires=lbcd.socket
 
 [Service]
-Type=notify
+Type=simple
 NotifyAccess=main
 Restart=always
 
@@ -17,4 +18,5 @@ EnvironmentFile=-/etc/default/lbcd
 ExecStart=@sbindir@/lbcd -f -l $DAEMON_OPTS
 
 [Install]
-WantedBy=mutli-user.target
+Also=lbcd.socket
+WantedBy=multi-user.target

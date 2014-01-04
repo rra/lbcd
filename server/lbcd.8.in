@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "LBCD 8"
-.TH LBCD 8 "2013-12-28" "3.5.0" "lbcd"
+.TH LBCD 8 "2014-01-03" "3.5.1" "lbcd"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -351,6 +351,78 @@ requests, raise \s-1SIGSTOP. \s0 This signals to upstart, when using \f(CW\*(C`e
 stop\*(C'\fR, that the daemon is ready to accept connections, and upstart will
 raise \s-1SIGCONT\s0 to allow \fBlbcd\fR to continue.  This option is probably only
 useful when using upstart as the init system.
+.SH "EXAMPLES"
+.IX Header "EXAMPLES"
+Run \fBlbcd\fR as a daemon, using the default load service, and writing a
+\&\s-1PID\s0 file to \fI/var/run/lbcd.pid\fR:
+.PP
+.Vb 1
+\&    lbcd \-P /var/run/lbcd.pid
+.Ve
+.PP
+Run \fBlbcd\fR in the foreground, and log all client requests via syslog.
+This is a typical invocation with systemd, using socket activation.
+.PP
+.Vb 1
+\&    lbcd \-f \-l
+.Ve
+.PP
+The same, but raise \s-1SIGSTOP\s0 after \fBlbcd\fR is ready to answer queries.
+This is a typical invocation with upstart.
+.PP
+.Vb 1
+\&    lbcd \-f \-l \-Z
+.Ve
+.PP
+Run \fBlbcd\fR as a daemon, with default behavior, but use round-robin as the
+default service.  This will equally balance queries across machines
+instead of trying to be sensitive to load.
+.PP
+.Vb 1
+\&    lbcd \-R
+.Ve
+.PP
+Determine the weight of the system based on whether the local \s-1HTTP\s0 port is
+responding.  If it isn't, the system will return the maximum weight, which
+will cause it to drop out of the pool.
+.PP
+.Vb 1
+\&    lbcd \-w http:80
+.Ve
+.PP
+Run the external program \fI/usr/bin/lb\-slapd\fR to determine the weight.
+.PP
+.Vb 1
+\&    lbcd \-c /usr/bin/ldap\-check
+.Ve
+.PP
+This program should print, to standard output, two numbers separated by a
+space.  The first will be the weight and the second will be the load.  In
+this case, it does a query against a local \s-1LDAP\s0 search to determine its
+health.  (A good approach for \s-1LDAP\s0 slaves would be to check the syncrepl
+data to see if the slave is up-to-date.)
+.SH "ENVIRONMENT"
+.IX Header "ENVIRONMENT"
+.IP "\s-1LISTEN_FDS\s0" 4
+.IX Item "LISTEN_FDS"
+.PD 0
+.IP "\s-1LISTEN_PID\s0" 4
+.IX Item "LISTEN_PID"
+.PD
+If these environment variables are set, \fBlbcd\fR will expect to be provided
+its listening sockets via the systemd socket activation protocol and will
+not attempt to bind its own sockets.  For more details on the protocol,
+see \fIdaemon\fR\|(7) and \fIsd_listen_fds\fR\|(3).
+.IP "\s-1NOTIFY_SOCKET\s0" 4
+.IX Item "NOTIFY_SOCKET"
+If this environment variable is set, \fBlbcd\fR will notify the socket named
+in this variable when it is ready to accept incoming packets using the
+systemd status notification protocol.  For more details, see \fIdaemon\fR\|(7)
+and \fIsd_notify\fR\|(3).
+.Sp
+Note that using socket activation is recommended when running under
+systemd, and status notification is not necessary or useful when using
+socket activation.
 .SH "FILES"
 .IX Header "FILES"
 .ie n .IP "\fI\fI@sysconfdir\fI@/nolbcd\fR" 4
@@ -366,12 +438,6 @@ If this file exists, \fBlbcd\fR will force the weight returned by the default
 load algorithm to the maximum possible value.  This will only apply if the
 default load algorithm is used; if a different algorithm is used, due to
 \&\fB\-R\fR or \fB\-w\fR, no change to the returned weight will be made.
-.SH "SEE ALSO"
-.IX Header "SEE ALSO"
-\&\fIlbcdclient\fR\|(1)
-.PP
-The current version of this program is available from its web page at
-<http://www.eyrie.org/~eagle/software/lbcd/>.
 .SH "AUTHORS"
 .IX Header "AUTHORS"
 Originally written by Roland Schemers and Larry Schwimmer.  Currently
@@ -379,10 +445,16 @@ maintained by Russ Allbery <eagle@eyrie.org>.
 .SH "COPYRIGHT AND LICENSE"
 .IX Header "COPYRIGHT AND LICENSE"
 Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006,
-2009, 2012, 2013 The Board of Trustees of the Leland Stanford Junior
+2009, 2012, 2013, 2014 The Board of Trustees of the Leland Stanford Junior
 University
 .PP
 Copying and distribution of this file, with or without modification, are
 permitted in any medium without royalty provided the copyright notice and
 this notice are preserved.  This file is offered as-is, without any
 warranty.
+.SH "SEE ALSO"
+.IX Header "SEE ALSO"
+\&\fIlbcdclient\fR\|(1)
+.PP
+The current version of this program is available from its web page at
+<http://www.eyrie.org/~eagle/software/lbcd/>.
