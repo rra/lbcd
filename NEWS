@@ -2,7 +2,7 @@
 
 lbcd 3.5.1 (2014-01-03)
 
-    Mark lbcd sockets listening as close-on-exec so that they're not
+    Mark lbcd listening sockets as close-on-exec so that they're not
     inherited by weight commands run via the -c option.
 
     Document the environment variables that trigger systemd socket
