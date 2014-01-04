@@ -276,6 +276,32 @@ this case, it does a query against a local LDAP search to determine its
 health.  (A good approach for LDAP slaves would be to check the syncrepl
 data to see if the slave is up-to-date.)
 
+=head1 ENVIRONMENT
+
+=over 4
+
+=item LISTEN_FDS
+
+=item LISTEN_PID
+
+If these environment variables are set, B<lbcd> will expect to be provided
+its listening sockets via the systemd socket activation protocol and will
+not attempt to bind its own sockets.  For more details on the protocol,
+see L<daemon(7)> and L<sd_listen_fds(3)>.
+
+=item NOTIFY_SOCKET
+
+If this environment variable is set, B<lbcd> will notify the socket named
+in this variable when it is ready to accept incoming packets using the
+systemd status notification protocol.  For more details, see L<daemon(7)>
+and L<sd_notify(3)>.
+
+Note that using socket activation is recommended when running under
+systemd, and status notification is not necessary or useful when using
+socket activation.
+
+=back
+
 =head1 FILES
 
 =over 4
