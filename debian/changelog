@@ -1,5 +1,7 @@
 lbcd (3.5.1-2) UNRELEASED; urgency=medium
 
+  * Increase the buffer size for network client timeout tests, hopefully
+    fixing FTBFS on arm64.
   * Switch to debian/upstream/signing-key.asc for the upstream signing key
     location and use an armored key to avoid needing include-binaries.
   * Prefer *.tar.xz in debian/watch to match packaging.
