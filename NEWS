@@ -1,5 +1,10 @@
                         User-Visible lbcd Changes
 
+lbcd 3.5.2 (unreleased)
+
+    Port to libsystemd if it exists, preferring it over libsystemd-daemon
+    since systemd upstream has merged the libraries.
+
 lbcd 3.5.1 (2014-01-03)
 
     Mark lbcd listening sockets as close-on-exec so that they're not

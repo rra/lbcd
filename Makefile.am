@@ -47,9 +47,9 @@ server_lbcd_SOURCES = server/get_user.c server/kernel.c server/internal.h \
 	server/lbcd.c server/load.c server/protocol.h server/server.c	  \
 	server/tmp_full.c server/weight.c
 server_lbcd_CPPFLAGS = -DLBCD_SENTINEL_FILE='"$(sysconfdir)/nolbcd"' \
-	$(SYSTEMD_DAEMON_CFLAGS)
+	$(SYSTEMD_CFLAGS)
 server_lbcd_LDADD = modules/libmodules.a util/libutil.a \
-	portable/libportable.a $(SYSTEMD_DAEMON_LIBS)
+	portable/libportable.a $(SYSTEMD_LIBS)
 man_MANS = server/lbcd.8
 
 # The lbcdclient command-line query tool.
