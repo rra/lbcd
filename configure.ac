@@ -21,6 +21,7 @@ dnl Detect unexpanded macros.
 m4_pattern_forbid([^_?RRA_])
 
 AC_PROG_CC
+RRA_PROG_CC_CLANG
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AM_PROG_CC_C_O
