@@ -5,14 +5,14 @@ Comment: This file documents the copyright statements and licenses for
  .
  For any copyright year range specified as YYYY-ZZZZ in this file, the
  range specifies every single year in that closed interval.
-Copyright: 1993-1994, 1996-1998, 2000, 2003-2009, 2012
+Copyright: 1993-1994, 1996-1998, 2000, 2003-2009, 2012-2014
     The Board of Trustees of the Leland Stanford Junior University
 License: Expat
 
 Files: *
 Copyright: 1993-1994, 1996-2014
     The Board of Trustees of the Leland Stanford Junior University
-  2000-2002, 2004-2013 Russ Allbery <eagle@eyrie.org>
+  2000-2002, 2004-2015 Russ Allbery <eagle@eyrie.org>
   2007 Clif Redding
 License: Expat
 
@@ -23,8 +23,8 @@ Copyright: 1994-2013 Free Software Foundation, Inc.
 License: FSF-unlimited and Expat
 
 Files: aclocal.m4
-Copyright: 1996-2013 Free Software Foundation, Inc.
-  2004 Scott James Remnant <scott@netsplit.com>.
+Copyright: 1996-2014 Free Software Foundation, Inc.
+  2004 Scott James Remnant <scott@netsplit.com>
 License: FSF-unlimited, and GPL-2+ with Autoconf exception or Expat
 
 Files: build-aux/ar-lib build-aux/compile build-aux/depcomp
@@ -65,9 +65,10 @@ License: FSF-configure
  This script is free software; the Free Software Foundation gives unlimited
  permission to copy, distribute and modify it.
 
-Files: m4/inet-ntoa.m4 m4/snprintf.m4 m4/systemd.m4 m4/vamacros.m4
-Copyright: 1999-2001, 2003 Russ Allbery <eagle@eyrie.org>
-  2006, 2008-2009, 2013
+Files: m4/clang.m4 m4/inet-ntoa.m4 m4/snprintf.m4 m4/systemd.m4
+ m4/vamacros.m4
+Copyright: 1999-2001, 2003, 2015 Russ Allbery <eagle@eyrie.org>
+  2006, 2008-2009, 2013-2014
     The Board of Trustees of the Leland Stanford Junior University
 License: unlimited
  This file is free software; the authors give unlimited permission to copy
@@ -79,7 +80,8 @@ Files: m4/socket.m4 portable/socket.h util/fdflag.c util/fdflag.h
  util/xmalloc.c util/xmalloc.h util/xwrite.c util/xwrite.h
 Copyright: 1991, 1994-2003 The Internet Software Consortium and Rich Salz
   2004-2010 Internet Systems Consortium, Inc.
-  2008-2013 The Board of Trustees of the Leland Stanford Junior University
+  2008-2014 The Board of Trustees of the Leland Stanford Junior University
+  2014 Russ Allbery <eagle@eyrie.org>
 License: ISC
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -112,9 +114,10 @@ Files: portable/asprintf.c portable/daemon.c portable/dummy.c
  portable/getaddrinfo.c portable/getaddrinfo.h portable/getnameinfo.c
  portable/getnameinfo.h portable/inet_aton.c portable/inet_ntoa.c
  portable/inet_ntop.c portable/macros.h portable/mkstemp.c
- portable/sd-daemon.h portable/statvfs.h portable/stdbool.h
- portable/strlcat.c portable/strlcpy.c portable/strndup.c portable/system.h
- portable/uio.h tests/portable/asprintf-t.c tests/portable/daemon-t.c
+ portable/reallocarray.c portable/sd-daemon.h portable/statvfs.h
+ portable/stdbool.h portable/strlcat.c portable/strlcpy.c
+ portable/strndup.c portable/system.h portable/uio.h
+ tests/portable/asprintf-t.c tests/portable/daemon-t.c
  tests/portable/getaddrinfo-t.c tests/portable/getnameinfo-t.c
  tests/portable/inet_aton-t.c tests/portable/inet_ntoa-t.c
  tests/portable/inet_ntop-t.c tests/portable/strlcat-t.c
