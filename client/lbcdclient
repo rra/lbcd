@@ -341,7 +341,7 @@ my $protocol = $v2 ? 2 : 3;
 my ($host) = @ARGV;
 
 # Allow for comma-separated services as well as multiple -s options.
-@services = map { split(m{,}xms, $_) } @services;
+@services = map { split(m{,}xms) } @services;
 
 # Send the query and print the results.
 my $socket = udp_socket($host, $port, $timeout);

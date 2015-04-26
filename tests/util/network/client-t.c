@@ -5,7 +5,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2014 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -239,7 +239,7 @@ test_timeout_ipv4(void)
         sysbail("cannot fork");
     else if (child == 0) {
         alarm(10);
-        c = accept(fd, NULL, 0);
+        c = accept(fd, NULL, NULL);
         if (c == INVALID_SOCKET)
             _exit(1);
         sleep(9);
@@ -305,8 +305,6 @@ test_network_read(void)
 {
     socket_type fd, c;
     pid_t child;
-    struct sockaddr_in sin;
-    socklen_t slen;
     char buffer[4];
 
     /* Create the listening socket. */
@@ -329,8 +327,7 @@ test_network_read(void)
     alarm(10);
 
     /* Accept the client connection. */
-    slen = sizeof(sin);
-    c = accept(fd, &sin, &slen);
+    c = accept(fd, NULL, NULL);
     if (c == INVALID_SOCKET)
         sysbail("cannot accept on socket");
 
@@ -371,13 +368,11 @@ test_network_write(void)
 {
     socket_type fd, c;
     pid_t child;
-    struct sockaddr_in sin;
-    socklen_t slen;
     char *buffer;
 
     /* Create the data that we're going to send. */
-    buffer = bmalloc(4096 * 1024);
-    memset(buffer, 'a', 4096 * 1024);
+    buffer = bmalloc(8192 * 1024);
+    memset(buffer, 'a', 8192 * 1024);
 
     /* Create the listening socket. */
     fd = network_bind_ipv4(SOCK_STREAM, "127.0.0.1", 11119);
@@ -399,8 +394,7 @@ test_network_write(void)
     alarm(10);
 
     /* Accept the client connection. */
-    slen = sizeof(struct sockaddr_in);
-    c = accept(fd, &sin, &slen);
+    c = accept(fd, NULL, NULL);
     if (c == INVALID_SOCKET)
         sysbail("cannot accept on socket");
 
@@ -414,7 +408,7 @@ test_network_write(void)
      * A longer write cannot be completely absorbed before the client sleep,
      * so should fail with a timeout.
      */
-    ok(!network_write(c, buffer, 4096 * 1024, 1),
+    ok(!network_write(c, buffer, 8192 * 1024, 1),
        "network_write aborted with timeout");
     is_int(ETIMEDOUT, socket_errno, "...with correct error");
     alarm(0);

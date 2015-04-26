@@ -9,7 +9,7 @@ dnl
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.64])
-AC_INIT([lbcd], [3.5.1], [eagle@eyrie.org])
+AC_INIT([lbcd], [3.5.2], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
@@ -17,7 +17,11 @@ AM_INIT_AUTOMAKE([1.11 check-news dist-xz foreign silent-rules subdir-objects
     -Wall -Werror])
 AM_MAINTAINER_MODE
 
+dnl Detect unexpanded macros.
+m4_pattern_forbid([^_?RRA_])
+
 AC_PROG_CC
+RRA_PROG_CC_CLANG
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AM_PROG_CC_C_O
@@ -47,7 +51,7 @@ dnl General C library probes.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([search.h sys/bittypes.h sys/filio.h sys/select.h \
     sys/statvfs.h sys/uio.h sys/time.h sys/vfs.h syslog.h utmp.h utmpx.h])
-AC_CHECK_DECLS([snprintf, vsnprintf])
+AC_CHECK_DECLS([snprintf, strlcat, strlcpy, vsnprintf])
 RRA_C_C99_VAMACROS
 RRA_C_GNU_VAMACROS
 AC_TYPE_LONG_LONG_INT
@@ -61,7 +65,8 @@ AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
 AC_CHECK_FUNCS([getutent getutxent hsearch setrlimit setsid statvfs])
-AC_REPLACE_FUNCS([asprintf daemon mkstemp strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([asprintf daemon mkstemp reallocarray strlcat strlcpy])
+AC_REPLACE_FUNCS([strndup])
 
 dnl Additional probes for networking portability and IPv6.
 AC_CHECK_DECLS([h_errno], [], [], [#include <netdb.h>])
@@ -93,6 +98,10 @@ AC_CHECK_FUNCS([getaddrinfo],
     [RRA_FUNC_GETADDRINFO_ADDRCONFIG],
     [AC_LIBOBJ([getaddrinfo])])
 AC_REPLACE_FUNCS([getnameinfo inet_aton inet_ntop])
+
+dnl Enable appropriate warnings.
+AM_CONDITIONAL([WARNINGS_GCC], [test x"$GCC" = xyes && test x"$CLANG" != xyes])
+AM_CONDITIONAL([WARNINGS_CLANG], [test x"$CLANG" = xyes])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
