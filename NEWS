@@ -5,6 +5,24 @@ lbcd 3.5.2 (unreleased)
     Port to libsystemd if it exists, preferring it over libsystemd-daemon
     since systemd upstream has merged the libraries.
 
+    Update to rra-c-util 5.7:
+
+    * Avoid $() in the systemd probe since it fails on Solaris 10.
+    * Check for integer overflow in vector_join and vector_cjoin.
+    * Avoid strlcpy in more places.
+    * Restart network I/O attempts on EINTR system call failures.
+    * Use calloc or reallocarray in preference to calculating sizes.
+    * Use AUTHOR/RELEASE_TESTING instead of RRA_MAINTAINER_TESTS.
+
+    Update to C TAP Harness 3.3:
+
+    * Display verbose test results with -v or C_TAP_VERBOSE.
+    * Support comments and blank lines in test lists.
+    * Check for integer overflow on memory allocations.
+    * Avoid all remaining uses of sprintf.
+    * Reopen standard input to /dev/null when running a test list.
+    * Don't leak extraneous file descriptors to tests.
+
 lbcd 3.5.1 (2014-01-03)
 
     Mark lbcd listening sockets as close-on-exec so that they're not

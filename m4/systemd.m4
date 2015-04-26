@@ -40,8 +40,11 @@ AC_DEFUN([RRA_WITH_SYSTEMD_UNITDIR],
  AM_CONDITIONAL([HAVE_SYSTEMD],
     [test -n "$with_systemdsystemunitdir" -a x"$with_systemdsystemunitdir" != xno])])
 
-dnl Check for libsystemd or libsystemd-daemon and define
-dnl SYSTEMD_DAEMON_{CFLAGS,LIBS} if it is available.
+dnl Check for libsystemd or libsystemd-daemon and define SYSTEMD_{CFLAGS,LIBS}
+dnl if it is available.  This is called RRA_LIB_SYSTEMD_DAEMON_OPTIONAL since
+dnl it was originally written when libsystemd-daemon was separate, and only
+dnl checks for that library.  It may eventually make sense to retire this in
+dnl favor of a simple RRA_LIB_SYSTEMD_OPTIONAL that isn't backward-compatible.
 AC_DEFUN([RRA_LIB_SYSTEMD_DAEMON_OPTIONAL],
 [PKG_CHECK_EXISTS([libsystemd],
     [PKG_CHECK_MODULES([SYSTEMD], [libsystemd])

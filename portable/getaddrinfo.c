@@ -62,6 +62,9 @@ extern int h_errno;
  * constants, but that should be okay (except possibly for gai_strerror).
  */
 #if TESTING
+# undef gai_strerror
+# undef freeaddrinfo
+# undef getaddrinfo
 # define gai_strerror test_gai_strerror
 # define freeaddrinfo test_freeaddrinfo
 # define getaddrinfo  test_getaddrinfo
@@ -152,10 +155,8 @@ freeaddrinfo(struct addrinfo *ai)
 
     while (ai != NULL) {
         next = ai->ai_next;
-        if (ai->ai_addr != NULL)
-            free(ai->ai_addr);
-        if (ai->ai_canonname != NULL)
-            free(ai->ai_canonname);
+        free(ai->ai_addr);
+        free(ai->ai_canonname);
         free(ai);
         ai = next;
     }
