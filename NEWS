@@ -1,6 +1,6 @@
                         User-Visible lbcd Changes
 
-lbcd 3.5.2 (unreleased)
+lbcd 3.5.2 (2015-04-26)
 
     Port to libsystemd if it exists, preferring it over libsystemd-daemon
     since systemd upstream has merged the libraries.
