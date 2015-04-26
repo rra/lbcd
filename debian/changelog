@@ -2,6 +2,7 @@ lbcd (3.5.2-1) UNRELEASED; urgency=medium
 
   * New upstream release.
     - Detect libsystemd instead of libsystemd-daemon.  (Closes: #779779)
+  * Update standards version to 3.9.6 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Sun, 26 Apr 2015 16:45:15 -0700
 
