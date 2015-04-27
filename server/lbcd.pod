@@ -1,0 +1,348 @@
+=for stopwords
+lbcd -dfhlRtZ UDP DNS-based balancer lbnamed lbnamed's iptables IP
+Schwimmer Allbery sublicense MERCHANTABILITY NONINFRINGEMENT SIGCONT
+SIGSTOP daemontools runit systemd queryable SIGTERM SIGINT LDAP syncrepl
+
+=head1 NAME
+
+lbcd - Report system load for remote load balancing
+
+=head1 SYNOPSIS
+
+B<lbcd> [B<-dfhlRtZ>] S<[B<-a> I<allowed-service> [B<-a> I<allowed-service>]]>
+    S<[B<-b> I<bind-address> [B<-b> I<bind-address>]]> S<[B<-c> I<command>]>
+    S<[B<-P> I<file>]> S<[B<-p> I<port>]> S<[B<-T> I<seconds>]>
+    S<[B<-w> I<weight>]>
+
+B<lbcd> B<-t> [v2] [I<service> ...]
+
+=head1 DESCRIPTION
+
+B<lbcd> runs as a daemon and reports various system utilization
+information and optionally service status information via a UDP network
+protocol.  It is designed to run on the client systems of a remote load
+balancing system, such as the DNS-based B<lbnamed> load balancer.
+
+B<lbcd> supports two different query protocols, version two and version
+three.  (Currently, B<lbnamed> only supports version two queries.)  Either
+will return the current time according to that system, the time of the
+last system boot, the time the information about logged in users last
+changed, the load averages (one, five, and fifteen minute), the total and
+unique logged in users, whether a user is logged in on console, percentage
+full of the system F</tmp> directory is full, and percentage full of the
+system F</var/tmp> directory.  (See, however, the note below about how
+some of this data is replaced with calculated weights for version two
+responses.)  The version three protocol can also return weight and
+increment information about a set of services.
+
+The service information is based around a model that returns a weight
+(indicating the current utilization of the box -- the higher, the busier)
+and an increment (an estimate of how much the utilization will increase
+for each additional connection directed to this box) which defaults to
+one.  The intent is for the load balancer to query the system
+periodically, using the returned weight as the system load, and to
+estimate the system load between queries of B<lbcd> as the last returned
+weight plus the last returned increment times the number of connections
+directed to that system.
+
+By default, only one service is returned.  That default service weight is
+calculated as follows:
+
+    (<uniq-users> * 100 + 300 * <one-minute-load>
+        + (<total-users> - <unique-users>) * 20) * <tmp-penalty>
+
+where <tmp-penalty> is a multiplier applied for the most full of F</tmp>
+and F</var/tmp>.  <tmp-penalty> will be 1 if both are less than 90% full
+and will range between 2 for 90-93% full up to 32 for 100% full.  If
+F</tmp> or F</var/tmp> are completely full, the maximum possible weight
+will be returned.  Different algorithms for determining the weight can be
+used instead; see the B<-w> option.
+
+If you want to use a simple load average instead, pass the B<-S> option to
+B<lbcd> and then the load service will use only the one-minute load.  If
+you want every system running B<lbcd> to return the same load, use the
+B<-R> option.
+
+If the file F<@sysconfdir@/nolbcd> exists, B<lbcd> will force the weight
+of the default service to the maximum value regardless of the normal
+service calculation.  This allows one to effectively remove a host from a
+load-balanced pool by touching a file without having to stop the B<lbcd>
+daemon.
+
+Since B<lbnamed> calculates the weight from the one minute load and the
+number of logged-in users and currently only supports version two, B<lbcd>
+will replace the one-minute load with the weight of the primary service
+when responding to a version two query and will set all of the user
+numbers to zero unless B<-S> was given.  If B<-S> was given, the values
+returned will be left alone.  (This means that B<-S> will override B<-R>
+for version two queries, since B<-R> is equivalent to specifying a service
+of C<rr>.)
+
+B<lbcd> responds to any UDP packets on port 4330 (or the port given with
+the B<-p> option).  It has no built-in security, so if you do not want to
+disclose the above information to random systems on the Internet, you will
+want to limit access to this port using iptables, firewall rules, or other
+similar measures.
+
+By default, B<lbcd> listens on all addresses and responds on whatever
+address the kernel picks for outgoing packets.  B<lbnamed> sends out all
+of its packets and then waits for replies and uses the source address of
+the reply packet to associate that reply with one of the queried hosts.
+This means that if B<lbnamed> is not configured to query the same address
+as the kernel picks for B<lbcd> to respond on, the response may be ignored
+and the host considered down.  To work around this, use the B<-b> flag on
+hosts with multiple interfaces to ensure that replies go out on the
+interface being queried.  If a host has multiple IP addresses that will be
+queried, run multiple instances of B<lbcd>, one for each interface.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<allowed-service>
+
+The version 3 lbcd protocol allows the client to request weight
+information for a specific protocol.  To prevent clients from getting
+information about (and causing B<lbcd> to probe) services that shouldn't
+be exposed over protocol, only services specified with the B<-a> option
+are allowed.  This option may be given multiple times to allow multiple
+services to be queried.  The service specified with B<-w>, if any, is
+always allowed, as is the C<default> service.
+
+For a list of the supported services, and therefore the allowed values
+for I<allowed-service>, see the B<-w> option.
+
+Client queries are compared exactly against the I<allowed-service> values,
+including any port information after a colon, so all service values that
+should be queryable must be listed using this option.
+
+=item B<-b> I<bind-address>
+
+By default, B<lbcd> binds to all available addresses.  If this option is
+given, B<lbcd> binds only to the specified address and will only answer
+UDP queries to that address.  This option may be given multiple times to
+bind to multiple addresses.  I<bind-address> must be an IP address (either
+IPv4 or IPv6), not a hostname.
+
+This option is ignored if B<lbcd> is passed already open sockets via the
+systemd socket activation protocol.  In that case, the bind addresses of
+the sockets should be controlled via the systemd configuration.
+
+=item B<-c> I<command>
+
+Obtain the service weight and increment by running an external command.
+This command should print to standard output one line containing two
+integer numbers, separated by whitespace.  The first number is taken to be
+the weight and the second number is taken to be the increment.  (As
+mentioned above, when responding to version two protocol queries, the
+weight is returned as the one-minute load average.)
+
+=item B<-d>
+
+Run in the foreground (the same as with B<-f>), send informational
+messages to standard output instead of syslog, and send errors to standard
+error instead of syslog.  This is intended for debugging.
+
+=item B<-f>
+
+Run in the foreground, meaning don't fork and don't detach from the
+controlling terminal.  This allows B<lbcd> to be run more simply via
+modern init systems such as upstart or systemd and work properly with
+process supervisors such as daemontools or runit.
+
+=item B<-h>
+
+Print out usage information and exit.
+
+=item B<-l>
+
+Log every received request to syslog (or to standard output if B<-d> was
+given).  The requests will be logged with the LOG_DAEMON facility and the
+LOG_INFO priority.
+
+=item B<-P> I<file>
+
+Store the PID of the running daemon in I<file>.  I<file> will be deleted
+when B<lbcd> exits normally (via a SIGTERM or SIGINT signal).
+
+=item B<-p> I<port>
+
+Listen on I<port> rather than the default of 4330.
+
+This option is ignored if B<lbcd> is passed already open sockets via the
+systemd socket activation protocol.  In that case, the listening port
+should be controlled via the systemd configuration.
+
+=item B<-R>
+
+Use round-robin as the service.  This will always return a weight of one
+and an increment of one.  It is equivalent to C<-w rr>.  For version two
+responses, it will always return a one-minute load of one regardless of
+the actual load average of the system (unless B<-S> is used).
+
+=item B<-S>
+
+When answering version two queries, do not attempt to adjust for
+B<lbnamed>'s logic and force it to use the service weight.  Instead,
+report the load averages and number of logged in users accurately.  This
+means that version two responses will not contain any information derived
+from custom services or weight settings and the B<-c>, B<-w>, and B<-R>
+options will be ignored for version two responses.
+
+=item B<-T> I<seconds>
+
+Use a timeout of I<seconds> when doing service probes (including running a
+command with B<-c>).  The default is five seconds.
+
+=item B<-t>
+
+Test mode.  When run with the B<-t> flag, B<lbcd> will do all the checks
+that it would do when receiving a query packet, print out the results in a
+human-readable format to standard output, and then exit.
+
+When run with this option, the remaining command-line arguments are taken
+as services to probe.  The valid service names are the same as the valid
+service arguments to the B<-w> option, with one exception.  If the first
+service is the string C<v2>, B<lbcd> will behave as if it received a
+protocol version two query packet and will manipulate its reply
+information accordingly before printing it out.
+
+=item B<-w> I<weight>
+
+Specify either a service to probe or a weight and increment to always
+return.  I<weight> can be a string of the form I<weight>:I<increment>
+where both I<weight> and I<increment> are numbers, in which case that
+weight and increment will always be returned.  Alternately, it can be the
+name of a service module, in which case that service will be probed and
+its weight will be returned as the service weight (and the one-minute load
+with version two queries).
+
+The currently supported services are C<load> (the default), C<ftp>,
+C<http>, C<imap>, C<nntp>, C<ntp>, C<pop>, C<smtp>, C<tcp>, and C<rr>
+(round-robin, the same as B<-R>).  The C<http> and C<tcp> services must be
+followed by a colon and a port number.
+
+This option only affects the default service.  A version 3 protocol client
+can query any of the supported services provided that the service is
+listed as allowed, using the B<-a> flag.  This allows the client to get
+weight and increment information for several different services.
+
+=item B<-Z>
+
+When B<lbcd> has set up its network socket and is ready to answer
+requests, raise SIGSTOP.  This signals to upstart, when using C<expect
+stop>, that the daemon is ready to accept connections, and upstart will
+raise SIGCONT to allow B<lbcd> to continue.  This option is probably only
+useful when using upstart as the init system.
+
+=back
+
+=head1 EXAMPLES
+
+Run B<lbcd> as a daemon, using the default load service, and writing a
+PID file to F</var/run/lbcd.pid>:
+
+    lbcd -P /var/run/lbcd.pid
+
+Run B<lbcd> in the foreground, and log all client requests via syslog.
+This is a typical invocation with systemd, using socket activation.
+
+    lbcd -f -l
+
+The same, but raise SIGSTOP after B<lbcd> is ready to answer queries.
+This is a typical invocation with upstart.
+
+    lbcd -f -l -Z
+
+Run B<lbcd> as a daemon, with default behavior, but use round-robin as the
+default service.  This will equally balance queries across machines
+instead of trying to be sensitive to load.
+
+    lbcd -R
+
+Determine the weight of the system based on whether the local HTTP port is
+responding.  If it isn't, the system will return the maximum weight, which
+will cause it to drop out of the pool.
+
+    lbcd -w http:80
+
+Run the external program F</usr/bin/lb-slapd> to determine the weight.
+
+    lbcd -c /usr/bin/ldap-check
+
+This program should print, to standard output, two numbers separated by a
+space.  The first will be the weight and the second will be the load.  In
+this case, it does a query against a local LDAP search to determine its
+health.  (A good approach for LDAP slaves would be to check the syncrepl
+data to see if the slave is up-to-date.)
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item LISTEN_FDS
+
+=item LISTEN_PID
+
+If these environment variables are set, B<lbcd> will expect to be provided
+its listening sockets via the systemd socket activation protocol and will
+not attempt to bind its own sockets.  For more details on the protocol,
+see L<daemon(7)> and L<sd_listen_fds(3)>.
+
+=item NOTIFY_SOCKET
+
+If this environment variable is set, B<lbcd> will notify the socket named
+in this variable when it is ready to accept incoming packets using the
+systemd status notification protocol.  For more details, see L<daemon(7)>
+and L<sd_notify(3)>.
+
+Note that using socket activation is recommended when running under
+systemd, and status notification is not necessary or useful when using
+socket activation.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item F<@sysconfdir@/nolbcd>
+
+If this file exists, B<lbcd> will force the weight of the default service
+to the maximum possible value regardless of the normal weight calculation.
+This allows one to effectively remove a host from a load-balanced pool by
+touching a file without having to stop the B<lbcd> daemon.
+
+=item F</etc/nologin>
+
+If this file exists, B<lbcd> will force the weight returned by the default
+load algorithm to the maximum possible value.  This will only apply if the
+default load algorithm is used; if a different algorithm is used, due to
+B<-R> or B<-w>, no change to the returned weight will be made.
+
+=back
+
+=head1 AUTHORS
+
+Originally written by Roland Schemers and Larry Schwimmer.  Currently
+maintained by Russ Allbery <eagle@eyrie.org>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006,
+2009, 2012, 2013, 2014 The Board of Trustees of the Leland Stanford Junior
+University
+
+Copying and distribution of this file, with or without modification, are
+permitted in any medium without royalty provided the copyright notice and
+this notice are preserved.  This file is offered as-is, without any
+warranty.
+  
+=head1 SEE ALSO
+
+lbcdclient(1)
+
+The current version of this program is available from its web page at
+L<http://www.eyrie.org/~eagle/software/lbcd/>.
+
+=cut

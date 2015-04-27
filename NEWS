@@ -1,0 +1,287 @@
+                        User-Visible lbcd Changes
+
+lbcd 3.5.2 (2015-04-26)
+
+    Port to libsystemd if it exists, preferring it over libsystemd-daemon
+    since systemd upstream has merged the libraries.
+
+    Update to rra-c-util 5.7:
+
+    * Avoid $() in the systemd probe since it fails on Solaris 10.
+    * Check for integer overflow in vector_join and vector_cjoin.
+    * Avoid strlcpy in more places.
+    * Restart network I/O attempts on EINTR system call failures.
+    * Use calloc or reallocarray in preference to calculating sizes.
+    * Use AUTHOR/RELEASE_TESTING instead of RRA_MAINTAINER_TESTS.
+
+    Update to C TAP Harness 3.3:
+
+    * Display verbose test results with -v or C_TAP_VERBOSE.
+    * Support comments and blank lines in test lists.
+    * Check for integer overflow on memory allocations.
+    * Avoid all remaining uses of sprintf.
+    * Reopen standard input to /dev/null when running a test list.
+    * Don't leak extraneous file descriptors to tests.
+
+lbcd 3.5.1 (2014-01-03)
+
+    Mark lbcd listening sockets as close-on-exec so that they're not
+    inherited by weight commands run via the -c option.
+
+    Document the environment variables that trigger systemd socket
+    activation and status notification in the lbcd man page.  Add an
+    examples section.
+
+    Switch the lbcd systemd unit to Type=simple and add lbcd.socket to
+    Also= and Requires= so that the two are linked.  There's no need to
+    use notify for lbcd since the only resource it needs to set up is its
+    socket, which socket activation handles.  Also fix a typo in the
+    WantedBy= field.
+
+lbcd 3.5.0 (2013-12-28)
+
+    lbcd no longer allows the client to request probes of arbitrary
+    supported services.  Instead, specify the services lbcd should allow
+    to be queried with the -a option, which can be given multiple times.
+    Querying any service not listed with an -a option will result in an
+    error reply.
+
+    Drop support for lbcd -s, to stop a running daemon, and lbcd -r, to
+    restart a running daemon.  This sort of daemon management is best done
+    via a system framework, whether init scripts, upstart, or systemd.
+
+    lbcd no longer writes its PID file to /var/run/lbcd.pid by default.
+    The -P option, specifying where to write a PID file, is still
+    supported, but unless it is given, lbcd does not write out a PID file.
+    lbcd also now removes any PID file it creates on exit.
+
+    lbcdclient has been rewritten.  The output format is now completely
+    different and more human-readable.  The timeout and port are
+    configurable on the command line, and the option parsing now supports
+    long options.  The command no longer takes a list of multiple servers
+    to query, and exits with an error message if it cannot reach a server
+    within the timeout.  lbcdclient supports IPv6 if the IO::Socket::INET6
+    Perl module is installed.
+
+    lbcd supports a new -f option, which runs the daemon in the foreground
+    (as preferred by modern init systems) but still logs to syslog, unlike
+    the existing -d option which also moves logging to standard output and
+    standard error.
+
+    Implement lbcd -l, which now logs to syslog each incoming client
+    request and its protocol version.
+
+    lbcd now ignores SIGHUP instead of exiting.  SIGHUP is conventionally
+    used to tell a daemon to reload its configuration, and lbcd has no
+    configuration and therefore trivially satisfies this, so ignoring the
+    signal seems like the most consistent approach.  Use SIGTERM to tell
+    the daemon to exit.
+
+    lbcd now supports IPv6.  The bind address given with -b may be an IPv6
+    address, and by default it listens to both IPv4 and IPv6 addresses on
+    hosts that support IPv6.  The -b option can now be given multiple
+    times to bind to multiple addresses.
+
+    lbcd now considers a user to be on console if any user is logged in
+    from an "address" that starts with ":0".  Modern Linux systems with a
+    display manager will show console users this way rather than logins to
+    tty1 or console.
+
+    Add support for systemd.  If built on a system with systemd installed,
+    lbcd will install (but not enable) systemd units to start lbcd via
+    socket activation.  lbcd will also notify systemd when its
+    initialization is complete if started by systemd with service
+    notification enabled.  Distributors are encouraged to modify the
+    provided lbcd.service file to set User and Group to a separate user
+    and group created for that purpose, although this is not done in the
+    default unit files due to the difficulty with creating users portably.
+
+    Add support for upstart's expect stop daemon synchronization method.
+    When starting lbcd with upstart, pass the new -Z option to lbcd, and
+    it will raise SIGSTOP when ready to accept connections, signaling to
+    upstart that the daemon has fully started.
+
+    Fix source typo that prevented compilation on Mac OS X.  (It is
+    probably obvious that the developer doesn't have access to Mac OS X
+    systems to test compilation....)
+
+    Update to rra-c-util 5.0:
+
+    * The network_bind_* functions now take a socket type.
+    * Improved error handling from network_bind_* functions.
+    * New network_wait_any function to wait on a set of file descriptors.
+    * vector_free and cvector_free now can take NULL pointers.
+    * New TAP add-on to spawn background processes.
+    * Update warning flags to gcc 4.7.2.
+
+    Update to C TAP Harness 2.4:
+
+    * Add new diag_file_add and _remove API to the C TAP library.
+
+lbcd 3.4.2 (2013-12-17)
+
+    Support getutxent and use it in preference to getutent, falling back
+    on the latter only if getutxent isn't available.  Hopefully fixes
+    compilation problems on Mac OS X.
+
+    Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
+
+    Update to rra-c-util 4.12:
+
+    * network_connect now resumes after being interrupted by a signal.
+    * Correctly check the return status of snprintf.
+    * Correctly handle formatting errors in asprintf functions.
+
+    Update to C TAP Harness 2.3:
+
+    * bail and sysbail now exit with status 255 to match Test::More.
+    * Suppress lazy plans and test summaries if the test failed with bail.
+    * Add warn_unused_result gcc attributes to relevant functions.
+
+lbcd 3.4.1 (2013-03-28)
+
+    If $sysconfdir/nolbcd (/usr/local/etc/nolbcd by default) exists, force
+    the weight of the default service to the maximum regardless of what
+    the normal weight calculation returned.  This allows a host to be
+    effectively dropped out of a load-balanced pool by touching this file.
+
+    Document the lbcd -t test mode and fix the output to treat the results
+    as unsigned numbers instead of signed numbers.
+
+    Stop rewriting maximum weights in the lbcdclient output to -1 and
+    report the actual number that will be used by clients.
+
+    Document lbcd handling of /etc/nologin.
+
+    Update to rra-c-util 4.8:
+
+    * Improve POD tests.
+    * Cleanly passes clang --analyze.
+
+    Update to C TAP Harness 2.1:
+
+    * runtests now treats the command line as a list of tests by default.
+    * The full test executable path can now be passed to runtests -o.
+    * Improved harness output for tests with lazy plans.
+    * Improved harness output to a terminal for some abort cases.
+    * Flush harness output after each test even when not on a terminal.
+
+lbcd 3.4.0 (2012-09-20)
+
+    Add Mac OS X port from Clif Redding.  Tested with Darwin 8.10.1 and
+    Mac OS X 10.4.10, but hopefully will work with other versions.
+
+    Update the LDAP check to do something more reasonable.  The old LDAP
+    plugin probably never worked, at least with OpenLDAP.  Thanks to
+    Quanah Gibson-Mount for the fixes.
+
+    Fix the HTTP check to correctly verify that the server returns a 20x
+    or 30x status code.  Previously, any status code response would have
+    accidentally been considered a success.
+
+    Fix a possible memory overwrite and security issue if there are more
+    than 512 unique users logged on to the system.
+
+    Check for inet_aton in libresolv for older versions of Solaris.
+
+    Dropped support for NeXTSTEP, ULTRIX, and SunOS.  It's unlikely that
+    lbcd still compiled on those platforms and it's too much effort to
+    support pre-ANSI systems that exist only in museums.
+
+lbcd 3.3.0 (2006-10-06)
+
+    Add the -S option, which says to return load and user information
+    unmolested when replying to version two queries rather than setting
+    all of the loads to the calculated weight of the first service and
+    zeroing the user information.
+
+    Fix user handling on Linux.  Due to an invalid utmp path, a logic
+    error in caching user login results, and an incorrect path for the
+    console, all the user numbers on Linux were always zero prior to this
+    fix.
+
+    Add considerably better documentation on what weight the default load
+    service calculates, including its various adjustments based on the
+    number of logged-in users.
+
+    In lbcdclient, don't send a one-byte packet to the server before
+    sending the real query.
+
+lbcd 3.2.6 (2006-05-16)
+
+    When building from a different build directory than the source
+    directory, the makefile built and looked for the man pages in the
+    wrong path.  Look for and build man pages in the source directory.
+
+lbcd 3.2.5 (2006-04-10)
+
+    Fixed a misuse of the third argument to waitpid that was causing use
+    of a command to generate weights to fail on some platforms.
+
+lbcd 3.2.4 (2006-03-17)
+
+    Document lbcd's behavior on hosts with multiple addresses and the use
+    of -b and running multiple instances of lbcd to ensure that replies
+    go out from the right source address.  Unfortunately, the design of
+    the Unix UDP API makes it more difficult than it's worth to try to
+    reply to incoming packets with the source address of the interface on
+    which they were received.
+
+lbcd 3.2.3 (2005-02-24)
+
+    Added the -b option to lbcd to bind to only the specified address
+    instead of all available addresses.
+
+lbcd 3.2.2 (2004-11-16)
+
+    Documentation updates, including adding a README file and reformatting
+    documentation to match other Stanford packages.  Added URL information
+    to the manual pages.
+
+lbcd 3.2.1 (2004-09)
+
+    Fixed a long-standing bug in round-robin (-R) mode when responding to
+    v2 requests.  The response packet was not being correctly changed on
+    Linux and other little-endian systems.
+
+    Set the 5 and 15 minute load to a constant value as well as the 1
+    minute load when using round-robin, just in case.
+
+lbcd 3.2.0 (2004-08)
+
+    Added manual pages for both lbcd and lbcdclient.
+
+    Changed the default PID file location for lbcd to /var/run/lbcd.pid,
+    which is FHS-compliant and supported on most operating systems now.
+
+    Added Debian build rules and Makefile support for building Debian
+    packages, and cleaned up the configure and build system.
+
+lbcd 3.1.2 (2003-07)
+
+    Fixed a bug with va_end usage on systems where va_end is not a no-op
+    and fixed some setpgrp portability issues.
+
+    Added a make dist target to the Makefile.
+
+lbcd 3.1.1 (2000-01)
+
+    Ported to IRIX 6.5.  The IRIX support code underwent a general
+    cleanup.
+
+lbcd 3.1.0 (1998-08)
+
+    Standardize on 32 bytes for protocol v3 service length and add
+    protocol v3 extensions to the server.
+
+    Ported to IRIX 6.x.
+
+    Fix protocol v2 conversion handling for little-endian machines.
+
+lbcd 3.0.1 (1998-01)
+
+    Fix Solaris utmp gathering mechanism by checking the utmp entry type.
+
+lbcd 3.0.0 (1998-01)
+
+    First complete protocol v3 server.

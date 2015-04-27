@@ -1,0 +1,48 @@
+                             lbcd To-Do List
+
+lbcd:
+
+ * Implement a new protocol that requires a secret key in order to
+   return a reply in order to prevent lbcd from being used as a DoS
+   attack reflector.  Provide command-line options to specify IP
+   ranges that don't require the key and can use the old protocol.
+
+Modules:
+
+ * The reported load numbers can wrap around at high loads.
+
+ * Support the port argument for all of the protocol tests except HTTP
+   (which already supports it).
+
+Portability:
+
+ * The on_console code doesn't work properly on IRIX.
+
+ * Drop portability to systems without hsearch.
+
+ * Add a portability layer for utmp.
+
+Code Cleanup:
+
+ * Move the various standard modules out of the main code into the modules
+   directory so that they're treated like all other modules.
+
+ * Convert booleans to bool type.
+
+ * Change all the uses of atoi to strtol with proper input checking.
+
+ * Pass lbcd_service structs into the check modules instead of separate
+   uint32_t pointers.
+
+Test Suite:
+
+ * More testing is needed to make sure that file descriptors are not
+   leaked when doing service probes, that querying multiple services
+   remotely works corectly, and that the daemon works when pounded on.
+
+Documentation:
+
+ * It's not clear whether protocol v3 is worth it, and it's definitely
+   unclear how service information is requested by the client and returned
+   as part of the v3 support.  Better documentation is needed here, if v3
+   ends up being worthwhile to keep.
