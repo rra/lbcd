@@ -2,9 +2,10 @@ lbcd (3.5.2-1) unstable; urgency=medium
 
   * New upstream release.
     - Detect libsystemd instead of libsystemd-daemon.  (Closes: #779779)
+  * Refresh upstream signing key.
   * Update standards version to 3.9.6 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sun, 26 Apr 2015 17:04:48 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 26 Apr 2015 17:15:58 -0700
 
 lbcd (3.5.1-2) unstable; urgency=medium
 
