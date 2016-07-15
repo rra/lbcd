@@ -1,0 +1,21 @@
+lbcd (3.5.0-1) unstable; urgency=low
+
+  Any -P option present in DAEMON_ARGS in /etc/default/lbcd should be
+  removed.  Under systemd and upstart, there's no need for lbcd to write a
+  PID file, so adding this flag is now handled by the init script.  If the
+  option is not removed on upgrades, the daemon may fail to start, since
+  the systemd and upstart configurations no longer create the directory
+  for the PID file.
+
+  The NO_START option in /etc/default/lbcd is no longer supported and will
+  be converted to update-rc.d lbcd disable on upgrade.  To re-enable the
+  lbcd service later, run update-rc.d lbcd enable.
+
+  lbcd no longer allows the client to ask for arbitrary supported service
+  probes.  Instead, all services that a client may query must be
+  explicitly allowed with -a command-line options (set in DAEMON_OPTS in
+  /etc/default/lbcd).  This only applies to version three queries.
+  lbnamed only uses version two queries and is not affected.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 14:24:22 -0800
+

@@ -1,0 +1,292 @@
+lbcd (3.5.2-2) unstable; urgency=medium
+
+  * Drop now-unnecessary dependency on sysv-rc, satisfied by stable and
+    intended for upstart support (which is now obsolete in unstable).
+  * Switch to the DEP-14 branch layout and update debian/gbp.conf and
+    Vcs-Git accordingly.  (Closes: #829547)
+  * Add explicitly nonexistent directory as home for adduser invocation.
+  * Run wrap-and-sort -ast on the packaging files.
+  * Switch to https URLs for Vcs-* and Homepage.
+  * Refresh upstream signing key.
+  * Update standards version to 3.9.8 (no changes required).
+
+ -- Russ Allbery <rra@debian.org>  Thu, 14 Jul 2016 18:25:36 -0700
+
+lbcd (3.5.2-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Detect libsystemd instead of libsystemd-daemon.  (Closes: #779779)
+  * Refresh upstream signing key.
+  * Update standards version to 3.9.6 (no changes required).
+
+ -- Russ Allbery <rra@debian.org>  Sun, 26 Apr 2015 17:15:58 -0700
+
+lbcd (3.5.1-2) unstable; urgency=medium
+
+  * Increase the buffer size for network client timeout tests, hopefully
+    fixing FTBFS on arm64.
+  * Switch to debian/upstream/signing-key.asc for the upstream signing key
+    location and use an armored key to avoid needing include-binaries.
+  * Prefer *.tar.xz in debian/watch to match packaging.
+  * Fix Upstream-Contact email address in debian/copyright.
+  * Add debian/gbp.conf reflecting the branch layout of the default
+    packaging repository.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 24 Aug 2014 00:39:40 -0700
+
+lbcd (3.5.1-1) unstable; urgency=low
+
+  * New upstream release.
+    - Mark lbcd listening sockets as close-on-exec.
+    - Document systemd environment variables and add examples section.
+
+ -- Russ Allbery <rra@debian.org>  Fri, 03 Jan 2014 22:17:56 -0800
+
+lbcd (3.5.0-4) unstable; urgency=low
+
+  * Switch the lbcd systemd configuration to Type=simple.  There's no need
+    for startup notification for this service when using socket
+    activation.  Link the service with lbcd.socket using Also and Requires.
+  * Fix a typo in the lbcd systemd service that referenced a misspelled
+    version of multi-user.target.
+  * Weaken the sanity check on user_mtime to allow for a result of zero,
+    which should fix build issues on the Debian mips buildds.
+  * Remove now-unnecessary comment about the conversion of NO_START to a
+    disabled service on upstart.  Add a dependency on sysv-rc 2.88dsf-45
+    or later, which added update-rc.d disable support for upstart.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 29 Dec 2013 12:56:35 -0800
+
+lbcd (3.5.0-3) unstable; urgency=low
+
+  * Restrict the libsystemd-daemon-dev build dependency to linux-any.
+  * Remove one unnecessary Lintian override about redirecting update-rc.d
+    output.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 19:58:45 -0800
+
+lbcd (3.5.0-2) unstable; urgency=low
+
+  * Patch the upstream-provided service unit to set user and group to
+    lbcd.  Upstream's unit file cannot assume any particular user exists,
+    so this has to be handled in distribution packaging.
+  * Add setuid and setgid directives to the upstart configuration.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 17:42:16 -0800
+
+lbcd (3.5.0-1) unstable; urgency=low
+
+  * New upstream release.
+    - lbcd no longer allows the client to ask for arbitrary supported
+      service probes.  Instead, all services for which probes should be
+      permitted must be explicitly specified with the -a option, which can
+      be set in /etc/default/lbcd in DAEMON_OPTS.
+    - lbcd -s and -r to stop and restart lbcd have been dropped.
+    - lbcd no longer writes a PID file by default.  This is handled by the
+      Debian init script already.
+    - lbcd removes its PID file on exit if it wrote one.
+    - lbcdclient has been completely rewritten in modern Perl and now
+      supports IPv6 queries.  The output format is entirely different and
+      should be more readable.  It no longer takes multiple servers to
+      query, supports long options, supports configuring the timeout and
+      port, and exits with an error if it cannot reach a server within the
+      timeout period.
+    - lbcd supports a new -f option to run in the foreground while still
+      logging to syslog.
+    - lbcd -l now behaves as intended and logs each client request.
+    - lbcd now ignores SIGHUP (since there's no configuration to reload)
+      and exits cleanly on SIGTERM and SIGINT.
+    - lbcd now supports IPv6 and multiple bind addresses (the -b option).
+    - lbcd now considers there to be a user on console if any of the users
+      come from an "address" that starts with ":0".
+    - systemd socket activation and synchronization support has been
+      added, as has a -Z option to raise SIGSTOP for upstart
+      synchronization.
+  * Remove the -P option from /etc/default/lbcd.  This isn't useful for
+    upstart and systemd, and the init script requires a specific setting,
+    so it is now set directly in the init script.  This option should be
+    removed on upgrades; if not, the daemon may not start under systemd or
+    upstart, since they will not create the (now-unnecessary) directory
+    for the PID file.
+  * The NO_START option in /etc/default/lbcd is no longer supported.  On
+    upgrade, it will be converted into update-rc.d lbcd disable, which
+    will disable daemon startup in systemd and sysvinit.  upstart users
+    will need to manually disable the daemon since the update-rc.d disable
+    interface currently doesn't support upstart.
+  * systemd and upstart are now supported with native service
+    configuration.  Socket activation is used on systems running systemd.
+    Continue to use DAEMON_OPTS in /etc/default/lbcd to configure the
+    behavior of lbcd for the time being to ensure compatibility between
+    the init systems and a clean upgrade path.
+  * The init script now exits non-zero if run on a system booted with
+    upstart per Policy 9.11.1.
+  * Remove the start parameters to dh_installinit.  These are now ignored
+    by the dependency-based init system and produce warnings on postinst
+    execution.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 28 Dec 2013 16:19:16 -0800
+
+lbcd (3.4.2-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Use getutxent in preference to get getutent.
+    - Support FreeBSD (and Debian GNU/kFreeBSD) if /proc is mounted.
+  * Add necessary keyring and watch configuration for uscan to verify
+    PGP signatures on new upstream releases.
+  * Remove now-unnecessary override of dh_builddeb to use xz compression.
+  * Update standards version to 3.9.5 (no changes required).
+
+ -- Russ Allbery <rra@debian.org>  Tue, 17 Dec 2013 16:37:40 -0800
+
+lbcd (3.4.1-3) unstable; urgency=low
+
+  * Apply upstream patch to add AM_PROG_AR to configure.ac, now apparently
+    required by Automake for the binutils in unstable.  (Closes: #713291)
+  * Apply upstream patch to build with largefile support.  This is
+    probably pointless for this module, but consistency is good.
+  * Apply upstream patch to fix the buffer size for network timeout tests,
+    fixing test failures with newer Linux kernels.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 13:29:33 -0700
+
+lbcd (3.4.1-2) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 11 May 2013 17:02:56 -0700
+
+lbcd (3.4.1-1) experimental; urgency=low
+
+  * New upstream release.
+    - If /etc/nolbcd exists, force the weight of the default service to
+      the maximum without regard to the normal calculation.
+    - Document lbcd -t and fix the output for sign issues.
+    - Stop rewriting maximum weights in lbcdclient to -1.
+    - Document lbcd handling of /etc/nologin.
+
+ -- Russ Allbery <rra@debian.org>  Thu, 28 Mar 2013 14:59:43 -0700
+
+lbcd (3.4.0-2) experimental; urgency=low
+
+  * Pass $DAEMON_OPTS to lbcd when starting.
+  * Tell update-rc.d to not create stop links by default.
+
+ -- Russ Allbery <rra@debian.org>  Fri, 21 Sep 2012 00:28:45 -0700
+
+lbcd (3.4.0-1) experimental; urgency=low
+
+  * New upstream release.
+    - Update the LDAP check to do something more reasonable.
+    - Fix the HTTP check to correctly verify the server status, and allow
+      any 20x or 30x status code as a success.  Previously, any status
+      code response would have accidentally been considered a success.
+    - Fix possible memory overwrite and security issue when run on a
+      system with more than 512 unique logged-in users.
+  * Rewrite the init script.
+    - Use LSB functions for output and logging.
+    - Add a status action.
+    - Be more correct about the exit status.
+    - Remove the PID file after stop.
+    - Remove set -e to avoid spurious init script failures.
+  * Remove old init script failure workaround.  We no longer need to worry
+    about upgrades from old init scripts that failed if lbcd couldn't be
+    stopped.  The old versions were never in Debian.
+  * Use set -e in maintainer scripts.
+  * Always create the lbcd user if missing, even on postinst maintainer
+    script actions other than configure.
+  * Improve comments in /etc/default/lbcd.
+  * Update to debhelper compatibility level V9.
+    - Switch to debhelper rule minimization.
+    - Enable hardening flags.
+    - Add ${misc:Depends} and ${perl:Depends} to dependencies.
+  * Switch to xz compression for the upstream source, Debian tarball, and
+    binary packages.
+  * Use dh-autoreconf to rebuild the build system.
+  * Enable parallel builds.
+  * Mark lbcd as Multi-Arch: foreign.
+  * Add Homepage, Vcs-Git, and Vcs-Browser control fields.
+  * Update Debian source package format to 3.0 (quilt).
+  * Rewrite debian/copyright in copyright-format 1.0.
+  * Update standards version to 3.9.4.
+
+ -- Russ Allbery <rra@debian.org>  Thu, 20 Sep 2012 23:42:51 -0700
+
+lbcd (3.3.0-1) unstable; urgency=low
+
+  * [4107c5d] Imported Upstream version 3.3.0
+  * [965cd57] create a pid dir since lbcd runs non root
+  * [db4ed40] bump standards version
+
+ -- Guido Guenther <agx@sigxcpu.org>  Wed, 17 Sep 2008 10:06:02 +0200
+
+lbcd (3.2.6-3) unstable; urgency=low
+
+  * Upload to unstable (Closes: #488372) 
+
+ -- Guido Guenther <agx@sigxcpu.org>  Mon, 30 Jun 2008 18:55:49 -0300
+
+lbcd (3.2.6-2) unstable; urgency=low
+
+  * [0c80707] add myself to uploaders
+  * [ef07945] init script: add LSB header
+  * [e150623] start lbcd by default
+  * [78b3ac6] don't run lbcd as root
+
+ -- Guido Guenther <agx@sigxcpu.org>  Sat, 28 Jun 2008 00:04:49 +0200
+
+lbcd (3.2.6-1) unstable; urgency=low
+
+  * New upstream release.
+  * Don't fail on stop and restart actions in the init script if lbcd was
+    not already running.
+  * Ignore failures in prerm from the old init script, since it will fail
+    if lbcd couldn't be stopped.
+  * Update standards version to 3.7.2 (no changes required).
+
+ -- Russ Allbery <rra@debian.org>  Tue, 16 May 2006 12:01:08 -0700
+
+lbcd (3.2.5-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fix a bug in using external commands to generate weights.
+  * Add a watch file.
+
+ -- Russ Allbery <rra@debian.org>  Mon, 10 Apr 2006 20:51:34 -0700
+
+lbcd (3.2.4-1) unstable; urgency=low
+
+  * New upstream release.
+    - Document behavior on systems with multiple interfaces.
+  * General debian/rules cleanup.
+  * Update debian/copyright to my current format.
+  * Update to standards version 3.6.2 (no changes required).
+  * Update maintainer address.
+
+ -- Russ Allbery <rra@debian.org>  Fri, 17 Mar 2006 23:26:43 -0800
+
+lbcd (3.2.3-1) unstable; urgency=low
+
+  * New upstream release adding the -b option to lbcd.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 24 Feb 2005 20:02:29 -0800
+
+lbcd (3.2.2-1) unstable; urgency=low
+
+  * New upstream release.
+    - Improved documentation.
+
+ -- Russ Allbery <rra@stanford.edu>  Tue, 16 Nov 2004 14:40:48 -0800
+
+lbcd (3.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fixes -R mode on Linux when responding to v2 queries.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 16 Sep 2004 16:12:51 -0700
+
+lbcd (3.2.0-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Russ Allbery <rra@stanford.edu>  Thu, 19 Aug 2004 17:30:18 -0700
+
