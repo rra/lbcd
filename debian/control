@@ -6,7 +6,7 @@ Uploaders: Guido Guenther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 9), dh-autoreconf, dh-systemd,
  libsystemd-dev [linux-any], libtest-minimumversion-perl,
  libtest-pod-perl, libtest-strict-perl, pkg-config
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: http://www.eyrie.org/~eagle/software/lbcd/
 Vcs-Git: git://git.eyrie.org/system/lbcd.git -b debian
 Vcs-Browser: http://git.eyrie.org/?p=system/lbcd.git
