@@ -5,6 +5,7 @@ lbcd (3.5.2-2) unstable; urgency=medium
   * Switch to the DEP-14 branch layout and update debian/gbp.conf and
     Vcs-Git accordingly.  (Closes: #829547)
   * Run wrap-and-sort -ast on the packaging files.
+  * Switch to https URLs for Vcs-* and Homepage.
   * Refresh upstream signing key.
   * Update standards version to 3.9.8 (no changes required).
 

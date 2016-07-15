@@ -14,9 +14,9 @@ Build-Depends:
  libtest-strict-perl,
  pkg-config,
 Standards-Version: 3.9.8
-Homepage: http://www.eyrie.org/~eagle/software/lbcd/
-Vcs-Git: git://git.eyrie.org/system/lbcd.git -b debian/master
-Vcs-Browser: http://git.eyrie.org/?p=system/lbcd.git
+Homepage: https://www.eyrie.org/~eagle/software/lbcd/
+Vcs-Git: https://git.eyrie.org/git/system/lbcd.git -b debian/master
+Vcs-Browser: https://git.eyrie.org/?p=system/lbcd.git
 
 Package: lbcd
 Architecture: any
