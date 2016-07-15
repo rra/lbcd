@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Contact: Russ Allbery <eagle@eyrie.org>
 Source: http://www.eyrie.org/~eagle/software/lbcd/
-Copyright: 2015 Russ Allbery <eagle@eyrie.org>
+Copyright: 2015, 2016 Russ Allbery <eagle@eyrie.org>
   1993-1994, 1996-1998, 2000, 2003-2009, 2012-2014
     The Board of Trustees of the Leland Stanford Junior University
 License: Expat
@@ -120,7 +120,7 @@ Files: portable/asprintf.c portable/daemon.c portable/dummy.c
  tests/portable/inet_ntop-t.c tests/portable/strlcat-t.c
  tests/portable/strlcpy-t.c tests/portable/strndup-t.c
  tests/util/vector-t.c util/macros.h util/vector.c util/vector.h
-Copyright: no copyright notice, see License
+Copyright: no copyright notice, see License for explanation
 License: rra-public-domain
  The authors hereby relinquish any claim to any copyright that they may
  have in this work, whether granted under contract or by operation of law
