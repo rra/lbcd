@@ -5,7 +5,7 @@ set -e
 # Add a user for the daemon to run as.
 if ! getent passwd lbcd >/dev/null; then
     adduser --disabled-password --quiet --system --no-create-home \
-	--gecos "Load Balancing Client Daemon" --group lbcd
+	--home /nonexistent --gecos "Load Balancing Client Daemon" --group lbcd
 fi
 
 # Handle upgrades from versions supporting NO_START in /etc/default/lbcd.

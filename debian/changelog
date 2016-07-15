@@ -4,6 +4,7 @@ lbcd (3.5.2-2) unstable; urgency=medium
     intended for upstart support (which is now obsolete in unstable).
   * Switch to the DEP-14 branch layout and update debian/gbp.conf and
     Vcs-Git accordingly.  (Closes: #829547)
+  * Add explicitly nonexistent directory as home for adduser invocation.
   * Run wrap-and-sort -ast on the packaging files.
   * Switch to https URLs for Vcs-* and Homepage.
   * Refresh upstream signing key.
