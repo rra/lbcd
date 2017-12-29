@@ -4,6 +4,10 @@ lbcd (3.5.2-3) UNRELEASED; urgency=medium
     - Remove now-unnecessary dh-autoreconf and dh-systemd dependencies.
     - Remove explicit configuration of autoreconf and systemd sequences.
   * Update standards version to 4.1.3.
+    - Remove support for NO_START in the init script.  There was already
+      logic in place to disable the init script when upgrading from older
+      versions that supported NO_START.
+    - Use update-rc.d defaults-disabled when upgrading from older versions.
     - Use https URLs in debian/copyright.
     - Remove upstart configuration.
   * Set Rules-Requires-Root: no.

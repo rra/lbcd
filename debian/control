@@ -6,6 +6,7 @@ Uploaders:
  Guido Guenther <agx@sigxcpu.org>,
 Build-Depends:
  debhelper (>= 11),
+ init-system-helpers (>= 1.50),
  libsystemd-dev [linux-any],
  libtest-minimumversion-perl,
  libtest-pod-perl,

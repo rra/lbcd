@@ -71,10 +71,6 @@ do_stop()
 
 case "$1" in
     start)
-        if [ "$NO_START" = 1 ] ; then
-            log_warning_msg "Not starting $NAME (see /etc/default/$NAME)"
-            exit 0
-        fi
         [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
         do_start
         case "$?" in
