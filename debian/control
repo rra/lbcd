@@ -11,7 +11,7 @@ Build-Depends:
  libtest-pod-perl,
  libtest-strict-perl,
  pkg-config,
-Standards-Version: 3.9.8
+Standards-Version: 4.1.3
 Homepage: https://www.eyrie.org/~eagle/software/lbcd/
 Vcs-Git: https://git.eyrie.org/git/system/lbcd.git -b debian/master
 Vcs-Browser: https://git.eyrie.org/?p=system/lbcd.git

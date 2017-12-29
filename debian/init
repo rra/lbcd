@@ -36,12 +36,6 @@ GROUP=lbcd
 # Define LSB log_* functions and init_is_upstart.
 . /lib/lsb/init-functions
 
-# If we're running under upstart, do nothing, since the lbcd package provides
-# a separate native upstart configuration.
-if init_is_upstart ; then
-    exit 1
-fi
-
 # Add the PID file flag to DAEMON_OPTS since the init script relies on a
 # specific PID file location.
 DAEMON_OPTS="$DAEMON_OPTS -P $PIDFILE"
