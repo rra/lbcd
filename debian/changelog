@@ -1,3 +1,11 @@
+lbcd (3.5.2-3) UNRELEASED; urgency=medium
+
+  * Update to debhelper compatibility level V11.
+    - Remove now-unnecessary dh-autoreconf and dh-systemd dependencies.
+    - Remove explicit configuration of autoreconf and systemd sequences.
+
+ -- Russ Allbery <rra@debian.org>  Fri, 29 Dec 2017 13:10:54 -0800
+
 lbcd (3.5.2-2) unstable; urgency=medium
 
   * Drop now-unnecessary dependency on sysv-rc, satisfied by stable and

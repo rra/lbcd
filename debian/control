@@ -5,9 +5,7 @@ Maintainer: Russ Allbery <rra@debian.org>
 Uploaders:
  Guido Guenther <agx@sigxcpu.org>,
 Build-Depends:
- debhelper (>= 9),
- dh-autoreconf,
- dh-systemd,
+ debhelper (>= 11),
  libsystemd-dev [linux-any],
  libtest-minimumversion-perl,
  libtest-pod-perl,
