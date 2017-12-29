@@ -1,9 +1,7 @@
 Source: lbcd
 Section: net
 Priority: optional
-Maintainer: Russ Allbery <rra@debian.org>
-Uploaders:
- Guido Guenther <agx@sigxcpu.org>,
+Maintainer: Debian QA Group <packages@qa.debian.org>
 Build-Depends:
  debhelper (>= 11),
  init-system-helpers (>= 1.50),

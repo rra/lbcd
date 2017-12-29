@@ -1,5 +1,6 @@
 lbcd (3.5.2-3) UNRELEASED; urgency=medium
 
+  * Orphan package.  Note that it is also orphaned upstream.
   * Update to debhelper compatibility level V11.
     - Remove now-unnecessary dh-autoreconf and dh-systemd dependencies.
     - Remove explicit configuration of autoreconf and systemd sequences.
