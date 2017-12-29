@@ -1,4 +1,4 @@
-lbcd (3.5.2-3) UNRELEASED; urgency=medium
+lbcd (3.5.2-3) unstable; urgency=medium
 
   * Orphan package.  Note that it is also orphaned upstream.
   * Update to debhelper compatibility level V11.
@@ -15,7 +15,7 @@ lbcd (3.5.2-3) UNRELEASED; urgency=medium
   * Use https URL in debian/watch.
   * Remove trailing whitespace from debian/changelog.
 
- -- Russ Allbery <rra@debian.org>  Fri, 29 Dec 2017 13:10:54 -0800
+ -- Russ Allbery <rra@debian.org>  Fri, 29 Dec 2017 13:55:17 -0800
 
 lbcd (3.5.2-2) unstable; urgency=medium
 
