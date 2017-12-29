@@ -1,4 +1,5 @@
-# Lintian incorrectly thinks that update-rc.d <service> disable calls
-# duplicate the calls added to set up the init script.  These calls port
-# the old NO_START configuration to a properly disabled daemon.
+# Lintian incorrectly thinks that update-rc.d <service> defaults-disabled
+# call duplicates the call added to set up the init script in the default
+# case.  These calls port the old NO_START configuration to a properly
+# disabled daemon.
 lbcd: duplicate-updaterc.d-calls-in-postinst lbcd
