@@ -3,6 +3,7 @@ lbcd (3.5.2-3) UNRELEASED; urgency=medium
   * Update to debhelper compatibility level V11.
     - Remove now-unnecessary dh-autoreconf and dh-systemd dependencies.
     - Remove explicit configuration of autoreconf and systemd sequences.
+  * Remove trailing whitespace from debian/changelog.
 
  -- Russ Allbery <rra@debian.org>  Fri, 29 Dec 2017 13:10:54 -0800
 
@@ -229,7 +230,7 @@ lbcd (3.3.0-1) unstable; urgency=low
 
 lbcd (3.2.6-3) unstable; urgency=low
 
-  * Upload to unstable (Closes: #488372) 
+  * Upload to unstable (Closes: #488372)
 
  -- Guido Guenther <agx@sigxcpu.org>  Mon, 30 Jun 2008 18:55:49 -0300
 
@@ -297,4 +298,3 @@ lbcd (3.2.0-1) unstable; urgency=low
   * Initial release.
 
  -- Russ Allbery <rra@stanford.edu>  Thu, 19 Aug 2004 17:30:18 -0700
-
